@@ -1,0 +1,79 @@
+Option Explicit
+
+Sub CreateMail()
+    Dim olApp As Object
+    Dim olMail As Object
+    Dim recipients() As String
+    Dim recipientsStr As String
+    Dim i As Long
+    Dim acc As Object
+    Dim selectedAccountName As String
+    
+    ' 使用するアカウント名を指定
+    selectedAccountName = "example@domain.com"  ' 送信元メールアドレスやアカウント名
+    
+    Dim ws As Worksheet
+    Dim attendeeTbl As ListObject
+    Dim row
+    Dim cb As CheckBox
+    Dim nameIdx As Integer, _
+        addressIdx As Integer
+    
+    Set ws = ThisWorkbook.Worksheets("フォーマット生成")
+    Set attendeeTbl = ws.ListObjects("Attendee")
+    
+    nameIdx = attendeeTbl.ListColumns("氏名").Index
+    addressIdx = attendeeTbl.ListColumns("メールアドレス").Index
+    
+    i = 0
+    
+    For Each row In attendeeTbl.ListRows
+    
+        Set cb = ws.CheckBoxes("chk_" & Format(i, "00"))
+        If Not cb.Value = 1 Then GoTo nextName
+        
+        
+        ReDim recipients(i)
+        recipients(i) = row.Range.Cells(1, nameIdx) & " <" & row.Range.Cells(1, addressIdx) & ">"
+        recipientsStr = recipientsStr & recipients(i) & "; "
+nextName:
+        i = i + 1
+    Next
+    
+    
+    ' Outlookを起動（未起動なら作成）
+    On Error Resume Next
+    Set olApp = GetObject(, "Outlook.Application")
+    If olApp Is Nothing Then
+        Set olApp = CreateObject("Outlook.Application")
+    End If
+    On Error GoTo 0
+    
+    ' 宛先ごとにメールを作成
+    ' For i = LBound(recipients) To UBound(recipients)
+        Set olMail = olApp.CreateItem(0) ' 0 = olMailItem
+        
+        ' 任意アカウントを設定
+        For Each acc In olApp.Session.Accounts
+            If LCase(acc.SmtpAddress) = LCase(selectedAccountName) Then
+                Set olMail.SendUsingAccount = acc
+                Exit For
+            End If
+        Next acc
+    
+        olMail.To = recipientsStr
+        olMail.Subject = "テストメール " & (i + 1)
+        olMail.Body = "これはテスト用のメールです。送信はしません。宛先：" & recipients(i)
+        olMail.BCC = "sample@gmail.com"
+        ' メールを表示
+        
+        
+    ' Next i
+    
+    olMail.Display
+    
+    ' オブジェクト解放
+    Set olMail = Nothing
+    Set olApp = Nothing
+
+End Sub

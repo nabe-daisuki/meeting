@@ -1,0 +1,55 @@
+Option Explicit
+
+Sub UpdateWordTableFromExcel()
+    Dim wordApp As Object
+    Dim doc As Object
+    Dim tbl As Object
+    Dim rw As Object
+    Dim cel As Object
+    Dim wordPath As String
+    
+    wordPath = ThisWorkbook.Sheets("Sheet1").Range("A1").Value
+    
+    On Error Resume Next
+    Set wordApp = GetObject(, "Word.Application")
+    If Err.Number <> 0 Then
+        Err.Clear
+        Set wordApp = CreateObject("Word.Application")
+    End If
+    On Error GoTo 0
+    
+    wordApp.Visible = True
+    
+    Set doc = wordApp.Documents.Open(wordPath)
+    
+    For Each tbl In doc.Tables
+        For Each rw In tbl.Rows
+            For Each cel In rw.Cells
+                Dim txt As String
+                txt = cel.Range.Text
+                txt = Left(txt, Len(txt) - 2) ' セル末尾の改行を除去
+                
+                If txt = "OLD" Then
+                    cel.Range.Text = "NEW"
+                    
+                    Debug.Print "行 " & cel.RowIndex & ", 列 " & cel.ColumnIndex & " 高さ: " & cel.Height
+                End If
+            Next cel
+        Next rw
+    Next tbl
+    
+    ' 保存（必要なら）
+    ' doc.Save
+    
+    ' 確認のため Word は開いたままにする
+    ' doc.Close
+    ' wordApp.Quit
+    
+    ' 後片付け
+    Set cel = Nothing
+    Set rw = Nothing
+    Set tbl = Nothing
+    Set doc = Nothing
+    Set wordApp = Nothing
+End Sub
+
