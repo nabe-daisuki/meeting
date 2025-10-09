@@ -2,7 +2,7 @@ const isTest = true;
 
 const header = document.getElementById("header");
 
-const comparisonContainer = document.getElementById("comparison-container");
+const editorPanel = document.getElementById("editor-panel");
 
 const lPanel = document.getElementById('left-panel');
 // const rPanel = document.getElementById('right-panel');
@@ -34,6 +34,8 @@ const textFileNames = document.getElementById("text-file-names");
 
 const menuContainer = document.getElementById('menu');
 
+const attachmentBadge = document.getElementById("attachment-badge");
+
 const audioInfo = {
   fileName: "",
   bytes: "",
@@ -42,15 +44,15 @@ const audioInfo = {
   length: ""
 }
 
-function setComparisonContainerH(){
-  comparisonContainer.style.height = `calc(100vh - ${header.offsetHeight}px)`;
+function setEditorPanelH(){
+  editorPanel.style.height = `calc(100vh - ${header.offsetHeight}px)`;
 }
 
 const lSide = new Side("left");
 // const rSide = new Side("right");
 
 window.onload= () =>{
-  setComparisonContainerH();
+  setEditorPanelH();
 
   TextInput.init();
   AudioInput.init();
@@ -59,6 +61,7 @@ window.onload= () =>{
   Scroll.init();
   Save.init();
   Load.init();
+  Badge.init();
   Export.init();
   AudioController.init();
   
@@ -66,7 +69,7 @@ window.onload= () =>{
 }
 
 window.onresize = () => {
-  setComparisonContainerH();
+  setEditorPanelH();
   Render.syncRowHeights();
 };
 

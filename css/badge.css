@@ -1,0 +1,20 @@
+@charset "utf-8";
+
+.badge {
+  padding:10px;
+  width: 2em;
+  height:2em;
+  border-radius: 2em;
+  /* user-select: none; */
+}
+
+.badge img {
+  width: 2em;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+#attachment-badge {
+  background-color: #ebd600;
+}

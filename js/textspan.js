@@ -64,6 +64,15 @@ class TextSpan {
 
       ContextMenu.show(e.clientX, e.clientY);
     });
+    textSpan.addEventListener("dragenter", e => e.preventDefault())
+    textSpan.addEventListener("drop", e => {
+      e.preventDefault();
+      const content = e.dataTransfer.getData('text/plain');
+      console.log(content);
+      if(content === "ATTACHMENT_BADGE"){
+        return;
+      }
+    });
 
     textSpanBody.appendChild(textSpanDummy);
     textSpanBody.appendChild(textSpan);

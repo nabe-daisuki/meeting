@@ -147,9 +147,9 @@
 
 
   /*@@@@@@@@@@@@@@@@@@@@@@*/
-  /* comparison-container */
+  /* editor-panel */
   /*@@@@@@@@@@@@@@@@@@@@@@*/
-  #comparison-container {
+  #editor-panel {
     display:flex;
     overflow:hidden;
   }
@@ -157,8 +157,18 @@
   /*********/
   /* panel */
   /*********/
+  #left-panel {
+    flex: 2;
+  }
+  #right-panel {
+    flex: 0.5;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+    background: #f7f7f7;
+  }
   .panel {
-    flex:1;
     overflow-y: auto;
     border:1px solid #ccc;
   }
@@ -335,6 +345,8 @@
   <link rel="stylesheet" href="css/flex-textarea.css">
   <link rel="stylesheet" href="css/contextmenu.css">
   <link rel="stylesheet" href="css/volume-controller.css">
+  <link rel="stylesheet" href="css/tools.css">
+  <link rel="stylesheet" href="css/badge.css">
 </head>
 <body>
 
@@ -403,9 +415,29 @@
 </div>
 
 
-<div id="comparison-container">
+<div id="editor-panel">
   <div class="panel" id="left-panel"></div>
-  <!-- <div class="panel" id="right-panel"></div> -->
+  <div class="panel" id="right-panel">
+    <div class="tool-section" id="taraTool" style="display:none;">
+      <div class="tool-header">「たら」の言い換え</div>
+      <div class="tool-buttons">
+        <button data-replace="した際">した際</button>
+        <button data-replace="した場合">した場合</button>
+        <button data-replace="したが">したが</button>
+      </div>
+    </div>
+
+    <div class="tool-section">
+      <div class="tool-header">その他ツール</div>
+      <div class="tool-buttons">
+        <button id="addMori">末尾に（森）</button>
+        <div class="badge" id="attachment-badge" draggable="true">
+          <img src="img/attachment.png">
+        </div>
+        <div id="badgeBtn" class="icon-button" draggable="true">🏷️</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="menu" class="context-menu">
@@ -456,6 +488,7 @@
 <script src="js/save.js"></script>
 <script src="js/export.js"></script>
 <script src="js/load.js"></script>
+<script src="js/badge.js"></script>
 <script src="js/keyboard.js"></script>
 
 <script src="js/app.js"></script>

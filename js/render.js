@@ -3,26 +3,18 @@ class Render {
   static render(lFile) {
 
     const lPanelHeader = PanelHeader.create(lFile);
-    // const rPanelHeader = PanelHeader.create(rFile);
-
-    // this.commonRender(lPanelHeader, rPanelHeader);
     this.commonRender(lPanelHeader);
   }
 
   static rerender(){
     const lPanelHeader = lPanel.querySelector(".panel-header");
-    // const rPanelHeader = rPanel.querySelector(".panel-header");
-    // this.commonRender(lPanelHeader, rPanelHeader);
     this.commonRender(lPanelHeader);
   }
 
-  // static commonRender(lPanelHeader, rPanelHeader){
   static commonRender(lPanelHeader){
     const lFlag = document.createDocumentFragment();
-    // const rFlag = document.createDocumentFragment();
 
     lFlag.appendChild(lPanelHeader);
-    // rFlag.appendChild(rPanelHeader);
 
     lSide.clearDivs();
     // rSide.clearDivs();
@@ -51,8 +43,6 @@ class Render {
 
     lPanel.innerHTML = "";
     lPanel.appendChild(lFlag);
-    // rPanel.innerHTML = "";
-    // rPanel.appendChild(rFlag);
 
     PanelHeader.setHeight(lPanelHeader.offsetHeight);
     // InsertLineDiv.setHeightWithMargin(lPanel.querySelector(".insert-line").offsetHeight + 4);

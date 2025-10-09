@@ -26,7 +26,7 @@ class Selection {
   //
   static isInViewport(div) {
     const rect = div.getBoundingClientRect();
-    const panelRect = comparisonContainer.getBoundingClientRect();
+    const panelRect = editorPanel.getBoundingClientRect();
     const panelHeaderHeight = PanelHeader.getHeight();
     return (
       rect.top > panelRect.top + panelHeaderHeight &&

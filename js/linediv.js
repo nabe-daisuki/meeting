@@ -19,6 +19,9 @@ class LineDiv {
 
     const invalidBtn = InvalidBtn.create(Side, div, idx);
 
+    div.addEventListener("drop", e => {
+      console.log(e.dataTransfer.getData("text/plain"));
+    });
     div.appendChild(effecter);
     div.appendChild(ts);
     div.appendChild(textSpan);

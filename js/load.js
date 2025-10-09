@@ -112,11 +112,8 @@ class Load {
         stateNum+=1; 
       });
 
-      // if(!lLines.length || !rLines.length) return;
       if(!lLines.length) return;
       lPanel.innerHTML = "";
-      // rPanel.innerHTML = "";
-      // textFileNames.innerHTML = `①－<br>②－`;
       textFileNames.innerHTML = `－`;
       
       const lFile = new TextFile({

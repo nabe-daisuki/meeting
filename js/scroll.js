@@ -7,9 +7,6 @@ class Scroll {
       this.isAuto = e.target.checked;
       if(this.isAuto) Selection.isSelectionPulledOnce = false;
     }
-
-    // lPanel.onscroll = () => rPanel.scrollTop = lPanel.scrollTop;
-    // rPanel.onscroll = () => lPanel.scrollTop = rPanel.scrollTop;
   }
 
   static scrollToLine(Side, idx) {
@@ -22,7 +19,6 @@ class Scroll {
     }
     
     lPanel.scrollTop = lineTopHeight;
-    // rPanel.scrollTop = lineTopHeight;
     this.autoIdx = idx;
   }
 }

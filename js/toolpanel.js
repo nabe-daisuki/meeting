@@ -1,0 +1,5 @@
+class ToolPanel {
+  static init(){
+    
+  }
+}
