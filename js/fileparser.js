@@ -30,6 +30,8 @@ class FileParser {
     line.startSec = +sh*3600 + +sm*60 + +ss;
     line.endSec = +eh*3600 + +em*60 + +es;
     line.text = text;
+    line.charCounts = text.split("\n").map(l => l.length);
+    line.comments = new Array(line.charCounts.length).fill(false);
     return line;
   }
 }

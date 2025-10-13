@@ -195,6 +195,14 @@
     color:blue;
     text-decoration:underline;
   }
+  .badged {
+    background-color :white;
+    flex: 1;
+    margin: 5px;
+    border-radius: 10px;
+    border: 1px solid gray;
+    padding: 5px;
+  }
   .text {
     flex:1;
     margin-left:5px;
@@ -347,6 +355,7 @@
   <link rel="stylesheet" href="css/volume-controller.css">
   <link rel="stylesheet" href="css/tools.css">
   <link rel="stylesheet" href="css/badge.css">
+  <link rel="stylesheet" href="css/file-drop-overlay.css">
 </head>
 <body>
 
@@ -431,8 +440,11 @@
       <div class="tool-header">その他ツール</div>
       <div class="tool-buttons">
         <button id="addMori">末尾に（森）</button>
-        <div class="badge" id="attachment-badge" draggable="true">
+        <div class="badge big-badge attachment-badge" id="attachment-badge" draggable="true">
           <img src="img/attachment.png">
+        </div>
+        <div class="badge big-badge comment-badge" id="comment-badge" draggable="true">
+          <img src="img/comment.png">
         </div>
         <div id="badgeBtn" class="icon-button" draggable="true">🏷️</div>
       </div>
@@ -443,13 +455,9 @@
 <div id="menu" class="context-menu">
 </div>
 
-<div id="edit-overlay">
-  <div id="edit-container">
-    <textarea></textarea>
-    <div id="edit-button-container">
-      <button id="edit-ok-button">確定</button>
-      <button id="edit-cancel-button">戻る</button>
-    </div>
+<div id="file-drop-overlay">
+  <div id="file-drop-border">
+    <div id="file-drop-area">ここにファイル(.giji)をドロップしてね</div>
   </div>
 </div>
 
@@ -461,6 +469,7 @@
   <div id="sub-comment">（テキストファイルや音声ファイル選択等の場合は除く）</div>
 </div>
 
+<script src="js/header.js"></script>
 <script src="js/line.js"></script>
 <script src="js/side.js"></script>
 <script src="js/sides.js"></script>
@@ -473,7 +482,8 @@
 <!-- <script src="js/hachingbtn.js"></script> -->
 <script src="js/panelheader.js"></script>
 <script src="js/convert.js"></script>
-<script src="js/effecter.js"></script>
+<script src="js/effector.js"></script>
+<script src="js/badged.js"></script>
 <script src="js/timestamp.js"></script>
 <script src="js/textspan.js"></script>
 <script src="js/invalidbtn.js"></script>
@@ -481,6 +491,7 @@
 <script src="js/insertlinediv.js"></script>
 <script src="js/render.js"></script>
 <script src="js/textinput.js"></script>
+<script src="js/gijidrop.js"></script>
 <script src="js/audioinput.js"></script>
 <script src="js/audiocontroller.js"></script>
 <script src="js/menudata.js"></script>

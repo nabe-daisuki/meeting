@@ -1,11 +1,12 @@
 class TimeStamp {
   static create(Side, idx) {
     const line = Side.lines[idx];
-    const elem = document.createElement("span");
+    const elem = document.createElement("div");
     elem.className = "timestamp";
     elem.textContent = `[${Convert.secToStr(line.startSec)} -> ${Convert.secToStr(line.endSec)}]`;
     if(Side.lines[idx].hided) elem.style.display = "none";
     
+    elem.addEventListener("dragover", e => e.preventDefault());
     elem.onclick = () => {
       Selection.relocateHighlight(Side, idx);
       audio.currentTime = line.startSec;

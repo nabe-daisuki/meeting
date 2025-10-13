@@ -47,10 +47,10 @@ class Effect {
     }
 
     const restLCheck = lSide.divs.find(l => l.querySelector("input").checked);
-    if(!restLCheck) document.getElementById("left-all-effecter").checked = false;
+    if(!restLCheck) document.getElementById("left-all-effector").checked = false;
 
     // const restRCheck = rSide.divs.find(l => l.querySelector("input").checked);
-    // if(!restRCheck) document.getElementById("right-all-effecter").checked = false;
+    // if(!restRCheck) document.getElementById("right-all-effector").checked = false;
   }
 
   static show(){
@@ -95,8 +95,8 @@ class Effect {
     }
 
     const restLCheck = lSide.divs.find(l => l.querySelector("input").checked);
-    if(!restLCheck) document.getElementById("left-all-effecter").checked = false;
+    if(!restLCheck) document.getElementById("left-all-effector").checked = false;
     // const restRCheck = rSide.divs.find(l => l.querySelector("input").checked);
-    // if(!restRCheck) document.getElementById("right-all-effecter").checked = false;
+    // if(!restRCheck) document.getElementById("right-all-effector").checked = false;
   }
 }

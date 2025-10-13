@@ -45,9 +45,11 @@ class Render {
     lPanel.appendChild(lFlag);
 
     PanelHeader.setHeight(lPanelHeader.offsetHeight);
-    // InsertLineDiv.setHeightWithMargin(lPanel.querySelector(".insert-line").offsetHeight + 4);
 
     this.syncRowHeights();
+    for(let i = 0; i < lSide.lines.length; i++){
+      TextSpan.resetParagraphs(i);
+    }
     AudioInput.showPlayLine();
   }
 

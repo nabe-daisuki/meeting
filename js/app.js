@@ -3,6 +3,7 @@ const isTest = true;
 const header = document.getElementById("header");
 
 const editorPanel = document.getElementById("editor-panel");
+const fileDropOverlay = document.getElementById('file-drop-overlay');
 
 const lPanel = document.getElementById('left-panel');
 // const rPanel = document.getElementById('right-panel');
@@ -35,6 +36,7 @@ const textFileNames = document.getElementById("text-file-names");
 const menuContainer = document.getElementById('menu');
 
 const attachmentBadge = document.getElementById("attachment-badge");
+const commentBadge = document.getElementById("comment-badge");
 
 const audioInfo = {
   fileName: "",
@@ -54,6 +56,7 @@ const lSide = new Side("left");
 window.onload= () =>{
   setEditorPanelH();
 
+  GijiDrop.init();
   TextInput.init();
   AudioInput.init();
   Hatching.init();
@@ -68,10 +71,15 @@ window.onload= () =>{
   ContextMenu.set();
 }
 
-window.onresize = () => {
+window.addEventListener("resize", () => {
   setEditorPanelH();
   Render.syncRowHeights();
-};
+  for(let i = 0; i < lSide.lines.length; i++){
+    TextSpan.resetCharCounts(i);
+    TextSpan.resetParagraphs(i);
+    TextSpan.resetCommnetPos(i);
+  }
+});
 
 window.addEventListener("focus", () => {
   isWindowBlur = false;
@@ -93,13 +101,17 @@ document.addEventListener('click', function() {
   TextSpan.initSelection();
 });
 
-fetch("http://localhost:20000", {
-  method: "POST",
-  headers: {
-    "Content-Type": "text/plain; charset=UTF-8" // 文字コードは明示的にUTF-8
-  },
-  body: "cr_downloading"
-})
-.then(response => response.text())
-.then(data => console.log(data))
-.catch(error => console.error(error));
+// fetch("http://localhost:20000", {
+//   method: "POST",
+//   headers: {
+//     "Content-Type": "text/plain; charset=UTF-8" // 文字コードは明示的にUTF-8
+//   },
+//   body: "cr_downloading"
+// })
+// .then(response => response.text())
+// .then(data => console.log(data))
+// .catch(error => console.error(error));
+// const url = encodeURIComponent('https://example.com/api/data');
+// fetch(`http://localhost:3000/proxy?url=${url}`)
+//   .then(res => res.text())
+//   .then(data => console.log(data));

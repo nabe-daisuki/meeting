@@ -65,7 +65,6 @@ class Side {
     const textSpan = this.divs[idx].querySelector("textarea");
     const line = this.lines[idx];
 
-    console.log(editingText);
     if(line.text === editingText){
       line.editedText = null;
       

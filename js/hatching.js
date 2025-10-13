@@ -10,16 +10,16 @@ class Hatching {
         if(lCheck.checked){
           Hatching.remove(lSide, i);
           Hatching.green(lSide, i);
-          Effecter.uncheck(lSide, i);
+          Effector.uncheck(lSide, i);
         }
         // if(rCheck.checked){
         //   Hatching.remove(rSide, i);
         //   Hatching.green(rSide, i);
-        //   Effecter.uncheck(rSide, i);
+        //   Effector.uncheck(rSide, i);
         // }
       }
-      document.getElementById("left-all-effecter").checked = false;
-      // document.getElementById("right-all-effecter").checked = false;
+      document.getElementById("left-all-effector").checked = false;
+      // document.getElementById("right-all-effector").checked = false;
     }
   }
 
