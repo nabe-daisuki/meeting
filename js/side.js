@@ -2,6 +2,7 @@ class Side {
   divs = [];
   lines = [];
   inserts = [];
+  rephists = [];
 
   constructor(_side){
     this.side = _side;

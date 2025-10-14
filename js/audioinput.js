@@ -79,4 +79,26 @@ class AudioInput {
       // else Hatching.remove(rSide, i, true);
     }
   }
+
+  static inputAudio(buffer, sections){
+    const audioBytes = buffer.slice(sections.audio.start, sections.audio.end);
+    const byteLen = audioBytes.byteLength;
+
+    audioInfo.bytes = byteLen.toLocaleString();
+    audioInfo.KB = (byteLen / 1024).toFixed(2);
+    audioInfo.MB = (byteLen / 1024 / 1024).toFixed(2);
+
+    audioInfo.fileName = "aiueo";
+    audioFileName.textContent = "aiueo";
+
+    // Blob化して再生
+    const blob = new Blob([audioBytes], { type: "audio/mpeg" });
+    const url = URL.createObjectURL(blob);
+    audio.src = url;
+    audio.load();
+
+    audio.volume = 0.1;
+
+    volumeSlider.value = 10;
+  }
 }

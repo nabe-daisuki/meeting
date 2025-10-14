@@ -9,13 +9,6 @@ src_text = "test2.txt"
 src_audio = "sample_src.mp3"
 extract_audio = "sample.mp3"
 
-print("あいうえお".rstrip(" ") + "a")
-print("あいうえお　　　　".rstrip() + "a")
-sys.exit(0)
-
-print(file_path)
-print(root_dir)
-
 src_file_path = os.path.join(root_dir, src_text)
 src_audio_file_path = os.path.join(root_dir, src_audio)
 giji_file_path = os.path.join(root_dir, "giji_test.giji")

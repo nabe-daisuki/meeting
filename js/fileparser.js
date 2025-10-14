@@ -17,6 +17,16 @@ class FileParser {
     });   
   }
 
+  static parseFromText(text, Side){
+    const lines = (text + "\n")
+      .split('\n')
+      .map( (line, i) => this.parseLine(line, i, Side.side))
+      .filter(Boolean);
+    
+      console.log(lines);
+    Side.insertLines(lines);
+  }
+
   //
   // 行記述解析かつステータス登録
   //

@@ -55,6 +55,10 @@ class TextSpan {
       const replacedText = prefix + surfix;
       textSpan.textContent = replacedText;
 
+      const caretPos = prefix.length;
+      textSpan.focus();
+      textSpan.setSelectionRange(caretPos, caretPos);
+
       Side.setLineText(replacedText, idx);
 
       TextSpan.initSelection();
@@ -78,15 +82,25 @@ class TextSpan {
       const elem = e.target;
       if(elem.selectionStart === 0 && elem.selectionEnd === 0) return;
 
-      TextSpan.selectionStr.start = elem.selectionStart;
-      TextSpan.selectionStr.end = elem.selectionEnd;
+      this.selectionStr.start = elem.selectionStart;
+      this.selectionStr.end = elem.selectionEnd;
       
       if(TextSpan.selectionStr.start === -1) return;
       e.preventDefault();
 
       ContextMenu.show(e.clientX, e.clientY);
     });
-    
+    textSpan.addEventListener("mouseup", e => {
+      if(Side.lines[idx].editedText) return;
+      if(e.button !== 0) return;
+
+      this.selectionStr.start = elem.selectionStart;
+      this.selectionStr.end = elem.selectionEnd;
+
+      if(this.selectionStr.start !== this.selectionStr.end) return;
+    });
+
+
     textSpan.addEventListener("drop", e => {
       const content = e.dataTransfer.getData('text/plain');
       if(content === "ATTACHMENT_BADGE"){
@@ -94,15 +108,10 @@ class TextSpan {
         return;
       }else if(["COMMENT_BADGE", "MINI_COMMENT_BADGE"].includes(content)){
         e.preventDefault();
-        // スクロール補正付きの位置を計算
-        const rect = e.target.getBoundingClientRect();
-
-        // 左側スクロール内での補正値
+        
         const offsetX = e.clientX;
-        // const offsetY = e.clientY - lPanel.scrollTop + this.getOffsetTop(idx);
         const offsetY = e.clientY;
 
-        // 正確なキャレット位置を算出（仮：行数と文字数）
         const caretIndex = this.getCaretIndexFromPosition(textSpanBody, e.target, offsetX, offsetY);// - this.getOffsetTop(idx);
         // console.log("補正済みドロップ位置:", caretIndex);
 
@@ -235,7 +244,22 @@ class TextSpan {
       for(let j = 0; j < textLen; j++){
         const span = document.createElement("span");
         span.textContent = text[j];
+
+        const rephist = [];
+        for(let k = 0; k < lSide.rephists[0].length; k++){
+          if(!lSide.rephists[0][k].includes(offset + j))continue;
+          rephist.push(k);
+        }
+        if(rephist.length != 0){
+          span.style.backgroundColor = "#ffc8c8";
+          span.style.color = "#ffc8c8";
+          span.style.display = "inline-block";
+        }else{          
+          span.style.color = "transparent";
+        }
+
         measureTopDiv.appendChild(span);
+
         const rect = span.getBoundingClientRect();
         const top = rect.top - this.getOffsetTop(idx);
         if(!line.paragraphs[i].includes(top))line.paragraphs[i].push(top);
@@ -244,7 +268,7 @@ class TextSpan {
       offset += charCount;
     }
 
-    this.removeMeasureTopDiv(textSpanBody);
+    // this.removeMeasureTopDiv(textSpanBody);
   }
 
   static clearParagraphs(idx){
@@ -271,14 +295,19 @@ class TextSpan {
   static createMeasureTopDiv(parent, textarea){
     const div = document.createElement("div");
     div.id = "measure-top-div"
-    const style = getComputedStyle(textarea);
-    for (const prop of style) div.style[prop] = style[prop];
+    // const style = getComputedStyle(textarea);
+    // for (const prop of style) div.style[prop] = style[prop];
 
+    div.style.overflow = "hidden";
+    div.style.boxSizing = "border-box";
+    div.style.padding = "5px 15px 5px 45px";
     div.style.position = "absolute";
-    div.style.visibility = "hidden";
+    div.style.top = "0";
+    div.style.left = "0";
     div.style.whiteSpace = "pre-wrap";
-    div.style.wordWrap = "break-word";
     div.style.width = textarea.offsetWidth + "px";
+    div.style.height = textarea.offsetHeight + "px";
+    div.style.marginLeft = "5px";
 
     parent.appendChild(div);
 

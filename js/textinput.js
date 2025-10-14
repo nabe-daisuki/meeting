@@ -43,4 +43,18 @@ class TextInput {
       Save.enable();
     }
   }
+
+  static async inputText(text){
+    const lFile = new TextFile({
+      data: null,
+      name: "kakikukeko",
+      side: "left"
+    });
+    await FileParser.parseFromText(text, lSide);
+    textFileNames.innerHTML = lFile.name;
+
+    // Render.render(lFile, rFile);
+    Render.render(lFile);
+    Save.enable();
+  }
 }
