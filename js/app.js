@@ -35,8 +35,13 @@ const textFileNames = document.getElementById("text-file-names");
 
 const menuContainer = document.getElementById('menu');
 
+const moriSpeaker = document.getElementById("mori-speaker");
+const tanakaSpeaker = document.getElementById("tanaka-speaker");
+const satoSpeaker = document.getElementById("sato-speaker");
+
 const attachmentBadge = document.getElementById("attachment-badge");
 const commentBadge = document.getElementById("comment-badge");
+const startBadge = document.getElementById("start-badge");
 
 const audioInfo = {
   fileName: "",
@@ -56,7 +61,7 @@ const lSide = new Side("left");
 window.onload= () =>{
   setEditorPanelH();
 
-  GijiDrop.init();
+  // GijiDrop.init();
   TextInput.init();
   AudioInput.init();
   Hatching.init();
@@ -64,6 +69,7 @@ window.onload= () =>{
   Scroll.init();
   Save.init();
   Load.init();
+  Speaker.init();
   Badge.init();
   Export.init();
   AudioController.init();

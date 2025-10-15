@@ -65,7 +65,8 @@ document.addEventListener("keydown", e => {
 });
 
 document.addEventListener("keyup", e => {
-  if(e.shiftKey){
+  console.log(e.shiftKey)
+  if(!e.shiftKey){
     KeyBorad.hasShift = false;
   }
 });

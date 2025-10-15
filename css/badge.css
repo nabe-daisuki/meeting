@@ -47,3 +47,14 @@
 .comment-badge {
   background-color: rgb(54, 136, 0);
 }
+
+.start-badge {
+  background-color: #eba5a5;
+}
+.start-badge img {
+  width: 0.9em;
+  transform: translateX(5%);
+}
+#start-badge img {
+  width: 1.7em;
+}

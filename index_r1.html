@@ -178,7 +178,7 @@
     background: #f0f0f0;
     font-weight: bold;
     padding: 2px 5px;
-    z-index: 5; /* 他の要素より前面に表示 */
+    z-index: 150;
     border-bottom: 1px solid #ccc;
   }
   .line {
@@ -438,16 +438,26 @@
     </div>
 
     <div class="tool-section">
-      <div class="tool-header">その他ツール</div>
+      <div class="tool-header">発言者</div>
       <div class="tool-buttons">
-        <button id="addMori">末尾に（森）</button>
+        <button id="mori-speaker" draggable="true">（森）</button>
+        <button id="tanaka-speaker" draggable="true">（田中）</button>
+        <button id="sato-speaker" draggable="true">（佐藤）</button>
+      </div>
+    </div>
+
+    <div class="tool-section">
+      <div class="tool-header">バッジ</div>
+      <div class="tool-buttons">
         <div class="badge big-badge attachment-badge" id="attachment-badge" draggable="true">
           <img src="img/attachment.png">
         </div>
         <div class="badge big-badge comment-badge" id="comment-badge" draggable="true">
           <img src="img/comment.png">
         </div>
-        <div id="badgeBtn" class="icon-button" draggable="true">🏷️</div>
+        <div class="badge big-badge start-badge" id="start-badge" draggable="true">
+          <img src="img/start.png">
+        </div>
       </div>
     </div>
 
@@ -509,6 +519,7 @@
 <script src="js/export.js"></script>
 <script src="js/load.js"></script>
 <script src="js/badge.js"></script>
+<script src="js/speaker.js"></script>
 <script src="js/keyboard.js"></script>
 
 <script src="js/app.js"></script>

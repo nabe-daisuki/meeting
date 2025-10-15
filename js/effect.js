@@ -12,6 +12,7 @@ class Effect {
 
       if(lCheck.checked){
         lSide.divs[i].querySelector(".timestamp").style.display = "none";
+        lSide.divs[i].querySelector(".badged").style.display = "none";
         lSide.divs[i].querySelector(".FlexTextarea").style.display = "none";
         // rSide.divs[i].querySelector(".timestamp").style.display = "none";
         // rSide.divs[i].querySelector(".FlexTextarea").style.display = "none";
@@ -60,6 +61,7 @@ class Effect {
 
       if(lCheck.checked){
         lSide.divs[i].querySelector(".timestamp").style.display = "block";
+        lSide.divs[i].querySelector(".badged").style.display = "block";
         lSide.divs[i].querySelector(".FlexTextarea").style.display = "block";
         // rSide.divs[i].querySelector(".timestamp").style.display = "block";
         // rSide.divs[i].querySelector(".FlexTextarea").style.display = "block";

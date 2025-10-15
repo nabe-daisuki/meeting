@@ -41,13 +41,13 @@ class TextSpan {
       const elem = e.target;
       if(elem.selectionStart === elem.selectionEnd) return;
 
-      TextSpan.selectionStr.start = elem.selectionStart;
-      TextSpan.selectionStr.end = elem.selectionEnd;
+      this.selectionStr.start = elem.selectionStart;
+      this.selectionStr.end = elem.selectionEnd;
 
-      console.log(TextSpan.selectionStr.start);
-      console.log(TextSpan.selectionStr.end);
+      console.log(this.selectionStr.start);
+      console.log(this.selectionStr.end);
       
-      if(TextSpan.selectionStr.start === -1) return;
+      if(this.selectionStr.start === -1) return;
 
       const textSpan = e.target;
       const prefix = textSpan.value.slice(0, TextSpan.selectionStr.start);
@@ -56,10 +56,14 @@ class TextSpan {
       textSpan.textContent = replacedText;
 
       const caretPos = prefix.length;
-      textSpan.focus();
+      console.log(caretPos)
       textSpan.setSelectionRange(caretPos, caretPos);
+      textSpan.focus();
 
       Side.setLineText(replacedText, idx);
+      this.resetCharCounts(idx);
+      this.resetParagraphs(idx);
+      this.resetCommnetPos(idx);
 
       TextSpan.initSelection();
 
@@ -94,18 +98,51 @@ class TextSpan {
       if(Side.lines[idx].editedText) return;
       if(e.button !== 0) return;
 
-      this.selectionStr.start = elem.selectionStart;
-      this.selectionStr.end = elem.selectionEnd;
+      this.selectionStr.start = e.target.selectionStart;
+      this.selectionStr.end = e.target.selectionEnd;
 
       if(this.selectionStr.start !== this.selectionStr.end) return;
+      
     });
 
 
     textSpan.addEventListener("drop", e => {
       const content = e.dataTransfer.getData('text/plain');
-      if(content === "ATTACHMENT_BADGE"){
+      if(content === "森_SPEAKER" || content === "田中_SPEAKER" || content === "佐藤_SPEAKER"){
         e.preventDefault();
-        return;
+        const offsetX = e.clientX;
+        const offsetY = e.clientY;
+
+        const caretIndex = this.getCaretIndexFromPosition(textSpanBody, e.target, offsetX, offsetY);// - this.getOffsetTop(idx);
+        // console.log("補正済みドロップ位置:", caretIndex);
+
+        if(caretIndex <= -1) return;
+
+        let offset = 0;
+        const lineNum = Side.lines[idx].charCounts.findIndex(charCount => {
+          let result = offset + charCount > caretIndex;
+          offset += charCount;
+          return result;
+        });
+
+        const textSpan = e.target;
+
+        const speaker = content.split("_")[0];
+        const replacedText = textSpan.value.split("\n").map((l, i) => {
+          if(i === lineNum) return this.resetSpeaker(l, speaker);
+          else return l;
+        }).join("\n");
+
+        textSpan.value = replacedText;
+        Side.setLineText(replacedText, idx);
+        this.resetCharCounts(idx);
+        this.resetParagraphs(idx);
+        this.resetCommnetPos(idx);
+
+        textSpan.setSelectionRange(caretIndex, caretIndex);
+        textSpan.focus();
+      }else if(content === "ATTACHMENT_BADGE" || content === "START_BADGE"){
+        e.preventDefault();
       }else if(["COMMENT_BADGE", "MINI_COMMENT_BADGE"].includes(content)){
         e.preventDefault();
         
@@ -141,6 +178,16 @@ class TextSpan {
     textSpanBody.appendChild(textSpan);
 
     return textSpanBody;
+  }
+
+  static resetSpeaker(text, speaker){
+    const pattern = /（[^（）]*?）$/;
+
+    if (pattern.test(text)) {
+        return text.replace(pattern, `（${speaker}）`);
+    }else{
+      return `${text}（${speaker}）`;
+    }
   }
 
   static createElem(tagName, className){
@@ -245,17 +292,19 @@ class TextSpan {
         const span = document.createElement("span");
         span.textContent = text[j];
 
-        const rephist = [];
-        for(let k = 0; k < lSide.rephists[0].length; k++){
-          if(!lSide.rephists[0][k].includes(offset + j))continue;
-          rephist.push(k);
-        }
-        if(rephist.length != 0){
-          span.style.backgroundColor = "#ffc8c8";
-          span.style.color = "#ffc8c8";
-          span.style.display = "inline-block";
-        }else{          
-          span.style.color = "transparent";
+        if(lSide.rephists.length != 0){
+          const rephist = [];
+          for(let k = 0; k < lSide.rephists[0].length; k++){
+            if(!lSide.rephists[0][k].includes(offset + j))continue;
+            rephist.push(k);
+          }
+          if(rephist.length != 0){
+            span.style.backgroundColor = "#ffc8c8";
+            span.style.color = "#ffc8c8";
+            span.style.display = "inline-block";
+          }else{          
+            span.style.color = "transparent";
+          }
         }
 
         measureTopDiv.appendChild(span);
@@ -268,7 +317,7 @@ class TextSpan {
       offset += charCount;
     }
 
-    // this.removeMeasureTopDiv(textSpanBody);
+    this.removeMeasureTopDiv(textSpanBody);
   }
 
   static clearParagraphs(idx){

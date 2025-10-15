@@ -37,30 +37,72 @@ class LineDiv {
       const droppedData = e.dataTransfer.getData("text/plain");
       if(droppedData === "ATTACHMENT_BADGE"){
         if(line.badges.includes("a")) return;
-        const smallBadge = document.createElement("div");
-        smallBadge.className = "badge small-badge attachment-badge";
-        const batchIcon = document.createElement("img");
-        batchIcon.src = "img/attachment.png";
-
-        smallBadge.appendChild(batchIcon);
-        badged.appendChild(smallBadge);
-
-        console.log(badged);
         line.badges += "a";
         line.badges = line.badges.split("").sort().join("");
 
-        const bufElem = badged.querySelectorAll("badge");
+        // const smallBadge = document.createElement("div");
+        // smallBadge.className = "badge small-badge attachment-badge";
+        // smallBadge.addEventListener("contextmenu", e => {
+        //   e.stopPropagation();
+        //   e.preventDefault();
+        //   e.target.remove();
+        //   line.badges = line.badges.replace("a", "");
+        // });
+        // const batchIcon = document.createElement("img");
+        // batchIcon.src = "img/attachment.png";
+
+        // smallBadge.appendChild(batchIcon);
+        // badged.appendChild(smallBadge);
+        badged.innerHTML = "";
+        // const bufElem = badged.children;
         line.badges.split("").forEach(keyword => {
           if(keyword === "n") return;
-          const badge = Array.from(bufElem)
-            .filter(div => {
-              const parts = div.querySelector("img").src.split("/")[1];
-              const part = parts[0];
-              return part === keyword;
-            });
-          badged.appendChild(badge);
+          // const badge = Array.from(bufElem)
+          //   .find(div => {
+          //     const parts = div.querySelector("img").src.split("/")[1];
+          //     const part = parts[0];
+          //     return part === keyword;
+          //   });
+          // console.log(badge);
+          
+          badged.appendChild(this.createSmallBadge(keyword));
+        });
+      }else if(droppedData === "START_BADGE"){
+        if(line.badges.includes("s")) return;
+        line.badges += "s";
+        line.badges = line.badges.split("").sort().join("");
+        // const smallBadge = document.createElement("div");
+        // smallBadge.className = "badge small-badge start-badge";
+        // smallBadge.addEventListener("contextmenu", e => {
+        //   e.stopPropagation();
+        //   e.preventDefault();
+        //   e.target.remove();
+        //   line.badges = line.badges.replace("s", "");
+        // });
+        // const batchIcon = document.createElement("img");
+        // batchIcon.src = "img/start.png";
+
+        // smallBadge.appendChild(batchIcon);
+        // badged.appendChild(smallBadge);
+
+        // console.log(badged);
+
+        // const bufElem = badged.querySelectorAll("badge");
+        badged.innerHTML = "";
+        line.badges.split("").forEach(keyword => {
+          if(keyword === "n") return;
+          // const badge = Array.from(bufElem)
+          //   .find(div => {
+          //     const parts = div.querySelector("img").src.split("/")[1];
+          //     const part = parts[0];
+          //     return part === keyword;
+          //   });
+            
+          // console.log(badge);
+          badged.appendChild(this.createSmallBadge(keyword));
         });
       }
+      console.log(lSide.lines[idx].badges);
     });
     
     tsAndBadged.appendChild(ts);
@@ -72,5 +114,31 @@ class LineDiv {
     div.appendChild(invalidBtn);
 
     return div;
+  }
+
+  static createSmallBadge(keyword){
+    const smallBadge = document.createElement("div");
+    smallBadge.className = "badge small-badge";
+    if(keyword === "a"){
+      smallBadge.classList.add("attachment-badge");
+    }else if(keyword === "s"){
+      smallBadge.classList.add("start-badge");
+    }
+    smallBadge.addEventListener("contextmenu", e => {
+      e.stopPropagation();
+      e.preventDefault();
+      e.target.remove();
+      line.badges = line.badges.replace(keyword, "");
+    });
+    const batchIcon = document.createElement("img");
+    
+    if(keyword === "a"){
+      batchIcon.src = "img/attachment.png";
+    }else if(keyword === "s"){
+      batchIcon.src = "img/start.png";
+    }
+
+    smallBadge.appendChild(batchIcon);
+    return smallBadge;
   }
 }

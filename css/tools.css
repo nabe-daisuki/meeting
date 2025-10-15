@@ -13,6 +13,11 @@
   margin-bottom: 0.5rem;
   color: #333;
 }
+.tool-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 .tool-buttons button {
   margin: 0.2rem;
   padding: 0.4rem 0.6rem;

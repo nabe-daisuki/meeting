@@ -9,5 +9,10 @@ class Badge {
       e.dataTransfer.setData("text/plain", "COMMENT_BADGE");
       e.dataTransfer.effectAllowed = "copy";
     });
+
+    startBadge.addEventListener("dragstart", e => {
+      e.dataTransfer.setData("text/plain", "START_BADGE");
+      e.dataTransfer.effectAllowed = "copy";
+    });
   }
 }

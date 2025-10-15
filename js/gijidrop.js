@@ -1,5 +1,6 @@
 class GijiDrop {
   static init(){
+    fileDropOverlay.style.display = "flex"
     // ドラッグが画面に入ったとき
     fileDropOverlay.addEventListener('dragenter', (e) => {
       e.preventDefault();

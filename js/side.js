@@ -74,7 +74,7 @@ class Side {
     }else{
       line.editedText = editingText;
       
-      textSpan.value = editingText;
+      // textSpan.value = editingText;
       textSpan.classList.add("edited");
     }
 

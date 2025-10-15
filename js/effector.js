@@ -14,6 +14,7 @@ class Effector {
     elem.onclick = e => {
       if(e.target.checked){
         Side.lines[idx].checked = true;
+        console.log(KeyBorad.hasShift)
         if(!KeyBorad.hasShift){ 
           Effector.preSide = Side.side;
           Effector.preIdx = idx;
