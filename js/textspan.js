@@ -288,17 +288,21 @@ class TextSpan {
       const text = textSpan.value.slice(offset, offset + charCount);
       const textLen = text.length;
       
+      const rephist = [];
       for(let j = 0; j < textLen; j++){
         const span = document.createElement("span");
         span.textContent = text[j];
 
         if(lSide.rephists.length != 0){
-          const rephist = [];
-          for(let k = 0; k < lSide.rephists[0].length; k++){
-            if(!lSide.rephists[0][k].includes(offset + j))continue;
-            rephist.push(k);
+          console.log(j)
+          console.log(lSide.rephists[0][j])
+          if(lSide.rephists[0][j].length == 0){
+            rephist.push([]);
+          }else{
+            rephist.push(lSide.rephists[0][j]);
           }
-          if(rephist.length != 0){
+          console.log(rephist);
+          if(rephist[j].length != 0){
             span.style.backgroundColor = "#ffc8c8";
             span.style.color = "#ffc8c8";
             span.style.display = "inline-block";
@@ -317,7 +321,7 @@ class TextSpan {
       offset += charCount;
     }
 
-    this.removeMeasureTopDiv(textSpanBody);
+    if(lSide.rephists.length == 0)this.removeMeasureTopDiv(textSpanBody);
   }
 
   static clearParagraphs(idx){

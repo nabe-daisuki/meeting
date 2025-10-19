@@ -61,7 +61,7 @@ const lSide = new Side("left");
 window.onload= () =>{
   setEditorPanelH();
 
-  // GijiDrop.init();
+  GijiDrop.init();
   TextInput.init();
   AudioInput.init();
   Hatching.init();

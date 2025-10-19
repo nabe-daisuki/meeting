@@ -4,6 +4,7 @@ import os
 import sys
 import struct
 import json
+from pp_ext import pp_ex
 
 time = "[00:00:00 -> 00:03:00]"
 text = "あいうえおかきくけこいうえおあ"
@@ -14,76 +15,147 @@ replace_patterns = [
   {"src": r"かきく","dest": "カク"},
   {"src": r"えおカ","dest": "なきくけ"},
   {"src": r"イウなき","dest": "ぬ"},
-  {"src": r"イウ","dest": "とらとら"},
   {"src": r"あぬ","dest": "さいはて"},
-  {"src": r"クけ","dest": "えおあ"},
-  {"src": r"えお","dest": "ノリ"},
+  {"src": r"けこ","dest": "か","offset":-1},
+  {"src": r"かイ","dest": "にん","offset":-1},
+  {"src": r"てく","dest": "ウえ","offset":-2},
+  {"src": r"ウえ","dest": "・・","offset":-1},
+  {"src": r"・","dest": "さか","offset":0},
 ]
 
-replace_historys = []
+test_char_replace_histories = [
+  [[1, 2]],
+  [[1, 2], [10, 11]],
+  [[1, 2], [9, 10], [5, 6]],
+  [[1, 2], [10, 11], [7], [3, 4, 5, 6]],
+  [[1], [7, 8], [4], [2, 3], [1]],
+  [[0, 1, 2, 3], [9, 10], [6], [4, 5], [0, 1, 2, 3], [0, 1, 2, 3]],
+  [[0, 1, 2, 3], [7, 8], [6], [4, 5], [0, 1, 2, 3], [0, 1, 2, 3], [6]],
+  [[0, 1, 2, 3], [7], [5, 6], [4], [0, 1, 2, 3], [0, 1, 2, 3], [5, 6], [5, 6]],
+  [[0], [5], [3, 4], [1, 2], [0], [0], [3, 4], [3, 4], [1, 2]],
+  [[0, 1], [4], [2, 3], [0, 1], [0, 1], [0, 1], [2, 3], [2, 3], [0, 1], [0, 1]],
+  [[0, 1], [3, 4], [2], [0, 1], [0, 1], [0, 1], [2], [2], [0, 1], [0, 1], [3, 4]],
+  [[2], [4, 5], [3], [2], [2], [2], [3], [3], [2], [2], [4, 5], [0, 1]],
+  [[2, 3], [5, 6], [4], [2, 3], [2, 3], [2, 3], [4], [4], [2, 3], [2, 3], [5, 6], [0, 1], [2, 3]],
+  [[2, 3], [7], [4], [2, 3], [2, 3], [2, 3], [4], [4], [2, 3], [2, 3], [7], [0, 1], [2, 3], [5, 6]],
+  [[2, 3], [7, 8], [4], [2, 3], [2, 3], [2, 3], [4], [4], [2, 3], [2, 3], [7, 8], [0, 1], [2, 3], [5, 6], [7, 8]]
+]
+
+char_replace_histories = []
+around_replace_histories = []
 affected_by_replace = []
 
 new_text = text
 
 replace_pattern_count = 0
+replace_count = 0
 for replace_pattern in replace_patterns:
   pattern = re.compile(replace_pattern["src"])
   offset = 0
+
   for m in pattern.finditer(new_text):
     start, end = m.span()
-    # print(str(start) + "-" + str(end) + " : " + m.group() + " -> " + replace_pattern["dest"])
-    
+    off = replace_pattern["offset"] if "offset" in replace_pattern else 0
+
+    start_with_offset = start + offset + off
+    end_with_offset = end + offset
+
     new_word = replace_pattern["dest"]
     new_word_len = len(new_word)
 
-    new_text = new_text[:start + offset] + new_word + new_text[end + offset:]
+    diff = end_with_offset - start_with_offset - new_word_len
 
-    diff = end - start - new_word_len
-    offset += -diff
+    # print()
+    # print("start       : " + str(start))
+    # print("start(+offs): " + str(start_with_offset))
+    # print("end         : " + str(end))
+    # print("end(+offset): " + str(end + offset))
+    # print("diff        : " + str(diff))
+    # print("offset      : " + str(offset))
+    # print("before      : " + new_text[start_with_offset:end + offset])
+    # print("after       : " + new_word)
+
+    prefix_start = max(0, start_with_offset - 7)
+    suffix_end = min(end_with_offset + 7, len(new_text))
+
+    before = new_text[prefix_start:start_with_offset] + "|||" + new_text[start_with_offset:end_with_offset] + "|||" + new_text[end_with_offset:suffix_end]
+    before = "　" + before if start_with_offset - 7 <= 0 else "…" + before
+    if end_with_offset + 7 < len(new_text): before += "…"
+
+    after = new_text[prefix_start:start_with_offset] + "|||" + new_word + "|||" + new_text[end_with_offset:suffix_end]
+    after = "　" + after if start_with_offset - 7 <= 0 else "…" + after
+    if end_with_offset + 7 < len(new_text): after += "…"
+
+    around_replace_histories.append({
+      "before": before.split("|||"),
+      "after" : after.split("|||")
+    })
+
+    # pp_ex(around_replace_histories[replace_count])
+
+    new_text = new_text[:start_with_offset] + new_word + new_text[end_with_offset:]
 
     if diff != 0:
-      for i, _ in enumerate(replace_historys):
-        if any(x >= start for x in replace_historys[i]):
-          overlap = set(range(start, end)) & set(replace_historys[i])
+      for i, _ in enumerate(char_replace_histories):
+        if any(x >= start_with_offset for x in char_replace_histories[i]):
+          overlap = set(range(start_with_offset, end_with_offset)) & set(char_replace_histories[i])
+
           contains_all = False
           if len(overlap):
-            if start <= replace_historys[i][0] and end > replace_historys[i][-1]:
-              replace_historys[i] = list(range(start, end - diff))
+            if start_with_offset <= char_replace_histories[i][0] and end_with_offset > char_replace_histories[i][-1]:
+              char_replace_histories[i] = list(range(start_with_offset, end_with_offset - diff))
               contains_all = True
             else:
-              replace_historys[i] = list(set(replace_historys[i]) - set(overlap))
+              char_replace_histories[i] = list(set(char_replace_histories[i]) - set(overlap))
 
-          if len(overlap) or start == replace_historys[i][0]:
+          if len(overlap) or start_with_offset == char_replace_histories[i][0]:
             affected_by_replace[i].append(replace_pattern_count)
 
           for y in range(0, abs(diff)):
             if diff < 0:
-              for j, val in enumerate(replace_historys[i]):
-                if val > start:
+              for j, val in enumerate(char_replace_histories[i]):
+                if val > start_with_offset:
                   if contains_all: continue
-                  replace_historys[i][j] += 1
+                  char_replace_histories[i][j] += 1
             else:
-              for j, val in enumerate(replace_historys[i]):
-                if val > start:
-                  replace_historys[i][j] -= 1
+              for j, val in enumerate(char_replace_histories[i]):
+                if val > start_with_offset:
+                  if contains_all: continue
+                  char_replace_histories[i][j] -= 1
 
-    replace_historys.append(list(range(start, end - diff)))
+    char_replace_histories.append(list(range(start_with_offset, end_with_offset - diff)))
     affected_by_replace.append([replace_pattern_count])
 
-    # print(replace_historys)
+    print(char_replace_histories)
+    print("\x1b[32m０１２３４５６７８９10111213141516\x1b[0m")
+    print(new_text)
 
-    # print()
+    # test_result = char_replace_histories == test_char_replace_histories[replace_count]
+    # print(f"\x1b[34m{test_result}\x1b[0m" if test_result else f"\x1b[31m{test_result}\x1b[0m")
+
+    offset += -diff
+    replace_count += 1
   
   replace_pattern_count += 1
 
-  # print(new_text)
-  # print(affected_by_replace)
+replace_histories = []
+for i, _ in enumerate(range(len(new_text))):
+  replace_histories.append([])
+
+  for j, char_replace_history in enumerate(char_replace_histories):
+
+    if i in char_replace_history:
+      replace_histories[i].append(around_replace_histories[j])
+  
+  print()
+  print(f"\x1b[32m{i}文字目\x1b[0m")
+  pp_ex(replace_histories[i])
 
 
 file_path = os.path.abspath(__file__)
 root_dir = os.path.dirname(file_path)
 src_text = "test2.txt"
-src_audio = "sample_src.mp3"
+src_audio = "sample.mp3"
 # extract_audio = "sample.mp3"
 
 src_file_path = os.path.join(root_dir, src_text)
@@ -113,7 +185,7 @@ with open(giji_file_path, "ab") as f:
 
 with open(giji_file_path, "ab") as f:
   rephist_start = f.tell()
-  f.write(json.dumps(replace_historys, ensure_ascii=False).encode())
+  f.write(json.dumps(replace_histories, ensure_ascii=False).encode())
   rephist_end = f.tell()
 
 with open(giji_file_path, "ab") as f:
@@ -141,38 +213,3 @@ with open(giji_file_path, "ab") as f:
   f.write("save".encode().ljust(strLen, b'\00'))
   f.write(struct.pack("<Q", save_start))
   f.write(struct.pack("<Q", save_end))
-
-
-# with open(giji_file_path, "rb") as f:
-#   f.seek(-8, os.SEEK_END)
-#   audio_end = struct.unpack("<Q", f.read(8))[0]
-
-#   f.seek(-16, os.SEEK_END)
-#   audio_start = struct.unpack("<Q", f.read(8))[0]
-  
-#   f.seek(-26 , os.SEEK_END)
-#   sec1 = f.read(10).rstrip(b'\00').decode("utf-8")
-  
-#   f.seek(-36, os.SEEK_END)
-#   sec2 = f.read(10).rstrip(b'\00').decode("utf-8")
-  
-#   f.seek(-46, os.SEEK_END)
-#   sec3 = f.read(10).rstrip(b'\00').decode("utf-8")
-  
-#   f.seek(-56, os.SEEK_END)
-#   sec4 = f.read(10).rstrip(b'\00').decode("utf-8")
-
-# print(f"audio_start(読込): {audio_start}")
-# print(f"audio_end(読込)  : {audio_end}")
-# print(f"audio_data(読込) : {audio_end - audio_start}")
-# print(f"sec1(読込)       : {sec1}")
-# print(f"sec2(読込)       : {sec2}")
-# print(f"sec3(読込)       : {sec3}")
-# print(f"sec4(読込)       : {sec4}")
-
-# with open(giji_file_path, "rb") as f:
-#   f.seek(audio_start)
-#   audio_data = f.read(audio_end - audio_start)
-
-# with open(extract_audio_file_path, "wb") as f:
-#   f.write(audio_data)

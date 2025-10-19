@@ -85,6 +85,7 @@ class GijiDrop {
         pre.textContent = JSON.stringify(json, null, 2);
         document.body.appendChild(pre);
         lSide.rephists.push(json);
+        console.log(lSide.rephists);
       }
 
 
