@@ -2,7 +2,7 @@ class AudioInput {
   static isPlaying = false;
 
   static init() {
-    audioFileInput.addEventListener('change', (e) => {
+    audioFileInput.addEventListener("change", (e) => {
       const file = e.target.files[0];
       if(!file){
         alert("音声ファイルを開けませんでした。");
@@ -20,9 +20,9 @@ class AudioInput {
       const url = URL.createObjectURL(file);
       audio.src = url;
       audio.load();
-      audio.volume = 0.1;
 
       volumeSlider.value = 10;
+      AudioController.updateSliderBackground();
     });
 
     audio.addEventListener("play", () => {
@@ -36,15 +36,8 @@ class AudioInput {
 
     audio.ontimeupdate = () => {
       if(Scroll.isAuto){
-        const curTime = audio.currentTime;
-        const lIdx = lSide.lines.findIndex(l => this.isPlayingLine(curTime, l));
-        // const rIdx = rSide.lines.findIndex(l => this.isPlayingLine(curTime, l));
-
-        // if(lIdx >= 0 && rIdx >= 0){
-        //   if(lIdx > rIdx) Scroll.scrollToLine(rSide, rIdx);
-        //   else Scroll.scrollToLine(lSide, lIdx);
-        // }
-        Scroll.scrollToLine(lSide, lIdx);
+        const i = Doc.getLines().findIndex(l => this.isPlayingLine(AudioController.getTime(), l));
+        Scroll.scrollToLine(i);
       }
       this.showPlayLine();
     }
@@ -68,15 +61,9 @@ class AudioInput {
   }
 
   static showPlayLine() {
-    const curTime = audio.currentTime;
-    for(let i = 0; i < lSide.lines.length; i++){
-      const lLine = lSide.lines[i];
-      if(this.isPlayingLine(curTime, lLine)) Hatching.yellow(lSide.divs[i]);
-      else  Hatching.remove(lSide, i, true);
-
-      // const rLine = rSide.lines[i];
-      // if(this.isPlayingLine(curTime, rLine)) Hatching.yellow(rSide.divs[i]);
-      // else Hatching.remove(rSide, i, true);
+    for(let i = 0; i < Doc.getLines().length; i++){
+      if(this.isPlayingLine(AudioController.getTime(), Doc.getLine(i))) Hatching.yellow(Doc.getDiv(i));
+      else Hatching.remove(i, true);
     }
   }
 

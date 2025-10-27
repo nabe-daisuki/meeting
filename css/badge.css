@@ -35,6 +35,7 @@
   width: 1.3em;
   position: absolute;
   left: 20px;
+  z-index: 140;
 }
 .mini-badge img {
   width: 1.3em;
@@ -57,4 +58,8 @@
 }
 #start-badge img {
   width: 1.7em;
+}
+
+.response-badge {
+  background-color: #ababab;
 }

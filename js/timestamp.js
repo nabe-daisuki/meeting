@@ -1,17 +1,20 @@
 class TimeStamp {
-  static create(Side, idx) {
-    const line = Side.lines[idx];
-    const elem = document.createElement("div");
-    elem.className = "timestamp";
-    elem.textContent = `[${Convert.secToStr(line.startSec)} -> ${Convert.secToStr(line.endSec)}]`;
-    if(Side.lines[idx].hided) elem.style.display = "none";
+  static create(i) {
+    const line = Doc.getLine(i);
+    const elem = Elem.create("div", {cl: "timestamp"});
+    elem.textContent = this.toTimeRangeStr(line.startSec, line.endSec);
+    if(line.hided) elem.style.display = "none";
     
     elem.addEventListener("dragover", e => e.preventDefault());
-    elem.onclick = () => {
-      Selection.relocateHighlight(Side, idx);
+    elem.addEventListener("click", () => {
+      Selection.relocateHighlight(i);
       audio.currentTime = line.startSec;
-      if(!Scroll.isAuto) Scroll.scrollToLine(Side, idx);
-    }
+      if(!Scroll.isAuto) Scroll.scrollToLine(i);
+    });
     return elem;
+  }
+
+  static toTimeRangeStr(ss, es){
+    return `[${Convert.secToStr(ss)} -> ${Convert.secToStr(es)}]`;
   }
 }

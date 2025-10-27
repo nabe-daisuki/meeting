@@ -51,38 +51,24 @@ class Save {
 
   static stateToText(){
     let text = "";
-    lSide.lines.forEach(line => {
+    Doc.getLines().forEach(line => {
       text += `${line.index}
 ${line.side}
 [${Convert.secToStr(line.startSec)} -> ${Convert.secToStr(line.endSec)}]
-${line.text}
-$$$$$
-${line.editedText}
-#####
+${line.text.split("\n").join("|||")}
+${line.editedText === null ? "null" : line.editedText.split("\n").join("|||")}
 ${line.disabled}
 ${line.color}
 ${line.hided}
 ${line.checked}
-${line.isDummy}
+${line.badges}
+${line.charsPerPara.join("|||")}
+${line.paraHeights.join("|||")}
+${line.comments.map(b => +b).join("|||")}
+${line.responses.map(b => +b).join("|||")}
 @@@@@
 `;
     });
-//     rSide.lines.forEach(line => {
-//       text += `${line.index}
-// ${line.side}
-// [${Convert.secToStr(line.startSec)} -> ${Convert.secToStr(line.endSec)}]
-// ${line.text}
-// $$$$$
-// ${line.editedText}
-// #####
-// ${line.disabled}
-// ${line.color}
-// ${line.hided}
-// ${line.checked}
-// ${line.isDummy}
-// @@@@@
-// `;
-//     });
     text += "%%%%%\n";
 
     if(audioInfo.fileName === ""){

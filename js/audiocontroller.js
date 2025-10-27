@@ -9,8 +9,19 @@ class AudioController {
   }
   
   static updateSliderBackground() {
-    const value = volumeSlider.value;
-    volumeSlider.style.setProperty("--value", value + "%");
-    audio.volume = value * 0.01;
+    const v = volumeSlider.value;
+    volumeSlider.style.setProperty("--value", v + "%");
+    this.setVolume(v)
+  }
+
+  static getTime(){
+    return audio.currentTime;
+  }
+  static setTime(s){
+    audio.currentTime = s;
+  }
+
+  static setVolume(v){
+    audio.volume = v * 0.01;
   }
 }

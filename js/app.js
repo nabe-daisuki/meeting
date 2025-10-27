@@ -6,7 +6,6 @@ const editorPanel = document.getElementById("editor-panel");
 const fileDropOverlay = document.getElementById('file-drop-overlay');
 
 const lPanel = document.getElementById('left-panel');
-// const rPanel = document.getElementById('right-panel');
 const audio = document.getElementById("audio");
 const volumeSlider = document.getElementById("volume-slider");
 const volumeLabel = document.getElementById("volume-label");
@@ -14,12 +13,11 @@ const volumeLabel = document.getElementById("volume-label");
 const audioFileInput = document.getElementById("audio-file-input");
 const audioFileName = document.getElementById("audio-file-name");
 const autoScrollCheckbox = document.getElementById('auto-scroll');
-// const greenHatchingLeftBtn = document.getElementById("green-hatching-left-btn");
-// const greenHatchingRightBtn = document.getElementById("green-hatching-right-btn");
 
 let isWindowBlur = false;
+let isWindowResize = false;
 
-const checkGreenHatch = document.getElementById("checked-green-hatch");
+const checkedSetGreen = document.getElementById("checked-set-green");
 const checkedShow = document.getElementById("checked-show");
 const checkedHide = document.getElementById("checked-hide");
 
@@ -31,7 +29,7 @@ const exportGreen = document.getElementById('export-green');
 const reloadFileInput = document.getElementById('reload-file-input');
 
 const textFileInput = document.getElementById("text-file-input");
-const textFileNames = document.getElementById("text-file-names");
+const textFileName = document.getElementById("text-file-name");
 
 const menuContainer = document.getElementById('menu');
 
@@ -39,6 +37,7 @@ const moriSpeaker = document.getElementById("mori-speaker");
 const tanakaSpeaker = document.getElementById("tanaka-speaker");
 const satoSpeaker = document.getElementById("sato-speaker");
 
+const badges = document.getElementById("badges");
 const attachmentBadge = document.getElementById("attachment-badge");
 const commentBadge = document.getElementById("comment-badge");
 const startBadge = document.getElementById("start-badge");
@@ -55,17 +54,15 @@ function setEditorPanelH(){
   editorPanel.style.height = `calc(100vh - ${header.offsetHeight}px)`;
 }
 
-const lSide = new Side("left");
-// const rSide = new Side("right");
+let docHeader = null;
 
 window.onload= () =>{
   setEditorPanelH();
 
-  GijiDrop.init();
+  // GijiDrop.init();
   TextInput.init();
   AudioInput.init();
-  Hatching.init();
-  Effect.init();
+  Effector.init();
   Scroll.init();
   Save.init();
   Load.init();
@@ -78,13 +75,17 @@ window.onload= () =>{
 }
 
 window.addEventListener("resize", () => {
+  isWindowResize = true;
   setEditorPanelH();
   Render.syncRowHeights();
-  for(let i = 0; i < lSide.lines.length; i++){
-    TextSpan.resetCharCounts(i);
-    TextSpan.resetParagraphs(i);
-    TextSpan.resetCommnetPos(i);
+
+  for(let i = 0; i < Doc.getLines().length; i++){
+    TextBody.resetCharsPerPara(i);
+    TextBody.resetParaHeights(i);
+    TextBody.resetCommentPos(i);
+    TextBody.resetResponsePos(i);
   }
+  isWindowResize = false;
 });
 
 window.addEventListener("focus", () => {
@@ -104,7 +105,17 @@ window.addEventListener("blur", () => {
 
 document.addEventListener('click', function() {
   menuContainer.style.display = 'none';
-  TextSpan.initSelection();
+  // TextBody.initSelection();
+});
+
+window.addEventListener("mouseup", e => {
+  if(e.button !== 0) return;
+  for(let j = 0; j < Doc.getDivs().length; j++){
+    Array.from(Doc.getTextBodyBG(j).querySelectorAll("span")).forEach((_, k) => {
+      TextBody.unemphasizeText(j, k);
+    });
+  }
+  TextBody.initDragover();
 });
 
 // fetch("http://localhost:20000", {

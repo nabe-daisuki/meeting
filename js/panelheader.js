@@ -3,40 +3,31 @@ class PanelHeader {
   static getHeight(){
     return this.height;
   }
-
   static setHeight(val){
     this.height = val;
   }
 
-  static create(textFile){
-    const elem = document.createElement("div");
-    elem.className = "panel-header";
+  static create(){
+    const elem = Elem.create("div", {cl: "panel-header"});
 
-    const allEffector = document.createElement("input");
-    allEffector.type = "checkbox";
-    allEffector.style.width = "20px";
-    allEffector.onclick = e => {
-      const Side = textFile.side === "left" ? lSide : rSide;
+    const allSelector = Elem.create("input", {id: "all-selector"});
+    allSelector.type = "checkbox";
+    allSelector.style.width = "20px";
+    allSelector.onclick = e => {
       if(e.target.checked){
-        Side.divs.forEach( (l, i) => {
-          if(Side.lines[i].disabled) return;
-          l.querySelector("input").checked = true
+        Doc.divs.forEach( ( _, i ) => {
+          if(Doc.lines[i].disabled) return;
+          Doc.getSelector(i).checked = true;
         });
       }else{
-        Side.divs.forEach(l => l.querySelector("input").checked = false);
+        Doc.divs.forEach( ( _, i ) => Doc.getSelector(i).checked = false);
       }
     }
 
-    const fileName = document.createElement("span");
-    if(textFile.side === "left"){
-      allEffector.id = "left-all-effector";
-      fileName.textContent = `${textFile.name}`;
-    }else{
-      allEffector.id = "right-all-effector";
-      fileName.textContent = `②${textFile.name}`;
-    }
+    const fileName = Elem.create("span");
+    fileName.textContent = TextFile.getName();
 
-    elem.appendChild(allEffector);
+    elem.appendChild(allSelector);
     elem.appendChild(fileName);
     return elem;
   }

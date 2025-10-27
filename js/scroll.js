@@ -1,24 +1,26 @@
 class Scroll {
-  static autoIdx = -1;
   static isAuto = false;
 
   static init(){
-    autoScrollCheckbox.onchange = e => {
+    autoScrollCheckbox.addEventListener("change", e => {
       this.isAuto = e.target.checked;
-      if(this.isAuto) Selection.isSelectionPulledOnce = false;
-    }
+    });
   }
 
-  static scrollToLine(Side, idx) {
-    if(idx !== 0) idx--;
+  static scrollToLine(i) {
+    if(i !== 0) i--;
 
-    let lineTopHeight = 0;
-    for(let i = 0; i < idx; i++){
-      // lineTopHeight += Side.divs[i].offsetHeight + InsertLineDiv.getHeightWithMargin();
-      lineTopHeight += Side.divs[i].offsetHeight;
-    }
+    const lineTopHeight = Doc.getDivs().slice(0, i + 1).reduce( (acc, cur) => {
+      return acc += cur.offsetHeight;
+    }, 0);
     
     lPanel.scrollTop = lineTopHeight;
-    this.autoIdx = idx;
+  }
+
+  static enableAuto(){
+    this.isAuto = true;
+  }
+  static disableAuto(){
+    this.isAuto = false;
   }
 }

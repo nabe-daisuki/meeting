@@ -1,5 +1,6 @@
 class KeyBorad {
   static hasShift = false;
+  static isEntered = false;
 }
 
 
@@ -7,8 +8,6 @@ document.addEventListener("keydown", e => {
   if(e.shiftKey){
     KeyBorad.hasShift = true;
   }
-
-
   if(e.ctrlKey){
     switch(e.key){
       case '6':
@@ -28,7 +27,7 @@ document.addEventListener("keydown", e => {
         break;
       case '1':
         console.log("ctrl+1");
-        audio.playbackRate = 1.0; // 元の速度に戻す
+        audio.playbackRate = 1.0;
         e.preventDefault();
         break;
     }
@@ -65,7 +64,6 @@ document.addEventListener("keydown", e => {
 });
 
 document.addEventListener("keyup", e => {
-  console.log(e.shiftKey)
   if(!e.shiftKey){
     KeyBorad.hasShift = false;
   }

@@ -1,34 +1,25 @@
 class InvalidBtn {
-  static create(Side, div, idx){
-    const line = Side.lines[idx];
+  static create(i){
+    const line = Doc.getLine(i);
     
-    const elem = document.createElement("span");
-    elem.className = "invalid-button";
-    if(line.isDummy) {
-      elem.textContent = "×解除不可";
-      elem.classList.add("disabled");
-    }else{
-      elem.textContent = '×';
-    }
+    const elem = Elem.create("span", {cl: "invalid-button"});
+    elem.textContent = '×';
 
-    elem.onclick = e => {
-      if(line.isDummy) return;
-      line.disabled = !line.disabled;
+    elem.addEventListener("click", e => {
+      Doc.setDisabled(i, !line.disabled);
+      const div = Doc.getDiv(i);
       if(line.disabled){
         e.target.textContent = "×解除";
-        Hatching.remove(Side, idx);
-        Effector.disable(Side, idx);
+        Hatching.remove(i);
+        Selector.disable(i);
         div.classList.add("disabled");
-        line.disabled = true;
-        line.color = null;
       }else{
         e.target.textContent = "×";
-        Effector.enable(Side, idx);
+        Selector.enable(i);
         div.classList.remove("disabled");
-        line.disabled = false;
       }
       Render.syncRowHeights();
-    }
+    });
 
     return elem;
   }

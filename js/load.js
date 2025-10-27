@@ -9,13 +9,11 @@ class Load {
     
     const reader = new FileReader();
     reader.onload = e => {
-      const lLines = [];
-      // const rLines = [];
+      const lines = [];
 
       let stateNum = 0;
-      let lineInfo = {};
       let text = [];
-      let editedText = [];
+      let lineInfo = {};
       let hasEnteredAudioBlock = false;
       let noAudio = false;
       let isFileEnd = false;
@@ -56,13 +54,10 @@ class Load {
         }
 
         if(line === "@@@@@"){
-          if(lineInfo.side === "left") lLines.push(lineInfo);
-          // else rLines.push(lineInfo);
+          lines.push(lineInfo);
 
           stateNum = 0;
           lineInfo = {};
-          text = [];
-          editedText = [];
           return;
         }
 
@@ -80,18 +75,10 @@ class Load {
             lineInfo.endSec = +eh*3600 + +em*60 + +es;
             break;
           case 3:
-            if(line != "$$$$$"){
-              text.push(line);
-              return;
-            }
-            lineInfo.text = text.join("\n");
+            lineInfo.text = line.split("|||").join("\n");
             break;
           case 4:
-            if(line != "#####"){
-              editedText.push(line);
-              return;
-            }
-            lineInfo.editedText = editedText[0] === "null" ? null : editedText.join("\n");
+            lineInfo.editedText = line === "null" ? null : line.split("|||").join("\n");
             break;
           case 5:
             lineInfo.disabled = line === "true" ? true : false;
@@ -106,37 +93,52 @@ class Load {
             lineInfo.checked = line === "true" ? true : false;
             break;
           case 9:
-            lineInfo.isDummy = line === "true" ? true : false;
+            lineInfo.badges = line;
+            break;
+          case 10:
+            lineInfo.charsPerPara = line.split("|||");
+            break;
+          case 11:
+            lineInfo.paraHeights = line.split("|||");
+            break;
+          case 12:
+            lineInfo.comments = line.split("|||").map(i => i === "1");;
+            break;
+          case 13:
+            lineInfo.responses = line.split("|||").map(i => i === "1");;
             break;
         }
         stateNum+=1; 
       });
 
-      if(!lLines.length) return;
+      if(!lines.length) return;
       lPanel.innerHTML = "";
-      textFileNames.innerHTML = `－`;
+      textFileName.innerHTML = `－`;
       
-      const lFile = new TextFile({
-        data: null,
-        name: "－",
-        side: "left"
-      });
-      // const rFile = new TextFile({
-      //   data: null,
-      //   name: "－",
-      //   side: "right"
-      // });
+      TextFile.setData(null);
+      TextFile.setName("ー");
 
-      lSide.clearLines();
-      // rSide.clearLines();
+      Doc.clearLines();
 
-      lSide.insertLines(lLines);
-      // rSide.insertLines(rLines);
+      Doc.insertLines(lines);
+      
+      TextInput.setTextFileName();
 
-      // Render.render(lFile, rFile);
-      Render.render(lFile);
+      DocHeader.init();
+      Render.render();
 
       Save.enable();
+
+      Doc.getLines().forEach( (l, i) => {
+        if(l.hided){
+          Doc.getTimeStamp(i).style.display = "none";
+          Doc.getBadged(i).style.display = "none";
+          Doc.getTextBox(i).style.display = "none";
+        }
+        Badged.set(i, Badged.createBadges(i));
+      });
+      if(Doc.getLines().every(l => l.checked)) DocHeader.check();
+
 
       if(noAudio){
         alert("前回保存時に読み込まれた会議音声はありませんでした。");

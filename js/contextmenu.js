@@ -81,13 +81,13 @@ class ContextMenu {
     const Side = Selection.side === "left" ? lSide : rSide;
     const idx = Selection.idx;
     const textSpan = Side.divs[idx].querySelector("textarea");
-    const replacedText = textSpan.value.substring(0, TextSpan.selectionStr.start)
+    const replacedText = textSpan.value.substring(0, TextBody.selectionStr.start)
       + destStr
-      + textSpan.textContent.substring(TextSpan.selectionStr.end);
+      + textSpan.textContent.substring(TextBody.selectionStr.end);
     textSpan.textContent = replacedText;
 
     Side.setLineText(replacedText, idx);
 
-    TextSpan.initSelection();
+    TextBody.initSelection();
   }
 }

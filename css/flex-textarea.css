@@ -9,14 +9,13 @@
 
 .FlexTextarea__dummy {
   overflow: hidden;
-  visibility: hidden;
   box-sizing: border-box;
   padding: 5px 15px 5px 45px;
   min-height: 120px;
   white-space: pre-wrap;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  border: 1px solid;
+  width: 100%;
 }
 
 .FlexTextarea__textarea {

@@ -3,45 +3,31 @@ class TextInput {
     textFileInput.onchange = async(e) => {
       const files = e.target.files;
       if(files.length != 1){
-        alert('1つのテキストファイルを選択してください');
+        alert("1つのテキストファイルを選択してください");
         return;
       }
-
-      const lFile = new TextFile({
-        data: files[0],
-        name: files[0].name,
-        side: "left"
-      });
-
-      // const rFile = new TextFile({
-      //   data: files[1],
-      //   name: files[1].name,
-      //   side: "right"
-      // });
-
-      await FileParser.parse(lFile.data, lSide);
-      // await FileParser.parse(rFile.data, rSide);
       
-      // const lLinesLen = lSide.lines.length;
-      // const rLinesLen = rSide.lines.length;
-      // if(!lLinesLen || !rLinesLen){
-      //   alert("ファイルの読み込みに失敗しました。");
-      //   return;
-      // }
+      TextFile.setData(files[0]);
+      TextFile.setName(files[0].name);
 
-      // if(lLinesLen !== rLinesLen){
-      //   const diffCount = Math.abs(lLinesLen - rLinesLen)
-      //   if(lLinesLen > rLinesLen) rSide.insertDummyLine(diffCount);
-      //   else lSide.insertDummyLine(diffCount);
-      // }
+      Doc.clearLines();
+      await FileParser.parse();
 
-      // textFileNames.innerHTML = `①${lFile.name}<br>②${rFile.name}`;
-      textFileNames.innerHTML = lFile.name;
+      this.setTextFileName();
 
-      // Render.render(lFile, rFile);
-      Render.render(lFile);
+      DocHeader.init();
+      Render.render();
       Save.enable();
     }
+  }
+
+  static setTextFileName(){
+    const fileName = TextFile.getName();
+    if(fileName === ""){
+      alert("テキストファイルの名前が取得できません。");
+      return;
+    }
+    textFileName.innerHTML = fileName;
   }
 
   static async inputText(text){

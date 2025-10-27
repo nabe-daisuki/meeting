@@ -1,0 +1,173 @@
+class Doc{
+  static divs = [];
+  static lines = [];
+  static rephists = [];
+
+  static getDivs(){
+    return this.divs;
+  }
+  static getDiv(i){
+    return this.getDivs()[i];
+  }
+  static addDiv(div){
+    this.getDivs().push(div);
+  }
+
+  static getLines(){
+    return this.lines;
+  }
+  static getLine(i){
+    return this.lines[i];
+  }
+  static insertLines(parsedLines){
+    this.lines.push(...parsedLines);
+  }
+
+  static getRepHists(){
+    return this.rephists;
+  }
+
+  static getCheckedSelectorIndexes(){
+    return this.getLines().reduce( ( acc, _, i ) => {
+      if(this.getChecked(i)) acc.push(i);
+      return acc;
+    }, []);
+  }
+  static getEditedTextIndexes(){
+    return this.getLines().reduce( ( acc, _, i ) => {
+      if(this.getEditedText(i)) acc.push(i);
+      return acc;
+    }, []);
+  }
+
+  static getSelector(i){
+    return this.getDiv(i).querySelector(".selector");
+  }
+  static getTimeStamp(i){
+    return this.getDiv(i).querySelector(".timestamp");
+  }
+  static getBadged(i){
+    return this.getDiv(i).querySelector(".badged");
+  }
+  static getTextBox(i){
+    return this.getDiv(i).querySelector(".FlexTextarea");
+  }
+  static getTextBodyBG(i){
+    return this.getDiv(i).querySelector(".FlexTextarea__dummy");
+  }
+  static getTextBody(i){
+    return this.getDiv(i).querySelector(".FlexTextarea__textarea");
+  }
+
+  static getText(i){
+    return this.getLine(i).text;
+  }
+
+  static getEditedText(i){
+    return this.getLine(i).editedText;
+  }
+  static setEditedText(i, t){
+    this.getLine(i).editedText = t;
+  }
+
+  static getBadges(i){
+    return this.getLine(i).badges;
+  }
+  static setBadges(i, b){
+    this.getLine(i).badges = b;
+  }
+  static hadBadge(i, c){
+    return this.getLine(i).badges.includes(c);
+  }
+  static addBadge(i, c){
+    if(this.hadBadge(i, c)) return;
+    this.setBadges(i, `${this.getBadges(i)}${c}`.split("").sort().join(""));
+  }
+  static removeBadge(i, c){
+    this.setBadges(i, this.getBadges(i).replace(c, ""));
+  }
+
+  static getCharsPerPara(i){
+    return this.getLine(i).charsPerPara;
+  }
+  static hasCharsInPara(i, j){
+    return this.getCharsPerPara(i)[j] !== undefined;
+  }
+
+  static getParaHeights(i){
+    return this.getLine(i).paraHeights;
+  }
+  static setParaHeights(i, pts){
+    this.clearParaHeights(i);
+    this.getParaHeights(i).push(...pts);
+  }
+  static clearParaHeights(i){
+    this.getParaHeights(i).length = 0;
+  }
+  static getParaHeight(i, j){
+    return this.getParaHeights(i)[j];
+  }
+  static setParaHeight(i, j, pt){
+    this.getLine(i).paraHeights[j] = pt;
+  }
+
+  static getComments(i){
+    return this.getLine(i).comments;
+  }
+  static setComments(i, cs){
+    this.getLine(i).comments = cs;
+  }
+  static getComment(i, j){
+    return this.getLine(i).comments[j];
+  }
+  static enableComment(i, j){
+    this.getLine(i).comments[j] = true;
+  }
+  static disableComment(i, j){
+    this.getLine(i).comments[j] = false;
+  }
+
+  static getResponses(i){
+    return this.getLine(i).responses;
+  }
+  static setResponses(i, rs){
+    this.getLine(i).responses = rs;
+  }
+  static getResponse(i, j){
+    return this.getLine(i).responses[j];
+  }
+  static enableResponse(i, j){
+    this.getLine(i).responses[j] = true;
+  }
+  static disableResponse(i, j){
+    this.getLine(i).responses[j] = false;
+  }
+
+  static getDisabled(i){
+    return this.getLine(i).disabled;
+  }
+  static setDisabled(i, b){
+    this.getLine(i).disabled = b;
+  }
+
+  static getHided(i){
+    return this.getLine(i).hided;
+  }
+  static setHided(i, b){
+    this.getLine(i).hided = b;
+  }
+
+  static getChecked(i){
+    return this.getLine(i).checked;
+  }
+  static setChecked(i, b){
+    this.getLine(i).checked = b;
+  }
+
+  static clearDivs(){
+    this.divs.length = 0;
+  }
+  static clearLines(){
+    this.lines.length = 0;
+  }
+}

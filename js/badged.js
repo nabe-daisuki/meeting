@@ -1,7 +1,30 @@
 class Badged {
-  static create(Side, idx){
-    const elem = document.createElement("div");
-    elem.className = "badged"
+  static target = ["a", "s"];
+  static create(i){
+    const elem = Elem.create("div", {cl: "badged"});
     return elem;
+  }
+
+  static init(i){
+    this.set(i, []);
+  }
+
+  static set(i, htmls){
+    const badged = Doc.getBadged(i);
+    badged.innerHTML = "";
+    
+    htmls.forEach( html => {
+      badged.appendChild(html);
+    });
+  }
+
+  static can(t){
+    return this.target.includes(t.slice(0, 1).toLowerCase())
+  }
+
+  static createBadges(i){
+    return Doc.getBadges(i).split("").filter(c => c !== "n").map( c => {
+      return Badge.createSmall(i, c);
+    });
   }
 }

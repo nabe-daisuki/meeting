@@ -1,68 +1,74 @@
 class Effector {
-  static preSide = "";
-  static preIdx = -1;
+  static init(){
+    checkedShow.onclick = () => this.show("checked");
 
-  static create(Side, idx){
-    const elem = document.createElement("input");
-    elem.type = "checkbox";
-    elem.style.width = "20px";
-    elem.style.cursor = "pointer";
-    elem.addEventListener("focus", e => e.target.blur());
-    if(Side.lines[idx].disabled) elem.disabled = true;
-    if(Side.lines[idx].checked) elem.checked = true;
+    checkedHide.onclick = () => this.hide("checked");
 
-    elem.onclick = e => {
-      if(e.target.checked){
-        Side.lines[idx].checked = true;
-        console.log(KeyBorad.hasShift)
-        if(!KeyBorad.hasShift){ 
-          Effector.preSide = Side.side;
-          Effector.preIdx = idx;
-          document.getElementById(`${Side.side}-all-effector`).checked = true;
-          return;
-        }
-        if(Effector.preSide !== Side.side || Effector.preSide === "" ){
-          document.getElementById(`${Side.side}-all-effector`).checked = true;
-        }else{
-          const minIdx = Math.min(Effector.preIdx, idx);
-          const maxIdx = Math.max(Effector.preIdx, idx);
+    checkedSetGreen.onclick = () => this.setGreen("checked");
 
-          for(let i = minIdx; i < maxIdx; i++){
-            Side.divs[i].querySelector("input").checked = true;
-          }
-        }
-        Effector.preSide = Side.side;
-        Effector.preIdx = idx;
-      }else{
-        const checkedDiv = Side.divs.find(l => l.querySelector("input").checked);
-        Effector.preSide = "";
-        Effector.preIdx = -1;
-        Side.lines[idx].checked = false;
-        if(checkedDiv) return;
-        document.getElementById(`${Side.side}-all-effector`).checked = false;
-      }
+    // checkedUnsetGreen.onclick = () => this.unsetGreen("checked");
+
+    // editedSetGreen.onclick = () => this.setGreen("edited");
+
+    // editedUnsetGreen.onclick = () => this.unsetGreen("edited");
+  }
+
+  static getIndexes(type){
+    if(type === "checked"){
+      return Doc.getCheckedSelectorIndexes();
+    }else if(type === "edited"){
+      return Doc.getEditedTextIndexes();
     }
-    return elem;
   }
 
-  static check(Side, idx){
-    const checkBox = Side.divs[idx].querySelector("input");
-    checkBox.disabled = true;
+  static hide(type){
+    this.getIndexes(type).forEach( i => {
+      Doc.getTimeStamp(i).style.display = "none";
+      Doc.getBadged(i).style.display = "none";
+      Doc.getTextBox(i).style.display = "none";
+      Selector.uncheck(i);
+
+      Doc.setChecked(i, false);
+      Doc.setHided(i, true);
+    });
+
+    DocHeader.uncheck();
   }
 
-  static enable(Side, idx){
-    const checkBox = Side.divs[idx].querySelector("input");
-    checkBox.disabled = false;
+  static show(type){
+    this.getIndexes(type).forEach( i => {
+      Doc.getTimeStamp(i).style.display = "block";
+      Doc.getBadged(i).style.display = "block";
+      Doc.getTextBox(i).style.display = "block";
+      Selector.uncheck(i);
+
+      Doc.setChecked(i, false);
+      Doc.setHided(i, false);
+    });
+
+    DocHeader.uncheck();
   }
 
-  static disable(Side, idx){
-    this.uncheck(Side, idx);
-    const checkBox = Side.divs[idx].querySelector("input");
-    checkBox.disabled = true;
+  static setGreen(type){
+    this.getIndexes(type).forEach( i => {
+      Hatching.remove(i);
+      Hatching.green(i);
+      Selector.uncheck(i);
+      
+      Doc.setChecked(i, false);
+    });
+    DocHeader.uncheck();
   }
 
-  static uncheck(Side, idx){
-    const checkBox = Side.divs[idx].querySelector("input");
-    checkBox.checked = false;
+  static unsetGreen(type){
+    this.getIndexes(type).forEach( i => {
+      Hatching.remove(i);
+      Selector.uncheck(i);
+
+      Doc.setChecked(i, false);
+    });
+    DocHeader.uncheck();
   }
+
+
 }

@@ -1,72 +1,54 @@
 class Render {
-  // static render(lFile, rFile) {
-  static render(lFile) {
-
-    const lPanelHeader = PanelHeader.create(lFile);
-    this.commonRender(lPanelHeader);
+  static render() {
+    this.commonRender(docHeader);
   }
 
   static rerender(){
-    const lPanelHeader = lPanel.querySelector(".panel-header");
-    this.commonRender(lPanelHeader);
+    const docHeader = lPanel.querySelector(".panel-header");
+    this.commonRender(docHeader);
   }
 
-  static commonRender(lPanelHeader){
-    const lFlag = document.createDocumentFragment();
+  static commonRender(docHeader = null){
+    const flag = document.createDocumentFragment();
 
-    lFlag.appendChild(lPanelHeader);
+    flag.appendChild(DocHeader.get());
 
-    lSide.clearDivs();
-    // rSide.clearDivs();
-    // lSide.clearInterts();
-    // rSide.clearInterts();
+    Doc.clearDivs();
 
-    for (let i = 0; i < lSide.lines.length; i++) {
-      const lDiv = LineDiv.create(lSide, i);
-      // const rDiv = LineDiv.create(rSide, i);
+    for (let i = 0; i < Doc.lines.length; i++) {
+      const div = Chunk.create(i);
+      flag.appendChild(div);
 
-      lFlag.appendChild(lDiv);
-      // rFlag.appendChild(rDiv);
-
-      lSide.divs.push(lDiv);
-      // rSide.divs.push(rDiv);
-
-      // const lInsertDiv = InsertLineDiv.create(lSide, i);
-      // const rInsertDiv = InsertLineDiv.create(rSide, i);
-
-      // lFlag.appendChild(lInsertDiv);
-      // rFlag.appendChild(rInsertDiv);
-
-      // lSide.inserts.push(lInsertDiv);
-      // rSide.inserts.push(rInsertDiv);
+      Doc.getDivs().push(div);
     }
 
     lPanel.innerHTML = "";
-    lPanel.appendChild(lFlag);
+    lPanel.appendChild(flag);
 
-    PanelHeader.setHeight(lPanelHeader.offsetHeight);
+    DocHeader.calcHeight();
 
-    this.syncRowHeights();
-    for(let i = 0; i < lSide.lines.length; i++){
-      TextSpan.resetParagraphs(i);
+    for(let i = 0; i < Doc.getLines().length; i++){
+      TextBody.resetParaHeights(i);
+      TextBody.resetCommentPos(i);
+      TextBody.resetResponsePos(i);
     }
     AudioInput.showPlayLine();
   }
 
   static syncRowHeights() {
-    const lDivs = lSide.divs;
+    // const lDivs = lSide.divs;
     // const rDivs = rSide.divs;
 
-    for(let i=0; i<lDivs.length; i++){
-      const lDiv = lDivs[i];
-      // const rDiv = rDivs[i];
+    for(let i = 0; i < Doc.getDivs().length; i++){
+      // const lDiv = lDivs[i];
+      // // const rDiv = rDivs[i];
       
-      lDiv.style.height = "auto";
-      // rDiv.style.height = "auto";
+      // lDiv.style.height = "auto";
+      // // rDiv.style.height = "auto";
 
-      // const maxHeight = Math.max(lDiv.offsetHeight, rDiv.offsetHeight);
-      // lDiv.style.height = maxHeight + 'px';
-      lDiv.style.height = lDiv.offsetHeight + 'px';
+      // // const maxHeight = Math.max(lDiv.offsetHeight, rDiv.offsetHeight);
+      // // lDiv.style.height = maxHeight + 'px';
+      // lDiv.style.height = lDiv.offsetHeight + 'px';
       // rDiv.style.height = maxHeight + 'px';
     }
   }

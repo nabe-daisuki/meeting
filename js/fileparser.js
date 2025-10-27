@@ -1,19 +1,24 @@
 class FileParser {
-  static parse(File, Side){
+  static parse(){
     return new Promise((resolve, reject) => {
+      const textFile = TextFile.getData();
+      if(textFile === null){
+        alert("テキストデータがありません。");
+        return reject();
+      }
       const reader = new FileReader();
 
       reader.onload = e => {
         const lines = e.target.result
           .split('\n')
-          .map( (line, i) => this.parseLine(line, i, Side.side))
+          .map( l => this.parseLine(l))
           .filter(Boolean);
         
-        Side.insertLines(lines);
+        Doc.insertLines(lines);
         resolve();
       };
       reader.onerror = e => reject(e);
-      reader.readAsText(File);
+      reader.readAsText(textFile);
     });   
   }
 
@@ -27,21 +32,19 @@ class FileParser {
     Side.insertLines(lines);
   }
 
-  //
-  // 行記述解析かつステータス登録
-  //
-  static parseLine(preline, i, side) {
+  static parseLine(preline) {
     const match = preline.match(/\[(\d+):(\d+):(\d+) -> (\d+):(\d+):(\d+)\] (.*)/);
     if (!match) return null;
     const [, sh, sm, ss, eh, em, es, text] = match;
     const line = {...Line.default};
-    line.index = i;
-    line.side = side;
+    line.index = -1; // 後に削除
+    line.side = "none"; // 後に削除
     line.startSec = +sh*3600 + +sm*60 + +ss;
     line.endSec = +eh*3600 + +em*60 + +es;
-    line.text = text;
-    line.charCounts = text.split("\n").map(l => l.length);
-    line.comments = new Array(line.charCounts.length).fill(false);
+    line.text = text.replaceAll("/", "\n");
+    line.charsPerPara = text.split("\n");
+    line.comments = new Array(line.charsPerPara.length).fill(false);
+    line.responses = new Array(line.charsPerPara.length).fill(false);
     return line;
   }
 }
