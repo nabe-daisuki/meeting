@@ -9,6 +9,10 @@ const lPanel = document.getElementById('left-panel');
 const audio = document.getElementById("audio");
 const volumeSlider = document.getElementById("volume-slider");
 const volumeLabel = document.getElementById("volume-label");
+const speedSlider = document.getElementById("speed-slider");
+const speedLabel = document.getElementById("speed-label");
+
+const config = document.getElementById("config");
 
 const audioFileInput = document.getElementById("audio-file-input");
 const audioFileName = document.getElementById("audio-file-name");
@@ -33,14 +37,20 @@ const textFileName = document.getElementById("text-file-name");
 
 const menuContainer = document.getElementById('menu');
 
-const moriSpeaker = document.getElementById("mori-speaker");
-const tanakaSpeaker = document.getElementById("tanaka-speaker");
-const satoSpeaker = document.getElementById("sato-speaker");
+const speakers = document.getElementById("speakers");
 
 const badges = document.getElementById("badges");
 const attachmentBadge = document.getElementById("attachment-badge");
 const commentBadge = document.getElementById("comment-badge");
 const startBadge = document.getElementById("start-badge");
+
+const repInfosUl = document.getElementById("repinfos");
+
+const configOverlay=document.getElementById("config-overlay");
+const configList=document.getElementById("config-list");
+const configOk=document.getElementById("config-ok");
+const configCancel=document.getElementById("config-cancel");
+const configX=document.getElementById("config-x");
 
 const audioInfo = {
   fileName: "",
@@ -59,14 +69,15 @@ let docHeader = null;
 window.onload= () =>{
   setEditorPanelH();
 
-  // GijiDrop.init();
+  GijiInput.init();
   TextInput.init();
   AudioInput.init();
   Effector.init();
   Scroll.init();
   Save.init();
   Load.init();
-  Speaker.init();
+  // Speaker.init();
+  Config.init();
   Badge.init();
   Export.init();
   AudioController.init();
@@ -103,20 +114,24 @@ window.addEventListener("blur", () => {
   if(!audio.paused) audio.pause();
 });
 
-document.addEventListener('click', function() {
+document.addEventListener('click', () => {
   menuContainer.style.display = 'none';
-  // TextBody.initSelection();
+  TextBody.visible();
 });
 
 window.addEventListener("mouseup", e => {
   if(e.button !== 0) return;
-  for(let j = 0; j < Doc.getDivs().length; j++){
-    Array.from(Doc.getTextBodyBG(j).querySelectorAll("span")).forEach((_, k) => {
-      TextBody.unemphasizeText(j, k);
-    });
-  }
-  TextBody.initDragover();
+
+  if(TextBody.dragover.i === -1){
+    for(let j = 0; j < Doc.getDivs().length; j++){
+      Array.from(Doc.getTextBodyBG(j).querySelectorAll("span")).forEach((_, k) => {
+        TextBody.unemphasizeText(j, k);
+      });
+    }
+    TextBody.initDragover();
+  }  
 });
+
 
 // fetch("http://localhost:20000", {
 //   method: "POST",

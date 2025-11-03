@@ -87,6 +87,43 @@ class TextBody {
       this.edit.pastedText = e.clipboardData.getData("text");
     });
 
+    textBody.addEventListener("keydown", e => {
+      const isMultiLine = e.target.value.slice(this.selection.start, this.selection.end).includes("\n");
+      const paraNum = this.getSelectionParaNum(i);
+      
+      switch(e.key){
+        case "Tab":
+          e.preventDefault();
+          const nextIndex = i + Math.sign(Number(KeyBoard.hasShift) - 0.5) * -1;
+          if(nextIndex < 0 || nextIndex >= Doc.getLines().length) return;
+          Doc.getTextBody(nextIndex).focus();
+          break;
+        case "q":
+          if(!KeyBoard.hasCtrl) return;
+          e.preventDefault();
+
+          if(isMultiLine || this.hasComment(i, paraNum) || !Doc.hasCharsInPara(i, paraNum)) return;
+          if(this.hasResponse(i, paraNum)){
+            Doc.disableResponse(i, paraNum);
+          }
+          this.setComment(i, paraNum);
+          this.resetResponsePos(i);
+          break;
+          
+        case "r":
+          if(!KeyBoard.hasCtrl) return;
+          e.preventDefault();
+
+          if(isMultiLine || this.hasResponse(i, paraNum) || !Doc.hasCharsInPara(i, paraNum)) return;
+          if(this.hasComment(i, paraNum)){
+            Doc.disableComment(i, paraNum);
+          }
+          this.setResponse(i, paraNum);
+          this.resetCommentPos(i);
+          break;
+      }
+    });
+    
     textBody.addEventListener("keyup", e => {
       this.edit.isKeyup = true;
 
@@ -121,19 +158,34 @@ class TextBody {
       this.edit.pastedText = null;
     });
 
-    textBody.addEventListener("contextmenu", e => {
+    textBody.addEventListener("contextmenu", async(e) => {
       console.log("contextmenu");
-      if(this.selection.start === this.selection.end) return;      
       if(this.selection.start === -1) return;
+
+      const x = e.clientX;
+      const y = e.clientY;
+      const text = e.target.value;
+
+      const isSelection = this.selection.start !== this.selection.end;
+      console.log(text);
+      console.log(text.slice(this.selection.start, this.selection.end));
+      console.log(text.slice(this.selection.start, this.selection.end).includes("\n"));
+      const isMultiLine = text.slice(this.selection.start, this.selection.end).includes("\n");
+      
+      await ContextMenu.reset(isSelection, isMultiLine);
+      ContextMenu.show(x, y);
+
+      if(isSelection) this.emphasizeSelection(i);
+      e.stopPropagation();
+      e.preventDefault();
+      return;
 
       this.edit.isRightCut = true;
 
       const prefix = e.target.value.slice(0, this.selection.start);
-      const suffix = e.target.value.slice(this.selection.end)
-      const replacedText = (prefix + suffix);
+      const suffix = e.target.value.slice(this.selection.end);
+      const replacedText = prefix + suffix;
       e.target.value = replacedText;
-      console.log(prefix)
-      console.log(suffix)
 
       this.setLineText(replacedText, i);
       
@@ -144,8 +196,6 @@ class TextBody {
       this.resetCharsPerPara(i);
       this.resetParaHeights(i);
 
-      e.stopPropagation();
-      e.preventDefault();
     });
 
     textBody.addEventListener("focusin", e => {
@@ -166,27 +216,87 @@ class TextBody {
       if ( e.button === 0 ){
         this.isMouseDown = true;
         return;
+      }else if (e.button === 1){
+        const x = e.clientX;
+        const y = e.clientY;
+        if(this.selection.start === this.selection.end) return;
+        if(this.selection.start === -1) return;
+
+        this.edit.isRightCut = true;
+
+        const prefix = e.target.value.slice(0, this.selection.start);
+        const suffix = e.target.value.slice(this.selection.end);
+        const replacedText = prefix + suffix;
+        e.target.value = replacedText;
+
+        this.setLineText(replacedText, i);
+        
+        const caretPos = prefix.length;
+        e.target.setSelectionRange(caretPos, caretPos);
+        e.target.focus();
+        
+        this.resetCharsPerPara(i);
+        this.resetParaHeights(i);
+
+        e.stopPropagation();
+        e.preventDefault();
       }
-      // ミドルクリック
-      // if (e.button !== 1) return;
-
-      // const elem = e.target;
-      // if(elem.selectionStart === 0 && elem.selectionEnd === 0) return;
-
-      // this.selection.start = elem.selectionStart;
-      // this.selection.end = elem.selectionEnd;
-      
-      // if(this.selection.start === -1) return;
-      // e.preventDefault();
-
-      // ContextMenu.show(e.clientX, e.clientY);
     });
 
     textBody.addEventListener("mouseup", e => {
+      console.log("mouseup");
+      if(e.button === 2) this.setSelection(e.target, i);
       if(e.button !== 0) return;
 
       this.isMouseDown = false;
       e.target.dispatchEvent(new Event("selectionchange"));
+    });
+
+    textBody.addEventListener("mousemove", e => {
+      if(Doc.getEditedText(i)) return;
+      const x = e.clientX;
+      const y = e.clientY;
+
+      const repinfo = Doc.getRepInfo(i)["replace_histories"];
+      Array.from(Doc.getTextBodyBG(i).querySelectorAll("i.has-replace")).some( (el, j) => {
+        const r = el.getBoundingClientRect();
+        if(r.top >= y || y >= r.bottom || r.left >= x || x >= r.right) return;
+        repInfosUl.innerHTML = "";
+        const idx = el.getAttribute("idx");
+        
+        repinfo[idx].forEach( r => {
+          const before = Elem.create("span");
+          const beforePrefix = Elem.createT(r.before[0]);
+          const beforeTarget = Elem.create("span", {cl: "replace-target"});
+          beforeTarget.textContent = r.before[1];
+          const beforeSuffix = Elem.createT(r.before[2]);
+
+          before.appendChild(beforePrefix);
+          before.appendChild(beforeTarget);
+          before.appendChild(beforeSuffix);
+
+          const after = Elem.create("span");
+          const afterPrefix = Elem.createT(r.after[0]);
+          const afterTarget = Elem.create("span", {cl: "replace-target"});
+          afterTarget.textContent = r.after[1];
+          const afterSuffix = Elem.createT(r.after[2]);
+
+          after.appendChild(afterPrefix);
+          after.appendChild(afterTarget);
+          after.appendChild(afterSuffix);
+
+          const arrow = Elem.create("span");
+          arrow.textContent = "↓";
+
+          const li = Elem.create("li");
+          li.appendChild(before);
+          li.appendChild(arrow);
+          li.appendChild(after);
+
+          repInfosUl.appendChild(li);
+        });
+        return true;
+      });
     });
 
     textBody.addEventListener("selectionchange", e => {
@@ -233,7 +343,7 @@ class TextBody {
     textBody.addEventListener("drop", e => {
       console.log("drop")
       const content = e.dataTransfer.getData('text/plain');
-      if(content === "森_SPEAKER" || content === "田中_SPEAKER" || content === "佐藤_SPEAKER"){
+      if(content.includes("_SPEAKER")){
         e.preventDefault();
         this.edit.isSpeakerDrop = true;
         
@@ -335,7 +445,6 @@ class TextBody {
     this.selection.end = el.selectionEnd;
 
     const charsPerPara = Doc.getCharsPerPara(i);
-    console.log(charsPerPara.length)
     this.selection.paras = new Array(charsPerPara.length).fill("");
     let startPos = 0;
 
@@ -359,14 +468,60 @@ class TextBody {
 
       startPos += charsPerPara[j].length + 1;
     }
-    console.log(this.preSelection);
-    console.log(this.selection);
+    // console.log(this.preSelection);
+    // console.log(this.selection);
   }
 
   static initSelection(){
     this.selection.start = -1;
     this.selection.end = -1;
   }
+
+  static emphasizeSelection(i){
+    this.resetCharsPerPara(i);
+    this.resetParaHeights(i);
+
+    const paraNum = this.getSelectionParaNum(i);
+    const charsPerPara = Doc.getCharsPerPara(i);
+    const chars = charsPerPara[paraNum];
+    const offset = charsPerPara.reduce((acc, cur, i) => {
+      if(paraNum <= i) return acc;
+      acc += cur.length + 1;
+      return acc;
+    }, 0);
+
+    const textBody = Doc.getTextBody(i);
+    const prefix = textBody.value.slice(offset, this.selection.start);
+    const targets = textBody.value.slice(this.selection.start, this.selection.end).split("\n");
+    const suffix = textBody.value.slice(this.selection.end, offset + chars.length);
+
+    const prefixNode = Elem.createT(prefix);
+    const targetNodes = targets.flatMap( (target, j) => {
+      const nodes = [];
+      const textSpan = Elem.create("span");
+      textSpan.textContent = target;
+      // textSpan.style.display = "inline-block";
+      textSpan.style.color = "white";
+      textSpan.style.backgroundColor = "#2A61D1";
+      nodes.push(textSpan);
+      if(j !== targets.length - 1){
+        const newLine = Elem.createT("\n");
+        nodes.push(newLine);
+      }
+      return nodes;
+    });
+    const suffixNode = Elem.createT(suffix);
+
+    const textBodyBG = Doc.getTextBodyBG(i);
+    const paraSpan = textBodyBG.querySelectorAll("span")[paraNum];
+    paraSpan.innerHTML = "";
+    paraSpan.appendChild(prefixNode);
+    targetNodes.forEach( targetNode => paraSpan.appendChild(targetNode));
+    paraSpan.appendChild(suffixNode);
+
+    textBody.style.visibility = "hidden";
+  }
+
 
   static emphasizeText(i, paraNum){
     Doc.getTextBodyBG(i).querySelectorAll("span")[paraNum].style.backgroundColor = "#d3d3d3";
@@ -404,52 +559,37 @@ class TextBody {
 
     Doc.setParaHeights(i, [...paraHeights]);
 
-    // for(let j = 0; j < paraCount; j++){
-    //   if(j != 0){
-    //     const newLine = Elem.create("span");
-    //     newLine.textContent = "\n";
-    //     textBodyBG.appendChild(newLine);
-    //   }
+    this.replaceHighlight(i);
+  }
 
-    //   const chars = charsPerPara[j];
 
-    //   const rephist = [];
-    //   const paraTop = [];
-    //   for(let k = 0; k < chars.length; k++){
-    //     const char = Elem.create("span");
-    //     char.textContent = chars[k];
+  static replaceHighlight(i){
+    if(Doc.getEditedText(i)) return;
+    
+    const textBodyBG = Doc.getTextBodyBG(i);
+    textBodyBG.innerHTML = "";
 
-    //     if(Doc.getRepHists().length != 0){
-    //       console.log(j)
-    //       console.log(lSide.rephists[0][j])
-    //       if(lSide.rephists[0][j].length == 0){
-    //         rephist.push([]);
-    //       }else{
-    //         rephist.push(lSide.rephists[0][j]);
-    //       }
-    //       console.log(rephist);
-    //       if(rephist[j].length != 0){
-    //         char.style.backgroundColor = "#ffc8c8";
-    //         char.style.color = "#ffc8c8";
-    //         char.style.display = "inline-block";
-    //       }else{          
-    //         char.style.color = "transparent";
-    //       }
-    //     }
+    const spans = new Array(Doc.getParaHeights(i).length).fill(null).map(v => Elem.create("span"));
 
-    //     textBodyBG.appendChild(char);
-
-    //     const rect = char.getBoundingClientRect();
-    //     const top = rect.top - this.getOffsetTop(i);
-    //     const bottom = rect.bottom - this.getOffsetTop(i);
-    //     const paraHeight = `${top}:${bottom}`;
-    //     if(!paraTop.includes(paraHeight)) paraTop.push(paraHeight);
-    //   }
-
-    //   Doc.setParaTop(i, j, paraTop);
-    // }
-
-    // console.log(Doc.getParaTops(i)[0]);
+    let paraCount = 0;
+    Doc.getRepInfo(i)["replace_histories"].forEach( (rephist, j) => {
+      const char = Doc.getText(i).slice(j, j + 1);
+      const italic = Elem.create("i");
+      italic.textContent = Doc.getText(i).slice(j, j + 1);
+      italic.style.fontStyle = "normal";
+      if(rephist.length !== 0){
+        italic.classList.add("has-replace");
+        italic.setAttribute("idx", j);
+        italic.addEventListener("mousemove", () => {
+          repInfosUl.textContent = rephist;
+        });
+      }
+      spans[paraCount].appendChild(italic);
+      if(char === "\n" || Doc.getRepInfo(i)["replace_histories"].length - 1 === j){
+        textBodyBG.appendChild(spans[paraCount]);
+        paraCount++;
+      }
+    });
   }
 
 
@@ -568,8 +708,9 @@ class TextBody {
           return acc;
         }, []);
       }
-      if(!newComments) return;
-      Doc.setComments(i, [...(newComments.map(v => v ?? false))]);
+      if(newComments){
+        Doc.setComments(i, [...(newComments.map(v => v ?? false))]);
+      }
     }
 
     this.clearComments(i);
@@ -731,12 +872,10 @@ class TextBody {
           return acc;
         }, []);
       }
-      if(!newResponses) return;
-      Doc.setResponses(i, [...(newResponses.map(v => v ?? false))]);
+      if(newResponses){
+        Doc.setResponses(i, [...(newResponses.map(v => v ?? false))]);
+      }
     }
-
-    KeyBorad.isEntered = false;
-    this.isDelete = false;
 
     this.clearResponses(i);
 
@@ -782,9 +921,19 @@ class TextBody {
   }
 
 
+  static getSelectionParaNum(i){
+    let offset = 0;
+    const charsPerPara = Doc.getCharsPerPara(i);
+    for(let j = 0; j < charsPerPara.length; j++){
+      const charCount = offset + charsPerPara[j].length;
+      if(this.selection.start <=  charCount) return j;
+      offset += charsPerPara[j].length;
+    }
+    return charsPerPara.length - 1;
+  }
   static getDroppedParaNum(i, y){
     const yPos = y - this.getOffsetTop(i);
-    return Doc.getParaHeights(i).findIndex(paraHeight => {
+    return Doc.getParaHeights(i).findIndex((paraHeight, j) => {
       const topAndBottom = paraHeight.split(":");
       const top = parseFloat(topAndBottom[0]);
       const bottom = parseFloat(topAndBottom[1]);
@@ -800,6 +949,56 @@ class TextBody {
       + Chunk.getPaddingTop();
   }
 
+  static insert(text, i){
+    const textBody = Doc.getTextBody(i);
+    const textBodyBG = Doc.getTextBodyBG(i);    
+
+    const prefix = textBody.value.slice(0, this.selection.start);
+    const suffix = textBody.value.slice(this.selection.end);
+    const replacedText = prefix + text + suffix;
+
+    textBody.value = replacedText;
+    textBodyBG.innerHTML = textBody.value;
+
+    this.setLineText(replacedText, i);
+
+    const caretPos = prefix.length + text.length;
+    textBody.setSelectionRange(caretPos, caretPos);
+    textBody.focus();
+
+    this.resetCharsPerPara(i);
+    this.resetParaHeights(i);
+    this.resetCommentPos(i);
+    this.resetResponsePos(i);
+  }
+
+  static replace(before, after, i){
+    const textBody = Doc.getTextBody(i);
+    const textBodyBG = Doc.getTextBody(i);
+
+    const prefix = textBody.value.slice(0, this.selection.start);
+    const target = textBody.value.slice(this.selection.start, this.selection.end);
+    const suffix = textBody.value.slice(this.selection.end);
+
+    const regex = new RegExp(before, "g");
+    const replacedText = target.replace(regex, after);
+    const newText = prefix + replacedText + suffix;
+
+    textBody.value = newText;
+    textBodyBG.value = textBody.value;
+
+    this.setLineText(replacedText, i);
+
+    const caretPos = prefix.length + replacedText.length;
+    textBody.setSelectionRange(caretPos, caretPos);
+    textBody.focus();
+
+    this.resetCharsPerPara(i);
+    this.resetParaHeights(i);
+    this.resetCommentPos(i);
+    this.resetResponsePos(i);
+  }
+
   static setLineText(newText, i){
     const textBody = Doc.getTextBody(i);
     const line = Doc.getLine(i);
@@ -807,13 +1006,17 @@ class TextBody {
     if(line.text === newText){
       line.editedText = null;
       
-      // textBody.value = line.text;
       textBody.classList.remove("edited");
     }else{
       line.editedText = newText;
       
-      // textBody.value = newText;
       textBody.classList.add("edited");
     }
+  }
+
+  static visible(){
+    Doc.getLines().forEach((_, i) => {
+      Doc.getTextBody(i).style.visibility = "visible";
+    });
   }
 }

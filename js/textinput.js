@@ -6,18 +6,8 @@ class TextInput {
         alert("1つのテキストファイルを選択してください");
         return;
       }
-      
-      TextFile.setData(files[0]);
-      TextFile.setName(files[0].name);
 
-      Doc.clearLines();
-      await FileParser.parse();
-
-      this.setTextFileName();
-
-      DocHeader.init();
-      Render.render();
-      Save.enable();
+      await this.input(files[0]);
     }
   }
 
@@ -30,17 +20,17 @@ class TextInput {
     textFileName.innerHTML = fileName;
   }
 
-  static async inputText(text){
-    const lFile = new TextFile({
-      data: null,
-      name: "kakikukeko",
-      side: "left"
-    });
-    await FileParser.parseFromText(text, lSide);
-    textFileNames.innerHTML = lFile.name;
+  static async input(file){
+    TextFile.setData(file);
+    TextFile.setName(file.name);
 
-    // Render.render(lFile, rFile);
-    Render.render(lFile);
+    Doc.clearLines();
+    await FileParser.parse();
+
+    this.setTextFileName();
+
+    DocHeader.init();
+    Render.render();
     Save.enable();
   }
 }

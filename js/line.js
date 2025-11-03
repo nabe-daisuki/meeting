@@ -1,7 +1,5 @@
 class Line {
   static default = {
-    index       : -1,
-    side        : "",
     startSec    : 0,
     endSec      : 0,
     text        : "",

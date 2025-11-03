@@ -52,9 +52,7 @@ class Save {
   static stateToText(){
     let text = "";
     Doc.getLines().forEach(line => {
-      text += `${line.index}
-${line.side}
-[${Convert.secToStr(line.startSec)} -> ${Convert.secToStr(line.endSec)}]
+      text += `[${Convert.secToStr(line.startSec)} -> ${Convert.secToStr(line.endSec)}]
 ${line.text.split("\n").join("|||")}
 ${line.editedText === null ? "null" : line.editedText.split("\n").join("|||")}
 ${line.disabled}

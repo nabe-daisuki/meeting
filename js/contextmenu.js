@@ -1,56 +1,98 @@
 class ContextMenu {
   static offset = 20;
 
-  static set(){
-    MenuData.get().forEach(this.createMenuItem);
+  static async reset(isSelection, isMultiLine){
+    menuContainer.innerHTML = "";
+    let menuData = [];
+    if(isSelection){
+      // menuData = [ ...menuData, ...MenuData.selection ];
+      // if(await ClipBoard.hasText()) menuData = [ ...menuData, ...MenuData.noSelection ];
+      // menuData = [ ...menuData, ...MenuData.noSelection ];
+      if(!isMultiLine) if(menuData.length === 0) menuData = [ ...menuData, ...MenuData.conversation ];
+      else menuData = [ ...menuData, ...MenuData.sep, ...MenuData.conversation ];
+    }else{
+      // if(await ClipBoard.hasText()) menuData = [ ...menuData, ...MenuData.noSelection ];
+      // menuData = [ ...menuData, ...MenuData.noSelection ];
+      if(menuData.length === 0) menuData = [ ...menuData, ...MenuData.conversation ];
+      else menuData = [ ...menuData, ...MenuData.sep, ...MenuData.conversation ];
+    }
+    this.set(menuData);
+  }
+
+  static set(menuData){
+    menuData.forEach(this.createMenuItem);
   }
 
   static createMenuItem(item) {
     // セパレーターの場合
     if (item.separator) {
-      const sep = document.createElement("div");
-      sep.className = "separator";
+      const sep = Elem.create("div", {cl: "separator"});
       menuContainer.appendChild(sep);
       return;
     }
 
-    const div = document.createElement("div");
-    div.className = "menu-row";
+    const menuRow = Elem.create("div", {cl: "menu-row"});
+    menuRow.tabIndex = -1;
+    menuRow.addEventListener("focusin", e => {
+    });
 
     // 親項目
-    const mainItem = document.createElement("div");
-    mainItem.textContent = item.text;
-    mainItem.className = "menu-item";
-    mainItem.onclick = e => {
-      ContextMenu.replaceSelectionStr(item.text);
-      menuContainer.style.display = "none";
+    const mainItem = Elem.create("div", {id: item.id, cl: "menu-item"});
+    mainItem.addEventListener("click", e => {
+      ContextMenu.click(e.target.id);
+      ContextMenu.hide();
+      TextBody.visible();
+    });
+
+    const mainIconAndText = Elem.create("div");
+    mainIconAndText.style.display = "flex";
+    mainIconAndText.style.alignItems = "center";
+    mainIconAndText.style.gap = "5px";
+    mainIconAndText.style.pointerEvents = "none";
+
+    if("icon" in item){
+      const mainIcon = Elem.create("img");
+      mainIcon.src = `img/${item.icon}.png`;
+      mainIconAndText.appendChild(mainIcon);
     }
-    div.appendChild(mainItem);
+    const textNode = document.createTextNode(item.text);
+    mainIconAndText.appendChild(textNode);
+
+    const mainShortCut = Elem.create("div");
+    mainShortCut.textContent = item.sc;
+    mainShortCut.style.color = "#bbbbbb";
+    mainShortCut.style.fontSize = "smaller";
+    mainShortCut.style.fontWeight = "bold";
+    mainShortCut.style.whiteSpace = "nowrap";
+    mainShortCut.style.pointerEvents = "none";
+
+    mainItem.appendChild(mainIconAndText);
+    mainItem.appendChild(mainShortCut);
+
+    menuRow.appendChild(mainItem);
 
     // サブメニューがある場合
     if (item.sub) {
-      const subContainer = document.createElement("div");
-      subContainer.className = "sub-menu";
+      const subContainer = Elem.create("div", {cl: "sub-menu"});
 
       item.sub.forEach(subText => {
-        const subDiv = document.createElement("div");
+        const subDiv = Elem.create("div", {cl: "menu-item"});
         subDiv.textContent = subText;
-        subDiv.className = "menu-item";
-        subDiv.onclick = () => {
-          ContextMenu.replaceSelectionStr(subText);
-          menuContainer.style.display = "none";
-        };
+        subDiv.addEventListener("click", () => {
+          ContextMenu.click(subText);
+          ContextMenu.hide();
+          TextBody.visible();
+        });
         subContainer.appendChild(subDiv);
       });
 
-      div.appendChild(subContainer);
+      menuRow.appendChild(subContainer);
 
       // 親の高さをサブメニューに合わせる
-      const subHeight = item.sub.length * 24; // 1項目24px想定
-      mainItem.style.height = subHeight + "px";
+      mainItem.style.height = "auto";
     }
 
-    menuContainer.appendChild(div);
+    menuContainer.appendChild(menuRow);
   }
 
   static show(x, y){
@@ -75,19 +117,66 @@ class ContextMenu {
 
     menuContainer.style.left = posX + "px";
     menuContainer.style.top = posY + "px";
+
+    menuContainer.querySelector(".menu-row").focus();
+  }
+
+  static hide(){
+    menuContainer.style.display = "none";
+  }
+
+  static click(id){
+    const i = Selection.idx;
+    const paraNum = TextBody.getSelectionParaNum(i);
+
+    console.log(id);
+    switch(id){
+      case "comment":
+        if(TextBody.hasComment(i, paraNum) || !Doc.hasCharsInPara(i, paraNum)) return;
+        if(TextBody.hasResponse(i, paraNum)){
+          Doc.disableResponse(i, paraNum);
+        }
+        TextBody.setComment(i, paraNum);
+        TextBody.resetResponsePos(i);
+        break;
+      case "response":
+        if(TextBody.hasResponse(i, paraNum) || !Doc.hasCharsInPara(i, paraNum)) return;
+        if(TextBody.hasComment(i, paraNum)){
+          Doc.disableComment(i, paraNum);
+        }
+        TextBody.setResponse(i, paraNum);
+        TextBody.resetCommentPos(i);
+        break;
+      case "cut":
+        break;
+      case "copy":
+        break;
+      case "paste":
+        break;
+    }
   }
 
   static replaceSelectionStr(destStr){
-    const Side = Selection.side === "left" ? lSide : rSide;
-    const idx = Selection.idx;
-    const textSpan = Side.divs[idx].querySelector("textarea");
-    const replacedText = textSpan.value.substring(0, TextBody.selectionStr.start)
-      + destStr
-      + textSpan.textContent.substring(TextBody.selectionStr.end);
-    textSpan.textContent = replacedText;
+    const i = Selection.idx;
+    const textBody = Doc.getTextBody(i);
+    const textBodyBG = Doc.getTextBodyBG(i);    
 
-    Side.setLineText(replacedText, idx);
+    const prefix = textBody.value.slice(0, TextBody.selection.start);
+    const suffix = textBody.value.slice(TextBody.selection.end);
+    const replacedText = prefix + destStr + suffix;
 
-    TextBody.initSelection();
+    textBody.value = replacedText;
+    textBodyBG.innerHTML = textBody.value;
+
+    TextBody.setLineText(replacedText, i);
+
+    const caretPos = prefix.length + destStr.length;
+    textBody.setSelectionRange(caretPos, caretPos);
+    textBody.focus();
+
+    TextBody.resetCharsPerPara(i);
+    TextBody.resetParaHeights(i);
+    TextBody.resetCommentPos(i);
+    TextBody.resetResponsePos(i);
   }
 }

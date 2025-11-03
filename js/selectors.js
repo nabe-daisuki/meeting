@@ -9,7 +9,7 @@ class Selectors {
   }
 
   static multiCheck(i){
-    if(Keyboard.hasShift){
+    if(KeyBoard.hasShift){
       if(this.preCheckedIdx === -1){
         this.setPreCheckedIdx(i);
         return;
@@ -22,7 +22,7 @@ class Selectors {
         Doc.setChecked(j, true);
       }
     }else{
-      this.initPreCheckedIdx();
+      this.setPreCheckedIdx(i);
     }
   }
 

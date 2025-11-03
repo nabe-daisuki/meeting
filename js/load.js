@@ -63,48 +63,42 @@ class Load {
 
         switch(stateNum){
           case 0:
-            lineInfo.index = line;
-            break;
-          case 1:
-            lineInfo.side = line;
-            break;
-          case 2:
             const match = line.match(/\[(\d+):(\d+):(\d+) -> (\d+):(\d+):(\d+)\]/);
             const [, sh, sm, ss, eh, em, es] = match;
             lineInfo.startSec = +sh*3600 + +sm*60 + +ss;
             lineInfo.endSec = +eh*3600 + +em*60 + +es;
             break;
-          case 3:
+          case 1:
             lineInfo.text = line.split("|||").join("\n");
             break;
-          case 4:
+          case 2:
             lineInfo.editedText = line === "null" ? null : line.split("|||").join("\n");
             break;
-          case 5:
+          case 3:
             lineInfo.disabled = line === "true" ? true : false;
             break;
-          case 6:
+          case 4:
             lineInfo.color = line === "null" ? null : line;
             break;
-          case 7:
+          case 5:
             lineInfo.hided = line === "true" ? true : false;
             break;
-          case 8:
+          case 6:
             lineInfo.checked = line === "true" ? true : false;
             break;
-          case 9:
+          case 7:
             lineInfo.badges = line;
             break;
-          case 10:
+          case 8:
             lineInfo.charsPerPara = line.split("|||");
             break;
-          case 11:
+          case 9:
             lineInfo.paraHeights = line.split("|||");
             break;
-          case 12:
+          case 10:
             lineInfo.comments = line.split("|||").map(i => i === "1");;
             break;
-          case 13:
+          case 11:
             lineInfo.responses = line.split("|||").map(i => i === "1");;
             break;
         }

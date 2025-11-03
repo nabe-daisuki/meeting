@@ -1,7 +1,7 @@
 class Doc{
   static divs = [];
   static lines = [];
-  static rephists = [];
+  static repinfos = [];
 
   static getDivs(){
     return this.divs;
@@ -23,8 +23,15 @@ class Doc{
     this.lines.push(...parsedLines);
   }
 
-  static getRepHists(){
-    return this.rephists;
+  static getRepInfos(){
+    return this.repinfos;
+  }
+  static setRepInfos(repinfos){
+    this.repinfos.length = 0;
+    this.repinfos.push(...repinfos);
+  }
+  static getRepInfo(i){
+    return this.getRepInfos()[i];
   }
 
   static getCheckedSelectorIndexes(){

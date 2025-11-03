@@ -5,4 +5,8 @@ class Elem{
     if(cl) elem.className = cl;
     return elem;
   }
+
+  static createT(text){
+    return document.createTextNode(text);
+  }
 }

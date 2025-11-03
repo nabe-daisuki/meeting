@@ -1,14 +1,18 @@
-class KeyBorad {
+class KeyBoard {
   static hasShift = false;
-  static isEntered = false;
+  static hasCtrl = false;
 }
 
 
 document.addEventListener("keydown", e => {
   if(e.shiftKey){
-    KeyBorad.hasShift = true;
+    KeyBoard.hasShift = true;
   }
+
   if(e.ctrlKey){
+    KeyBoard.hasCtrl = true;
+
+    let rate = 0;
     switch(e.key){
       case '6':
         console.log("ctrl+6");
@@ -22,12 +26,18 @@ document.addEventListener("keydown", e => {
         break;
       case '2':
         console.log("ctrl+2");
-        audio.playbackRate = 1.3;
+        rate = 65;
+        AudioController.setSpeedLabel(rate);
+        AudioController.updateSpeedSlider(rate);
+        AudioController.setSpeed(rate);
         e.preventDefault();
         break;
       case '1':
         console.log("ctrl+1");
-        audio.playbackRate = 1.0;
+        rate = 50;
+        AudioController.setSpeedLabel(rate);
+        AudioController.updateSpeedSlider(rate);
+        AudioController.setSpeed(rate);
         e.preventDefault();
         break;
     }
@@ -65,6 +75,10 @@ document.addEventListener("keydown", e => {
 
 document.addEventListener("keyup", e => {
   if(!e.shiftKey){
-    KeyBorad.hasShift = false;
+    KeyBoard.hasShift = false;
+  }
+
+  if(!e.ctrlKey){
+    KeyBoard.hasCtrl = false;
   }
 });

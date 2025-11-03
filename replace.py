@@ -147,10 +147,11 @@ for i, _ in enumerate(range(len(new_text))):
     if i in char_replace_history:
       replace_histories[i].append(around_replace_histories[j])
   
-  print()
-  print(f"\x1b[32m{i}文字目\x1b[0m")
-  pp_ex(replace_histories[i])
+  # print()
+  # print(f"\x1b[32m{i}文字目\x1b[0m")
+  # pp_ex(replace_histories[i])
 
+sys.exit(0)
 
 file_path = os.path.abspath(__file__)
 root_dir = os.path.dirname(file_path)

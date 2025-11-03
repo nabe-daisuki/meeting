@@ -2,27 +2,17 @@ class AudioInput {
   static isPlaying = false;
 
   static init() {
-    audioFileInput.addEventListener("change", (e) => {
+    audioFileInput.addEventListener("change", async(e) => {
       const file = e.target.files[0];
       if(!file){
         alert("音声ファイルを開けませんでした。");
         return;
       }
 
-      let bytes = file.size;
-      audioInfo.bytes = bytes.toLocaleString();
-      audioInfo.KB = (bytes / 1024).toFixed(2);
-      audioInfo.MB = (bytes / 1024 / 1024).toFixed(2);
+      const arrayBuffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
 
-      audioInfo.fileName = file.name;
-      audioFileName.textContent = audioInfo.fileName;
-
-      const url = URL.createObjectURL(file);
-      audio.src = url;
-      audio.load();
-
-      volumeSlider.value = 10;
-      AudioController.updateSliderBackground();
+      this.input(file.name, bytes);
     });
 
     audio.addEventListener("play", () => {
@@ -67,25 +57,29 @@ class AudioInput {
     }
   }
 
-  static inputAudio(buffer, sections){
-    const audioBytes = buffer.slice(sections.audio.start, sections.audio.end);
-    const byteLen = audioBytes.byteLength;
+  static input(filename, bytes){
+    const byteLen = bytes.byteLength;
 
     audioInfo.bytes = byteLen.toLocaleString();
     audioInfo.KB = (byteLen / 1024).toFixed(2);
     audioInfo.MB = (byteLen / 1024 / 1024).toFixed(2);
 
-    audioInfo.fileName = "aiueo";
-    audioFileName.textContent = "aiueo";
+    audioInfo.fileName = filename;
+    audioFileName.textContent = audioInfo.fileName;
 
-    // Blob化して再生
-    const blob = new Blob([audioBytes], { type: "audio/mpeg" });
+    const blob = Convert.bytesToBlob(bytes);
     const url = URL.createObjectURL(blob);
     audio.src = url;
     audio.load();
 
-    audio.volume = 0.1;
+    const initVolume = AudioController.initVolume;
+    AudioController.setVolumeLabel(initVolume);
+    AudioController.updateVolumeSlider(initVolume);
+    AudioController.setVolume(initVolume);
 
-    volumeSlider.value = 10;
+    const initSpeed = AudioController.initSpeed;
+    AudioController.setSpeedLabel(initSpeed);
+    AudioController.updateSpeedSlider(initSpeed);
+    AudioController.setSpeed(initSpeed);
   }
 }
