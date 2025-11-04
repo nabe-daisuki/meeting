@@ -10,7 +10,7 @@ class DocHeader {
   }
 
   static init(){
-    const elem = Elem.create("div", {cl: "panel-header"});
+    const elem = Elem.create("div", {cl: "doc-header"});
 
     const allSelector = Elem.create("input", {id: "all-selector"});
     allSelector.type = "checkbox";

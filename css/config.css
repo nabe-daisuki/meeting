@@ -7,6 +7,13 @@
   --radius: 12px;
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial;
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  color:#e6eef8
 }
 
 button {
@@ -27,14 +34,6 @@ button {
   color: var(--muted);
 }
 
-#config-overlay {
-  position: fixed;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 60;
-}
 #config-overlay.show {
   display: flex;
 }
@@ -51,7 +50,7 @@ button {
 
 #config-modal {
   position: relative;
-  z-index: 61;
+  z-index: 201;
   background: linear-gradient(180deg, var(--card), #061123);
   width: min(720px, 96%);
   max-height: 80vh;
@@ -99,7 +98,7 @@ button {
   background: var(--glass);
   border: 1px solid rgba(255, 255, 255, 0.02);
 }
-.config-item .left {
+.config-item .name {
   display: flex;
   flex-direction: column;
 }
@@ -112,7 +111,7 @@ button {
 }
 
 .config-checkbox,
-.config-textinput,
+.config-text,
 .config-select,
 .config-multiselect {
   display: inline-flex;
@@ -130,20 +129,30 @@ button {
   width: 18px;
   height: 18px;
 }
-.config-textinput input {
+.config-text input {
   background: transparent;
   border: none;
   color: #e6eef8;
   padding: 6px 8px;
   width: 180px;
 }
-.config-select select,
-.config-multiselect select {
-  background: transparent;
-  border: none;
-  color: #e6eef8;
-  padding: 6px 8px;
-  width: 180px;
+.config-select select,.config-multiselect select{
+  background:rgba(255,255,255,0.08);
+  border:none;
+  color:#fff;
+  padding:6px 8px;
+  width:180px;
+  border-radius:6px;
+}
+
+.config-select select option, .config-multiselect select option{
+  color:#fff;
+  padding:6px;
+}
+
+.config-select select:focus, .config-multiselect select:focus{
+  outline:2px solid var(--accent);
+  background:rgba(255,255,255,0.12);
 }
 
 #config-body::-webkit-scrollbar {

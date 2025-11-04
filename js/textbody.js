@@ -167,9 +167,6 @@ class TextBody {
       const text = e.target.value;
 
       const isSelection = this.selection.start !== this.selection.end;
-      console.log(text);
-      console.log(text.slice(this.selection.start, this.selection.end));
-      console.log(text.slice(this.selection.start, this.selection.end).includes("\n"));
       const isMultiLine = text.slice(this.selection.start, this.selection.end).includes("\n");
       
       await ContextMenu.reset(isSelection, isMultiLine);

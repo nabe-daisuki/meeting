@@ -76,13 +76,11 @@ window.onload= () =>{
   Scroll.init();
   Save.init();
   Load.init();
-  // Speaker.init();
   Config.init();
   Badge.init();
   Export.init();
   AudioController.init();
-  
-  ContextMenu.set();
+  Meta.init();
 }
 
 window.addEventListener("resize", () => {
@@ -104,6 +102,7 @@ window.addEventListener("focus", () => {
   setTimeout(() => {
     document.getElementById("inactive-overlay").style.display = "none";
     if(AudioInput.isPlaying) audio.play();
+    Meta.resetTitle();
   },500);
 });
 
@@ -112,6 +111,7 @@ window.addEventListener("blur", () => {
   isWindowBlur = true;
   document.getElementById("inactive-overlay").style.display = "flex";
   if(!audio.paused) audio.pause();
+  Meta.resetTitle();
 });
 
 document.addEventListener('click', () => {
@@ -131,19 +131,3 @@ window.addEventListener("mouseup", e => {
     TextBody.initDragover();
   }  
 });
-
-
-// fetch("http://localhost:20000", {
-//   method: "POST",
-//   headers: {
-//     "Content-Type": "text/plain; charset=UTF-8" // 文字コードは明示的にUTF-8
-//   },
-//   body: "cr_downloading"
-// })
-// .then(response => response.text())
-// .then(data => console.log(data))
-// .catch(error => console.error(error));
-// const url = encodeURIComponent('https://example.com/api/data');
-// fetch(`http://localhost:3000/proxy?url=${url}`)
-//   .then(res => res.text())
-//   .then(data => console.log(data));

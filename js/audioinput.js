@@ -65,7 +65,7 @@ class AudioInput {
     audioInfo.MB = (byteLen / 1024 / 1024).toFixed(2);
 
     audioInfo.fileName = filename;
-    audioFileName.textContent = audioInfo.fileName;
+    // audioFileName.textContent = filename;
 
     const blob = Convert.bytesToBlob(bytes);
     const url = URL.createObjectURL(blob);
@@ -81,5 +81,7 @@ class AudioInput {
     AudioController.setSpeedLabel(initSpeed);
     AudioController.updateSpeedSlider(initSpeed);
     AudioController.setSpeed(initSpeed);
+
+    Meta.resetTitle();
   }
 }

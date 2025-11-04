@@ -26,11 +26,11 @@ class AudioController {
   }
   
   static updateVolumeSlider(v){
-    volumeSlider.style.setProperty("--value", v + "%");
+    volumeSlider.value = v;
   }
 
   static updateSpeedSlider(v){
-    speedSlider.style.setProperty("--value", v + "%");
+    speedSlider.value = v;
   }
 
   static setVolumeLabel(v){

@@ -89,7 +89,6 @@ class GijiInput {
           case "repinfos":
             const repInfos = Convert.bytesToArray(sections[k]["bytes"]);
             Doc.setRepInfos(structuredClone(repInfos));
-            console.log(Doc.getRepInfos())
             break;
           case "reptbl":
             const repTbl = Convert.bytesToArray(sections[k]["bytes"]);

@@ -27,7 +27,8 @@ class TextInput {
     Doc.clearLines();
     await FileParser.parse();
 
-    this.setTextFileName();
+    // this.setTextFileName();
+    Meta.resetTitle();
 
     DocHeader.init();
     Render.render();
