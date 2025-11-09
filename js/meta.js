@@ -11,7 +11,7 @@ class Meta {
 
   static createTitle(isEdited = false){
     const textFilename = TextFile.getName();
-    const audioFilename = audioInfo.fileName;
+    const audioFilename = AudioFile.getName();
     const parts = [];
 
     if(isEdited) parts.push("⚠️");
@@ -29,7 +29,8 @@ class Meta {
 
     const filename = textFilename || audioFilename;
     if(filename){
-      text += filename.split("__")[0];
+      if(filename.includes("__")) text += filename.split("__")[0];
+      text += filename.split(".")[0];
     }
     if(text) parts.push(text);
 

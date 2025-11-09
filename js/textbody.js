@@ -9,24 +9,37 @@ class TextBody {
     end: -1,
     paras: []
   }
+
   static dragover = {
     i: -1,
     paraNum: -1
   }
+
+  static contextmenu = {
+    i: -1
+  }
+
   static edit = {
-    isKeyup: false,
+    isMouseDown: false,
+    isKeydown: false,
+    isMouseClicked: false,
+    isRightClick: false,
+    isArrowTyped: false,
     isDelete: false,
     isBackspace: false,
     isEnter: false,
+    isCut: false,
     isPaste: false,
+    isSelecting: false,
     isRightCut: false,
     isSpeakerDrop: false,
-    pastedText: null,
-    isDrop: false,
-    droppedText: null,
-    droppedElem: null
+    isDrop: false
   }
-  static isMouseDown = false;
+  static draggingText = {
+    src: -1,
+    dest: -1
+  }
+
   static draggingMiniComment = {
     elem: null,
     lineIdx: -1,
@@ -38,9 +51,6 @@ class TextBody {
     responseIdx: -1
   }
 
-  static initDragover(){
-    this.setDragover(-1, -1);
-  }
   static setDragover(_i, _paraNum){
     this.dragover.i = _i;
     this.dragover.paraNum = _paraNum;
@@ -72,22 +82,25 @@ class TextBody {
 
   static create(i){
     const line = Doc.getLine(i);
+    const themeType = Theme.get();
 
-    const textBox = Elem.create("div", {cl: "FlexTextarea"});
+    const textBox = Elem.create("div", {cl: "text-box"});
     if(line.hided) textBox.style.display = "none";
 
-    const textBodyBG = Elem.create("div", {cl: "text FlexTextarea__dummy"});
+    const textBodyBG = Elem.create("div", {cl: `text text-body-bg TBB_${themeType}`});
     
-    const textBody = Elem.create("textarea", {cl: "text FlexTextarea__textarea"});
+    const textBody = Elem.create("textarea", {cl: `text text-body TB_${themeType}`});
     textBody.textContent = line.editedText || line.text;
-    if(line.editedText) textBody.classList.add("edited");
-
-    textBody.addEventListener("paste", e => {
-      this.edit.isPaste = true;
-      this.edit.pastedText = e.clipboardData.getData("text");
-    });
+    if(line.editedText){
+      textBodyBG.classList.add("TB_edited");
+      textBody.classList.add("TB_edited");
+    }
 
     textBody.addEventListener("keydown", e => {
+      // console.log("keydown");
+      
+      this.edit.isKeydown = true;
+
       const isMultiLine = e.target.value.slice(this.selection.start, this.selection.end).includes("\n");
       const paraNum = this.getSelectionParaNum(i);
       
@@ -98,6 +111,33 @@ class TextBody {
           if(nextIndex < 0 || nextIndex >= Doc.getLines().length) return;
           Doc.getTextBody(nextIndex).focus();
           break;
+        case "F1":
+          e.preventDefault();
+
+          if(isMultiLine) return;
+
+          let newSpeakerIdx = 0;
+          if(/\（.*?\）$/.test(Doc.getCharsPerPara(i)[paraNum])){
+            const speaker = Doc.getCharsPerPara(i)[paraNum].match(/\（.*?\）$/)[0].replace(/[（）]/g, "");
+            const speakerIdx = Array.from(Speaker.getBtns()).findIndex(s => speaker === s.textContent.replace(/[（）]/g, ""));
+            if(speakerIdx !== Speaker.count() - 1) newSpeakerIdx = speakerIdx + 1;
+          }
+          const newSpeaker = Speaker.getBtns()[newSpeakerIdx].textContent.replace(/[（）]/g, "");
+
+          const replacedText = textBody.value.split("\n").map((l, j) => {
+            if(j === paraNum) return this.resetSpeaker(l, newSpeaker);
+            else return l;
+          }).join("\n");
+
+          textBody.value = replacedText;
+          this.enableEdited(i);
+          Doc.setEditedText(i, replacedText);
+          
+          this.resetCharsPerPara(i);
+          this.resetParaHeights(i);
+          this.resetCommentPos(i);
+          this.resetResponsePos(i);
+
         case "q":
           if(!KeyBoard.hasCtrl) return;
           e.preventDefault();
@@ -125,42 +165,48 @@ class TextBody {
     });
     
     textBody.addEventListener("keyup", e => {
-      this.edit.isKeyup = true;
+      // console.log("keyup");
+      this.edit.isKeydown = false;
 
-      switch(e.key){
-        case "Backspace":
-          this.edit.isBackspace = true;
-          break;
-        case "Delete":
-          this.edit.isDelete = true;
-          break;
-        case "Enter":
-          this.edit.isEnter = true;
-          break;
+      if(!e.shiftKey){
+        if(this.edit.isMouseClicked || this.edit.isArrowTyped){
+          this.edit.isMouseClicked = false;
+          this.edit.isArrowTyped = false;
+          return;
+        }
+      }
+      if(!e.ctrlKey){
+        if(this.edit.isPaste || this.edit.isCut){
+          this.edit.isPaste = false;
+          this.edit.isCut = false;
+          return;
+        }
+      }
+      if(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)){
+        if(KeyBoard.hasShift) this.edit.isArrowTyped = true;
       }
 
-      const i = Selection.idx;
-      const textBody = Doc.getTextBody(i);
+      if(e.key === "x"){
+        if(KeyBoard.hasCtrl) this.edit.isCut = true;
+      }else if(e.key === "v"){
+        if(KeyBoard.hasCtrl) this.edit.isPaste = true;
+      }else if(e.key === "c"){
+        if(KeyBoard.hasCtrl) return;
+      }
 
-      this.setLineText(textBody.value, i);
+      if(e.key === "Backspace"){this.edit.isBackspace = true}
+      if(e.key === "Delete"){this.edit.isDelete = true}
+      if(e.key === "Enter"){this.edit.isEnter = true}
 
-      textBodyBG.innerHTML = textBody.value;
-      this.resetCharsPerPara(i);
-      this.resetParaHeights(i);
-      this.setSelection(e.target, i);
-      this.resetCommentPos(i);
-      this.resetResponsePos(i);
-
-      this.edit.isBackspace = false;
-      this.edit.isDelete = false;
-      this.edit.isEnter = false;
-      this.edit.isPaste = false;
-      this.edit.pastedText = null;
+      e.target.dispatchEvent(new Event("selectionchange"));
     });
 
     textBody.addEventListener("contextmenu", async(e) => {
-      console.log("contextmenu");
+      // console.log("contextmenu");
       if(this.selection.start === -1) return;
+
+      this.edit.isRightClick = false;
+      e.target.dispatchEvent(new Event("selectionchange"));
 
       const x = e.clientX;
       const y = e.clientY;
@@ -173,6 +219,9 @@ class TextBody {
       ContextMenu.show(x, y);
 
       if(isSelection) this.emphasizeSelection(i);
+      this.setTransparent(i);
+
+      this.contextmenu.i = i;
       e.stopPropagation();
       e.preventDefault();
       return;
@@ -195,57 +244,67 @@ class TextBody {
 
     });
 
-    textBody.addEventListener("focusin", e => {
-      console.log("focusin")
-      textBodyBG.style.visibility = "hidden";
+    textBody.addEventListener("click", e => {
+      e.stopPropagation();
+    });
+
+    textBody.addEventListener("focusin", () => {
+      // console.log("focusin");
+
+      if(ContextMenu.isShow) ContextMenu.hide();
+      this.invisible(i);
+      this.unsetTransparent(i);
       Selection.relocateHighlight(i);
     });
 
-    textBody.addEventListener("focusout", e => {
-      console.log("focusout")
-      textBodyBG.style.visibility = "visible";
+    textBody.addEventListener("focusout", () => {
+      // console.log("focusout");
       
-      this.setLineText(e.target.value, i);
+      this.visible(i);
     });
 
     textBody.addEventListener("mousedown", e => {
-      console.log("mousedown")
-      if ( e.button === 0 ){
-        this.isMouseDown = true;
-        return;
-      }else if (e.button === 1){
-        const x = e.clientX;
-        const y = e.clientY;
-        if(this.selection.start === this.selection.end) return;
-        if(this.selection.start === -1) return;
+      // console.log("mousedown");
 
-        this.edit.isRightCut = true;
+      this.edit.isMouseDown = true;
+      if(KeyBoard.hasShift) this.edit.isMouseClicked = true;
+      if(e.button === 2) this.edit.isRightClick = true;
+      // if ( e.button === 0 ){
+      //   this.isMouseDown = true;
+      //   return;
+      // }else if (e.button === 1){
+      //   const x = e.clientX;
+      //   const y = e.clientY;
+      //   if(this.selection.start === this.selection.end) return;
+      //   if(this.selection.start === -1) return;
 
-        const prefix = e.target.value.slice(0, this.selection.start);
-        const suffix = e.target.value.slice(this.selection.end);
-        const replacedText = prefix + suffix;
-        e.target.value = replacedText;
+      //   this.edit.isRightCut = true;
 
-        this.setLineText(replacedText, i);
+      //   const prefix = e.target.value.slice(0, this.selection.start);
+      //   const suffix = e.target.value.slice(this.selection.end);
+      //   const replacedText = prefix + suffix;
+      //   e.target.value = replacedText;
+
+      //   this.setLineText(replacedText, i);
         
-        const caretPos = prefix.length;
-        e.target.setSelectionRange(caretPos, caretPos);
-        e.target.focus();
+      //   const caretPos = prefix.length;
+      //   e.target.setSelectionRange(caretPos, caretPos);
+      //   e.target.focus();
         
-        this.resetCharsPerPara(i);
-        this.resetParaHeights(i);
+      //   this.resetCharsPerPara(i);
+      //   this.resetParaHeights(i);
 
-        e.stopPropagation();
-        e.preventDefault();
-      }
+      //   e.stopPropagation();
+      //   e.preventDefault();
+      // }
     });
 
     textBody.addEventListener("mouseup", e => {
-      console.log("mouseup");
-      if(e.button === 2) this.setSelection(e.target, i);
-      if(e.button !== 0) return;
+      // console.log("mouseup");
 
-      this.isMouseDown = false;
+      this.edit.isMouseDown = false;
+      if(KeyBoard.hasShift) this.edit.isKeydown = false;
+      if(this.edit.isRightClick) return;
       e.target.dispatchEvent(new Event("selectionchange"));
     });
 
@@ -285,7 +344,7 @@ class TextBody {
           const arrow = Elem.create("span");
           arrow.textContent = "↓";
 
-          const li = Elem.create("li");
+          const li = Elem.create("li", {cl: `REPINFOS_LI_${Theme.get()}`});
           li.appendChild(before);
           li.appendChild(arrow);
           li.appendChild(after);
@@ -297,34 +356,37 @@ class TextBody {
     });
 
     textBody.addEventListener("selectionchange", e => {
-      console.log("selectionchange");
-      if(this.edit.isRightCut || this.edit.isSpeakerDrop){
-        this.setSelection(e.target, i);
-
-        this.edit.isBackspace = true;
-        this.resetCommentPos(i);
-        this.resetResponsePos(i);
-        this.edit.isBackspace = false;
-        this.edit.isRightCut = false;
-        this.edit.isSpeakerDrop = false;
-      }
-
-      if(this.isMouseDown){
-        this.setLineText(textBody.value, i);
-        this.resetCharsPerPara(i);
-        this.resetParaHeights(i);
-        this.setSelection(e.target, i);
-
-        if(this.edit.isDrop && this.edit.droppedElem === e.target){
-          this.resetCommentPos(i);
-          this.resetResponsePos(i);
-
-          this.edit.isDrop = false;
-          this.edit.droppedText = null;
-          this.edit.droppedElem = null;
-        }
+      if(this.edit.isMouseDown || this.edit.isKeydown){
+        // console.log("s_out");
+        this.edit.isSelecting = i;
         return;
       }
+      // console.log("selectionchange");
+      this.edit.isSelecting = false;
+
+      const el = e.target;
+      const currentText = el.value;
+      if(this.isEdited(currentText, i)){
+        this.enableEdited(i);
+        Doc.setEditedText(i, currentText);
+      }else{
+        this.disableEdited(i);
+        Doc.setEditedText(i, null)
+      }
+      
+      this.resetCharsPerPara(i);
+      this.resetParaHeights(i);
+      this.setSelection(el, i);
+
+      // console.log(`bs: ${this.edit.isBackspace}, dl: ${this.edit.isDelete}, en: ${this.edit.isEnter}, cu: ${this.edit.isCut}, pa: ${this.edit.isPaste}, dr: ${this.edit.isDrop}`);
+
+      this.resetCommentPos(i);
+      this.resetResponsePos(i);
+      
+      this.edit.isBackspace = false;
+      this.edit.isDelete = false;
+      this.edit.isEnter = false;
+      if(i === this.draggingText.dest) this.edit.isDrop = false;
     });
 
     textBody.addEventListener("dragover", e => {
@@ -337,8 +399,14 @@ class TextBody {
       this.setDragover(i, paraNum);
     });
 
+    textBody.addEventListener("dragstart", () => {
+      // console.log("dragstart");
+      this.draggingText.src = i;
+    });
+
     textBody.addEventListener("drop", e => {
-      console.log("drop")
+      // console.log("drop");
+
       const content = e.dataTransfer.getData('text/plain');
       if(content.includes("_SPEAKER")){
         e.preventDefault();
@@ -355,7 +423,9 @@ class TextBody {
         }).join("\n");
 
         textBody.value = replacedText;
-        this.setLineText(replacedText, i);
+        this.enableEdited(i);
+        Doc.setEditedText(i, replacedText);
+        
         this.resetCharsPerPara(i);
         this.resetParaHeights(i);
         this.resetCommentPos(i);
@@ -399,20 +469,9 @@ class TextBody {
         this.setResponse(i, paraNum);
         this.resetCommentPos(i);
       }else{
-        this.setLineText(textBody.value, i);
-        textBodyBG.innerHTML = textBody.value;
-
-        this.resetCharsPerPara(i);
-        this.setSelection(e.target, i);
-        this.resetParaHeights(i);
-        this.resetCommentPos(i);
-        this.resetResponsePos(i);
-
-        console.log("dropstatus");
-
+        this.draggingText.dest = i;
+        this.edit.isMouseDown = false;
         this.edit.isDrop = true;
-        this.edit.droppedText = content;
-        this.edit.droppedElem = e.target;
       }
     });
 
@@ -466,7 +525,7 @@ class TextBody {
       startPos += charsPerPara[j].length + 1;
     }
     // console.log(this.preSelection);
-    // console.log(this.selection);
+    console.log(this.selection);
   }
 
   static initSelection(){
@@ -515,16 +574,17 @@ class TextBody {
     paraSpan.appendChild(prefixNode);
     targetNodes.forEach( targetNode => paraSpan.appendChild(targetNode));
     paraSpan.appendChild(suffixNode);
-
-    textBody.style.visibility = "hidden";
   }
 
 
   static emphasizeText(i, paraNum){
-    Doc.getTextBodyBG(i).querySelectorAll("span")[paraNum].style.backgroundColor = "#d3d3d3";
+    const para = Doc.getTextBodyBG(i).querySelectorAll("span")[paraNum];
+    para.classList.add("focus-para");
+    para.classList.add(`FP_${Theme.get()}`);
   }
   static unemphasizeText(i, paraNum){
-    Doc.getTextBodyBG(i).querySelectorAll("span")[paraNum].style.backgroundColor = "transparent";
+    const para = Doc.getTextBodyBG(i).querySelectorAll("span")[paraNum];
+    para.classList.remove("focus-para");
   }
 
   static resetCharsPerPara(i){
@@ -554,13 +614,36 @@ class TextBody {
       if(!paraHeights.includes(paraHeight)) paraHeights.push(paraHeight);
     }
 
-    Doc.setParaHeights(i, [...paraHeights]);
+    const reCalcPparaHeights = paraHeights.map( (paraHeight, j) => {
+      let [top, bottom] = paraHeight.split(":").map(Number);
 
-    this.replaceHighlight(i);
+      if(paraCount === 1){
+        top = 5;
+        bottom = textBodyBG.offsetHeight;
+      }else if(j === 0){
+        top = 5;
+        const [nextTop, ] = paraHeights[j + 1].split(":").map(Number);
+        bottom += (nextTop - bottom) / 2;
+      }else if(j === paraCount - 1){
+        const [, preBottom] = paraHeights[j - 1].split(":").map(Number);
+        top -= (top - preBottom) / 2;
+        bottom = textBodyBG.offsetHeight;
+      }else{
+        const [, preBottom] = paraHeights[j - 1].split(":").map(Number);
+        top -= (top - preBottom) / 2;
+        const [nextTop, ] = paraHeights[j + 1].split(":").map(Number);
+        bottom += (nextTop - bottom) / 2;
+      }
+      return `${top}:${bottom}`;
+    });
+
+    Doc.setParaHeights(i, [...reCalcPparaHeights]);
+
+    this.setReplacementHighlights(i);
   }
 
 
-  static replaceHighlight(i){
+  static setReplacementHighlights(i){
     if(Doc.getEditedText(i)) return;
     
     const textBodyBG = Doc.getTextBodyBG(i);
@@ -576,6 +659,7 @@ class TextBody {
       italic.style.fontStyle = "normal";
       if(rephist.length !== 0){
         italic.classList.add("has-replace");
+        italic.classList.add(`HR_${Theme.get()}`);
         italic.setAttribute("idx", j);
         italic.addEventListener("mousemove", () => {
           repInfosUl.textContent = rephist;
@@ -591,123 +675,45 @@ class TextBody {
 
 
   static resetCommentPos(i){
-    if(!isWindowResize && this.selection.paras.length !== this.preSelection.paras.length){
-      let newComments;
+
+    if(this.edit.isBackspace 
+      || this.edit.isDelete
+      || this.edit.isEnter
+      || this.edit.isPaste
+      || this.edit.isCut
+      || this.edit.isDrop){
+
+      const prefixPreSelParaNum = this.preSelection.paras.findIndex(p => p !== "none");
+      const suffixPreSelParaNum = this.preSelection.paras.length - [...this.preSelection.paras].reverse().findIndex(p => p !== "none");
+      const selParaNum = this.selection.paras.findIndex(p => p !== "none");
+      const restParaCountAfterCaret = [...this.selection.paras].reverse().findIndex(p => p !== "none");
+
+      console.log(`i: ${i}, pps: ${prefixPreSelParaNum}, sps: ${suffixPreSelParaNum}, sp: ${selParaNum}, rpc: ${restParaCountAfterCaret}`);
+
+      const caretBeforeState = [];
       if(this.edit.isBackspace){
-        const diffCount = this.preSelection.paras.filter(p => p !== "none").length;
-        const selectionParaNum = this.selection.paras.findIndex(p => p !== "none");
-
-        newComments = this.selection.paras.reduce((acc, _, j) => {
-          if(selectionParaNum >= j){
-            acc.push(Doc.getComment(i, j));
-          }else if(selectionParaNum < j){
-            if(diffCount == 1){
-              acc.push(Doc.getComment(i, j + 1));
-            }else{
-              acc.push(Doc.getComment(i, j + diffCount - 1));
-            }
-          }
-          return acc;
-        }, []);
-      }else if(this.edit.isDelete){
-        const diffCount = this.preSelection.paras.filter(p => p !== "none").length;
-        const selectionParaNum = this.selection.paras.findIndex(p => p !== "none");
-
-        newComments = this.selection.paras.reduce((acc, _, j) => {
-          if(selectionParaNum >= j){
-            acc.push(Doc.getComment(i, j));
-          }else if(selectionParaNum < j){
-            if(diffCount == 1){
-              acc.push(Doc.getComment(i, j + 1));
-            }else{
-              acc.push(Doc.getComment(i, j + diffCount - 1));
-            }
-          }
-          return acc;
-        }, []);
-      }else if(this.edit.isEnter){
-        const diffCount = this.preSelection.paras.filter(p => p !== "none").length - 2;
-        const preSelectionPrefix = this.preSelection.paras.find(p => p !== "none");
-        const preSelectionParaNum = this.preSelection.paras.findIndex(p => p !== "none");
-        const preSelectionSuffix = [...this.preSelection.paras].reverse().find(p => p !== "none");
-
-        newComments = this.selection.paras.reduce((acc, _, j) => {
-          if(preSelectionParaNum > j){
-            acc.push(Doc.getComment(i, j));
-          }else if(preSelectionParaNum === j){
-            if(["start", "all"].includes(preSelectionPrefix)) acc.push(false);
-            else acc.push(Doc.getComment(i, j));
-          }else if(preSelectionParaNum + 1 === j){
-            if(["start", "all"].includes(preSelectionPrefix)) acc.push(Doc.getComment(i, j - 1));
-            else if(preSelectionSuffix !== "start") acc.push(false);
-            else acc.push(Doc.getComment(i, j + diffCount));
-          }else{
-            acc.push(Doc.getComment(i, j + diffCount));
-          }
-          return acc;
-        }, []);
-      }else if(this.edit.isPaste){
-        const newLineCount = this.edit.pastedText.split("\n").length - 1;
-        if(newLineCount === 0){
-          const diffCount = this.preSelection.paras.filter(p => p !== "none").length;
-          const selectionParaNum = this.selection.paras.findIndex(p => p !== "none");
-
-          newComments = this.selection.paras.reduce((acc, _, j) => {
-            if(selectionParaNum >= j){
-              acc.push(Doc.getComment(i, j));
-            }else if(selectionParaNum < j){
-              if(diffCount == 1){
-                acc.push(Doc.getComment(i, j + 1));
-              }else{
-                acc.push(Doc.getComment(i, j + diffCount - 1));
-              }
-            }
-            return acc;
-          }, []);
-        }else{
-          const diffCount = this.preSelection.paras.filter(p => p !== "none").length - (1 + newLineCount);
-          const preSelectionPrefix = this.preSelection.paras.find(p => p !== "none");
-          const preSelectionParaNum = this.preSelection.paras.findIndex(p => p !== "none");
-          const preSelectionSuffix = [...this.preSelection.paras].reverse().find(p => p !== "none");
-
-          newComments = this.selection.paras.reduce((acc, _, j) => {
-            if(preSelectionParaNum > j){
-              acc.push(Doc.getComment(i, j));
-            }else if(preSelectionParaNum === j){
-              if(["start", "all"].includes(preSelectionPrefix)) acc.push(false);
-              else acc.push(Doc.getComment(i, j));
-            }else if(newLineCount > 1 && preSelectionParaNum + newLineCount > j){
-              acc.push(false);
-            }else if(preSelectionParaNum + 1 + (newLineCount - 1)  === j){
-              if(["start", "all"].includes(preSelectionPrefix)) if(preSelectionSuffix !== "start") acc.push(Doc.getComment(i, j - (1 + newLineCount - 1)));
-              else acc.push(Doc.getComment(i, j + diffCount));
-              else if(preSelectionSuffix !== "start") acc.push(false);
-              else acc.push(Doc.getComment(i, j + diffCount));
-            }else{
-              acc.push(Doc.getComment(i, j + diffCount));
-            }
-            return acc;
-          }, []);
-        }
-      }else if(this.edit.isDrop){
-        const newLineCount = this.edit.droppedText.split("\n").length - 1;
-
-        const selectionParaNum = this.selection.paras.findIndex(p => p !== "none");
-
-        newComments = this.selection.paras.reduce((acc, _, j) => {
-          if(selectionParaNum >= j){
-            acc.push(Doc.getComment(i, j));
-          }else if(selectionParaNum + newLineCount >= j){
-            acc.push(false);
-          }else{
-            acc.push(Doc.getComment(i, j - newLineCount));
-          }
-          return acc;
-        }, []);
+        caretBeforeState.push(...Doc.getComments(i).slice(0, selParaNum + 1));
+      }else if(this.edit.isDrop && i === this.draggingText.dest){
+        caretBeforeState.push(...Doc.getComments(i).slice(0, selParaNum + 1));
+        const selText = Doc.getTextBody(i).value.slice(this.selection.start, this.selection.end);
+        const selParaCount = selText.split("\n").length - 1
+        caretBeforeState.push(...new Array(selParaCount).fill(false));
+      }else{
+        caretBeforeState.push(...Doc.getComments(i).slice(0, prefixPreSelParaNum + 1));
+        if(this.edit.isEnter || this.edit.isPaste) caretBeforeState.push(...new Array(selParaNum - prefixPreSelParaNum).fill(false));
       }
-      if(newComments){
-        Doc.setComments(i, [...(newComments.map(v => v ?? false))]);
+
+      const caretAfterState = [];
+      if(this.edit.isDelete){
+        caretAfterState.push(...Doc.getComments(i).slice(this.preSelection.paras.length - restParaCountAfterCaret));
+      }else if(this.edit.isDrop && i === this.draggingText.dest){
+        caretAfterState.push(...Doc.getComments(i).slice(selParaNum + 1));
+      }else{
+        caretAfterState.push(...Doc.getComments(i).slice(suffixPreSelParaNum));
       }
+
+      const result = [...caretBeforeState, ...caretAfterState];
+      Doc.setComments(i, [...result]);
     }
 
     this.clearComments(i);
@@ -719,7 +725,7 @@ class TextBody {
   }
   static clearComments(i){
     const div = Doc.getDiv(i);
-    Array.from(div.querySelectorAll("div.FlexTextarea div.mini-comment")).forEach(commentBadge => {
+    Array.from(div.querySelectorAll("div.text-box div.mini-comment")).forEach(commentBadge => {
       commentBadge.remove();
     });
   }
@@ -729,11 +735,11 @@ class TextBody {
   static setComment(i, paraNum){
     const el = Elem.create("div", {cl: "badge mini-badge mini-comment"});
     el.draggable = true;
-    el.style.top = parseFloat(Doc.getParaHeight(i, paraNum).split(":")[0]) - 3 + "px";
+    el.style.top = parseFloat(Doc.getParaHeight(i, paraNum).split(":")[0]) + 2 + "px";
     el.style.cursor = "pointer";
 
     const icon = Elem.create("img");
-    icon.src = "img/comment-mini.png";
+    icon.src = `img/theme/${Theme.get()}/comment-mini.png`;
 
     el.addEventListener("contextmenu", e => {
       e.stopPropagation();
@@ -755,123 +761,42 @@ class TextBody {
 
 
   static resetResponsePos(i){
-    if(!isWindowResize && this.selection.paras.length !== this.preSelection.paras.length){
-      let newResponses;
+    if(this.edit.isBackspace 
+      || this.edit.isDelete
+      || this.edit.isEnter
+      || this.edit.isPaste
+      || this.edit.isCut
+      || this.edit.isDrop){
+
+      const prefixPreSelParaNum = this.preSelection.paras.findIndex(p => p !== "none");
+      const suffixPreSelParaNum = this.preSelection.paras.length - [...this.preSelection.paras].reverse().findIndex(p => p !== "none");
+      const selParaNum = this.selection.paras.findIndex(p => p !== "none");
+      const restParaCountAfterCaret = [...this.selection.paras].reverse().findIndex(p => p !== "none");
+
+      const caretBeforeState = [];
       if(this.edit.isBackspace){
-        const diffCount = this.preSelection.paras.filter(p => p !== "none").length;
-        const selectionParaNum = this.selection.paras.findIndex(p => p !== "none");
-
-        newResponses = this.selection.paras.reduce((acc, _, j) => {
-          if(selectionParaNum >= j){
-            acc.push(Doc.getResponse(i, j));
-          }else if(selectionParaNum < j){
-            if(diffCount == 1){
-              acc.push(Doc.getResponse(i, j + 1));
-            }else{
-              acc.push(Doc.getResponse(i, j + diffCount - 1));
-            }
-          }
-          return acc;
-        }, []);
-      }else if(this.edit.isDelete){
-        const diffCount = this.preSelection.paras.filter(p => p !== "none").length;
-        const selectionParaNum = this.selection.paras.findIndex(p => p !== "none");
-
-        newResponses = this.selection.paras.reduce((acc, _, j) => {
-          if(selectionParaNum >= j){
-            acc.push(Doc.getResponse(i, j));
-          }else if(selectionParaNum < j){
-            if(diffCount == 1){
-              acc.push(Doc.getResponse(i, j + 1));
-            }else{
-              acc.push(Doc.getResponse(i, j + diffCount - 1));
-            }
-          }
-          return acc;
-        }, []);
-      }else if(this.edit.isEnter){
-        const diffCount = this.preSelection.paras.filter(p => p !== "none").length - 2;
-        const preSelectionPrefix = this.preSelection.paras.find(p => p !== "none");
-        const preSelectionParaNum = this.preSelection.paras.findIndex(p => p !== "none");
-        const preSelectionSuffix = [...this.preSelection.paras].reverse().find(p => p !== "none");
-
-        newResponses = this.selection.paras.reduce((acc, _, j) => {
-          if(preSelectionParaNum > j){
-            acc.push(Doc.getResponse(i, j));
-          }else if(preSelectionParaNum === j){
-            if(["start", "all"].includes(preSelectionPrefix)) acc.push(false);
-            else acc.push(Doc.getResponse(i, j));
-          }else if(preSelectionParaNum + 1 === j){
-            if(["start", "all"].includes(preSelectionPrefix)) acc.push(Doc.getResponse(i, j - 1));
-            else if(preSelectionSuffix !== "start") acc.push(false);
-            else acc.push(Doc.getResponse(i, j + diffCount));
-          }else{
-            acc.push(Doc.getResponse(i, j + diffCount));
-          }
-          return acc;
-        }, []);
-      }else if(this.edit.isPaste){
-        const newLineCount = this.edit.pastedText.split("\n").length - 1;
-        if(newLineCount === 0){
-          const diffCount = this.preSelection.paras.filter(p => p !== "none").length;
-          const selectionParaNum = this.selection.paras.findIndex(p => p !== "none");
-
-          newResponses = this.selection.paras.reduce((acc, _, j) => {
-            if(selectionParaNum >= j){
-              acc.push(Doc.getResponse(i, j));
-            }else if(selectionParaNum < j){
-              if(diffCount == 1){
-                acc.push(Doc.getResponse(i, j + 1));
-              }else{
-                acc.push(Doc.getResponse(i, j + diffCount - 1));
-              }
-            }
-            return acc;
-          }, []);
-        }else{
-          const diffCount = this.preSelection.paras.filter(p => p !== "none").length - (1 + newLineCount);
-          const preSelectionPrefix = this.preSelection.paras.find(p => p !== "none");
-          const preSelectionParaNum = this.preSelection.paras.findIndex(p => p !== "none");
-          const preSelectionSuffix = [...this.preSelection.paras].reverse().find(p => p !== "none");
-
-          newResponses = this.selection.paras.reduce((acc, _, j) => {
-            if(preSelectionParaNum > j){
-              acc.push(Doc.getResponse(i, j));
-            }else if(preSelectionParaNum === j){
-              if(["start", "all"].includes(preSelectionPrefix)) acc.push(false);
-              else acc.push(Doc.getResponse(i, j));
-            }else if(newLineCount > 1 && preSelectionParaNum + newLineCount > j){
-              acc.push(false);
-            }else if(preSelectionParaNum + 1 + (newLineCount - 1)  === j){
-              if(["start", "all"].includes(preSelectionPrefix)) if(preSelectionSuffix !== "start") acc.push(Doc.getResponse(i, j - (1 + newLineCount - 1)));
-              else acc.push(Doc.getResponse(i, j + diffCount));
-              else if(preSelectionSuffix !== "start") acc.push(false);
-              else acc.push(Doc.getResponse(i, j + diffCount));
-            }else{
-              acc.push(Doc.getResponse(i, j + diffCount));
-            }
-            return acc;
-          }, []);
-        }
-      }else if(this.edit.isDrop){
-        const newLineCount = this.edit.droppedText.split("\n").length - 1;
-
-        const selectionParaNum = this.selection.paras.findIndex(p => p !== "none");
-
-        newResponses = this.selection.paras.reduce((acc, _, j) => {
-          if(selectionParaNum >= j){
-            acc.push(Doc.getResponse(i, j));
-          }else if(selectionParaNum + newLineCount >= j){
-            acc.push(false);
-          }else{
-            acc.push(Doc.getResponse(i, j - newLineCount));
-          }
-          return acc;
-        }, []);
+        caretBeforeState.push(...Doc.getResponses(i).slice(0, selParaNum + 1));
+      }else if(this.edit.isDrop && i === this.draggingText.dest){
+        caretBeforeState.push(...Doc.getResponses(i).slice(0, selParaNum + 1));
+        const selText = Doc.getTextBody(i).value.slice(this.selection.start, this.selection.end);
+        const selParaCount = selText.split("\n").length - 1
+        caretBeforeState.push(...new Array(selParaCount).fill(false));
+      }else{
+        caretBeforeState.push(...Doc.getResponses(i).slice(0, prefixPreSelParaNum + 1));
+        if(this.edit.isEnter || this.edit.isPaste) caretBeforeState.push(...new Array(selParaNum - prefixPreSelParaNum).fill(false));
       }
-      if(newResponses){
-        Doc.setResponses(i, [...(newResponses.map(v => v ?? false))]);
+
+      const caretAfterState = [];
+      if(this.edit.isDelete){
+        caretAfterState.push(...Doc.getResponses(i).slice(this.preSelection.paras.length - restParaCountAfterCaret));
+      }else if(this.edit.isDrop && i === this.draggingText.dest){
+        caretAfterState.push(...Doc.getResponses(i).slice(selParaNum + 1));
+      }else{
+        caretAfterState.push(...Doc.getResponses(i).slice(suffixPreSelParaNum));
       }
+
+      const result = [...caretBeforeState, ...caretAfterState];
+      Doc.setResponses(i, [...result]);
     }
 
     this.clearResponses(i);
@@ -883,7 +808,7 @@ class TextBody {
   }
   static clearResponses(i){
     const div = Doc.getDiv(i);
-    Array.from(div.querySelectorAll("div.FlexTextarea div.mini-response")).forEach(b => {
+    Array.from(div.querySelectorAll("div.text-box div.mini-response")).forEach(b => {
       b.remove();
     });
   }
@@ -893,11 +818,11 @@ class TextBody {
   static setResponse(i, paraNum){
     const el = Elem.create("div", {cl: "badge mini-badge mini-response"});
     el.draggable = true;
-    el.style.top = parseFloat(Doc.getParaHeight(i, paraNum).split(":")[0]) - 3 + "px";
+    el.style.top = parseFloat(Doc.getParaHeight(i, paraNum).split(":")[0]) + 2 + "px";
     el.style.cursor = "pointer";
 
     const icon = Elem.create("img");
-    icon.src = "img/response-mini.png";
+    icon.src = `img/theme/${Theme.get()}/response-mini.png`;
 
     el.addEventListener("contextmenu", e => {
       e.stopPropagation();
@@ -957,7 +882,9 @@ class TextBody {
     textBody.value = replacedText;
     textBodyBG.innerHTML = textBody.value;
 
+    // ↓ 要修正
     this.setLineText(replacedText, i);
+    // ↑ 要修正
 
     const caretPos = prefix.length + text.length;
     textBody.setSelectionRange(caretPos, caretPos);
@@ -984,7 +911,9 @@ class TextBody {
     textBody.value = newText;
     textBodyBG.value = textBody.value;
 
+    // ↓ 要修正
     this.setLineText(replacedText, i);
+    // ↑ 要修正
 
     const caretPos = prefix.length + replacedText.length;
     textBody.setSelectionRange(caretPos, caretPos);
@@ -996,24 +925,36 @@ class TextBody {
     this.resetResponsePos(i);
   }
 
-  static setLineText(newText, i){
-    const textBody = Doc.getTextBody(i);
-    const line = Doc.getLine(i);
-
-    if(line.text === newText){
-      line.editedText = null;
-      
-      textBody.classList.remove("edited");
-    }else{
-      line.editedText = newText;
-      
-      textBody.classList.add("edited");
-    }
+  static isEdited(newText, i){
+    return Doc.getText(i) !== newText;
   }
 
-  static visible(){
-    Doc.getLines().forEach((_, i) => {
-      Doc.getTextBody(i).style.visibility = "visible";
-    });
+  static enableEdited(i){
+    Doc.getTextBody(i).classList.add("TB_edited");
+    Doc.getTextBodyBG(i).classList.add("TB_edited");
+  }
+  static disableEdited(i){
+    Doc.getTextBody(i).classList.remove("TB_edited");
+    Doc.getTextBodyBG(i).classList.remove("TB_edited");
+  }
+
+  static visible(i){
+    Doc.getTextBodyBG(i).classList.remove("TBB_hidden");
+  }
+  static invisible(i){
+    Doc.getTextBodyBG(i).classList.add("TBB_hidden");
+  }
+
+  static setTransparent(i){
+    Doc.getTextBody(i).classList.add("TB_transparent");
+  }
+  static unsetTransparent(i){
+    Doc.getTextBody(i).classList.remove("TB_transparent");
+  }
+
+  static select(i, start, end){
+    const textBody = Doc.getTextBody(i);
+    textBody.focus();
+    textBody.setSelectionRange(start, end);
   }
 }

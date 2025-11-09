@@ -1,0 +1,144 @@
+@charset "utf-8";
+
+#doc-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  background: var(--doc-header-bg);
+  color: var(--doc-header-fg);
+  font-weight: bold;
+  padding: 2px 5px;
+  z-index: 90;
+  border-bottom: 1px solid var(--doc-header-border);
+}
+#all-selector-box {
+  display: inline-flex;
+  user-select: none;
+  margin: auto 2px;
+}
+#all-selector {
+  appearance: none;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  background: #505050;
+  border-radius: 2px;
+  position: relative;
+  transition: background 0.2s;
+}
+#all-selector:hover {
+  background: #707070;
+}
+#all-selector:checked {
+  background: #fffb0a;
+}
+#all-selector:checked:hover {
+  background: #f0d90a;
+}
+#all-selector:checked::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 7px;
+  width: 5px;
+  height: 10px;
+  border: solid #181818;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.chunk {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 5px;
+  border: var(--chunk-border);
+}
+.chunk.selected {
+  border: 1px solid red;
+}
+.chunk.green-hatch {
+  background: var(--green-hatch-bg);
+  z-index: 1;
+}
+.chunk.yellow-hatch {
+  background-color: var(--yellow-hatch-bg);
+  position: relative;
+  z-index: 2;
+}
+
+.selector-box {
+  display: inline-flex;
+  user-select: none;
+  margin: auto 2px;
+}
+.selector {
+  appearance: none;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  background: #505050;
+  border-radius: 2px;
+  position: relative;
+  transition: background 0.2s;
+}
+.selector:hover {
+  background: #707070;
+}
+.selector:checked {
+  background: #fffb0a;
+}
+.selector:checked:hover {
+  background: #f0d90a;
+}
+.selector:checked::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 7px;
+  width: 5px;
+  height: 10px;
+  border: solid #181818;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+
+
+.textmeta {
+  display: flex;
+  flex-direction: column;
+}
+.timestamp {
+  cursor: pointer;
+  color: var(--ts-fg);
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+.timestamp:hover {
+  color: var(--ts-hover-fg);
+}
+.badged {
+  background-color: var(--badged-bg);
+  flex: 1;
+  margin: 5px;
+  border-radius: 10px;
+  border: 1px solid gray;
+  padding: 5px;
+  display: flex;
+  gap: 5px;
+}
+
+.disabled {
+  opacity:0.3;
+}
+
+.invalid-button {
+  cursor:pointer;
+  margin-left:5px;
+  color:red;
+}
+.invalid-button.disabled {
+  cursor: default;
+}

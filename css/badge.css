@@ -16,6 +16,14 @@
   width: 2em;
   height: 2em;
   border-radius: 2em;
+  transition: filter 0.2s, transform 0.2s ease;
+}
+.big-badge:hover {
+  filter: brightness(1.2);
+  transform: scale(1.1);
+}
+.big-badge:active {
+  transform: scale(1.0);
 }
 .big-badge img {
   width: 2em;
@@ -26,6 +34,11 @@
   width: 1em;
   height: 1em;
   border-radius: 2em;
+  transition: filter 0.2s, transform 0.2s ease;
+}
+.small-badge:hover {
+  filter: brightness(1.2);
+  transform: scale(1.1);
 }
 .small-badge img {
   width: 1em;
@@ -36,6 +49,11 @@
   position: absolute;
   left: 20px;
   z-index: 75;
+  transition: filter 0.2s, transform 0.2s ease;
+}
+.mini-badge:hover {
+  filter: brightness(1.2);
+  transform: scale(1.2);
 }
 .mini-badge img {
   width: 1.3em;

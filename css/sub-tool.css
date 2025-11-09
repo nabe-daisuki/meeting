@@ -1,0 +1,64 @@
+@charset "utf-8";
+
+.sub-tool-section {
+  --sub-tool-section-radius: 6;
+  border: 1px solid var(--sub-tool-section-border);
+  border-radius: calc(var(--sub-tool-section-radius) * 1px);
+  padding: 0.5rem;
+  background: var(--sub-tool-section-bg);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.sub-tool-section:last-child {
+  height: 100%;
+  overflow-y: scroll;
+}
+.sub-tool-section:last-child::-webkit-scrollbar {
+  width: calc(var(--sub-tool-section-radius) * 2px);
+  height: calc(var(--sub-tool-section-radius) * 2px);
+}
+.sub-tool-section:last-child::-webkit-scrollbar-thumb {
+  cursor: pointer;
+  background-color: #fffb0a;
+  border-radius: 6px;
+  border: 2px solid #505050;
+  transition: background-color 0.2s;
+}
+.sub-tool-section:last-child::-webkit-scrollbar-track {
+  background: #505050;
+  border-radius: calc(var(--sub-tool-section-radius) * 1px);
+}
+.sub-tool-section:last-child::-webkit-scrollbar-thumb:hover {
+  background-color: #f0d90a;
+}
+
+.sub-tool-header {
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  color: var(--sub-tool-header-fg);
+}
+.sub-tool-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.sub-tool-buttons button {
+  margin: 0.2rem;
+  padding: 0.4rem 0.6rem;
+  border: none;
+  background: var(--sub-tool-buttons-btn-bg);
+  color: var(--sub-tool-buttons-btn-fg);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+.sub-tool-buttons button:hover {
+  background-color: var(--sub-tool-buttons-btn-hover-bg);
+  color: var(--sub-tool-buttons-btn-hover-fg);
+  transform: scale(1.1);
+}
+.sub-tool-buttons button:active {
+  background: var(--sub-tool-buttons-btn-bg);
+  color: var(--sub-tool-buttons-btn-fg);
+  transform: scale(1.0);
+}

@@ -11,23 +11,14 @@ class TextInput {
     }
   }
 
-  static setTextFileName(){
-    const fileName = TextFile.getName();
-    if(fileName === ""){
-      alert("テキストファイルの名前が取得できません。");
-      return;
-    }
-    textFileName.innerHTML = fileName;
-  }
-
   static async input(file){
     TextFile.setData(file);
     TextFile.setName(file.name);
 
+    Doc.clearRepInfos();
     Doc.clearLines();
     await FileParser.parse();
 
-    // this.setTextFileName();
     Meta.resetTitle();
 
     DocHeader.init();

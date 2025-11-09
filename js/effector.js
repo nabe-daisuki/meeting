@@ -6,6 +6,8 @@ class Effector {
 
     checkedSetGreen.onclick = () => this.setGreen("checked");
 
+    editedSetGreen.onclick = () => this.setGreen("edited");
+
     // checkedUnsetGreen.onclick = () => this.unsetGreen("checked");
 
     // editedSetGreen.onclick = () => this.setGreen("edited");

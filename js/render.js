@@ -22,6 +22,7 @@ class Render {
       TextBody.resetParaHeights(i);
       TextBody.resetCommentPos(i);
       TextBody.resetResponsePos(i);
+      if(Doc.getLine(i).badges !== "n") Badged.set(i, Badged.createBadges(i));
     }
     AudioInput.showPlayLine();
   }
@@ -38,6 +39,42 @@ class Render {
       configList.appendChild(i);
     });
     configOverlay.classList.add("show");
+  }
+
+  static shortCutHelper(){
+    shortCutList.innerHTML = "";
+    for(const item of ShortCutHelper.create()){
+      shortCutList.appendChild(item);
+    }    
+  }
+
+  static mainTool(){
+    for(const s of Config.get()){
+      let el = null;
+      switch(s.key){
+        case "hideInputText":
+          el = document.getElementById("text-file-input-box");
+          break;
+        case "hideInputAudio":
+          el = document.getElementById("audio-file-input-box");
+          break;
+        case "hideLoad":
+          el = document.getElementById("reload-file-input-box");
+          break;
+        default:
+          break;
+      }
+      
+      if(!el) continue;
+      if(s.value) el.classList.add("hide");
+      else el.classList.remove("hide");
+    }
+
+    if(Array.from(document.querySelectorAll("#inputer>div")).every(d => d.classList.contains("hide"))){
+      document.getElementById("inputer").classList.add("hide");
+    }else{
+      document.getElementById("inputer").classList.remove("hide");
+    }
   }
 
   static syncRowHeights() {

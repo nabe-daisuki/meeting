@@ -1,18 +1,14 @@
 class ContextMenu {
+  static isShow = false;
   static offset = 20;
 
   static async reset(isSelection, isMultiLine){
     menuContainer.innerHTML = "";
     let menuData = [];
     if(isSelection){
-      // menuData = [ ...menuData, ...MenuData.selection ];
-      // if(await ClipBoard.hasText()) menuData = [ ...menuData, ...MenuData.noSelection ];
-      // menuData = [ ...menuData, ...MenuData.noSelection ];
       if(!isMultiLine) if(menuData.length === 0) menuData = [ ...menuData, ...MenuData.conversation ];
       else menuData = [ ...menuData, ...MenuData.sep, ...MenuData.conversation ];
     }else{
-      // if(await ClipBoard.hasText()) menuData = [ ...menuData, ...MenuData.noSelection ];
-      // menuData = [ ...menuData, ...MenuData.noSelection ];
       if(menuData.length === 0) menuData = [ ...menuData, ...MenuData.conversation ];
       else menuData = [ ...menuData, ...MenuData.sep, ...MenuData.conversation ];
     }
@@ -41,7 +37,8 @@ class ContextMenu {
     mainItem.addEventListener("click", e => {
       ContextMenu.click(e.target.id);
       ContextMenu.hide();
-      TextBody.visible();
+      TextBody.visible(TextBody.contextmenu.i);
+      TextBody.unsetTransparent(TextBody.contextmenu.i);
     });
 
     const mainIconAndText = Elem.create("div");
@@ -81,7 +78,8 @@ class ContextMenu {
         subDiv.addEventListener("click", () => {
           ContextMenu.click(subText);
           ContextMenu.hide();
-          TextBody.visible();
+          TextBody.visible(TextBody.contextmenu.i);
+          TextBody.unsetTransparent(TextBody.contextmenu.i);
         });
         subContainer.appendChild(subDiv);
       });
@@ -119,10 +117,14 @@ class ContextMenu {
     menuContainer.style.top = posY + "px";
 
     menuContainer.querySelector(".menu-row").focus();
+
+    this.isShow = true;
   }
 
   static hide(){
     menuContainer.style.display = "none";
+
+    this.isShow = false;
   }
 
   static click(id){

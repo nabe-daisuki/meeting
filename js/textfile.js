@@ -15,15 +15,4 @@ class TextFile {
   static getName(){
     return this.name;
   }
-
-  static defaults = {
-    data: null,
-    name: ""
-  }
-  constructor( options = {} ){
-    const settings = {...TextFile.defaults, ...options};
-
-    this.data = settings.data;
-    this.name = settings.name;
-  }
 }

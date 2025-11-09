@@ -1,0 +1,22 @@
+@charset "utf-8";
+
+
+#main-tools {
+  display: flex;
+}
+
+#main-tools > div {
+  position: relative;
+  padding-right: 24px;
+  gap: 20px;
+}
+
+#main-tools > div:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 5%;
+  bottom: 5%;
+  width: 1px;
+  background-color: var(--main-tools-div-after-bg);
+}

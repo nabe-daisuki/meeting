@@ -5,4 +5,12 @@ class Replace {
     this.table.length = 0;
     this.table.push(...t);
   }
+
+  static get(){
+    return this.table;
+  }
+
+  static getList(){
+    return repInfosUl.children;
+  }
 }

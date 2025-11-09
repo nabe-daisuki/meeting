@@ -1,7 +1,11 @@
 class Badged {
   static target = ["a", "s"];
   static create(i){
-    const elem = Elem.create("div", {cl: "badged"});
+    const line = Doc.getLine(i);
+
+    const elem = Elem.create("div", {cl: `badged BADGED_${Theme.get()}`});
+    if(line.hided) elem.style.display = "none";
+    elem.addEventListener("dragover", e => e.preventDefault());
     return elem;
   }
 

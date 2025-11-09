@@ -9,6 +9,7 @@ class FileParser {
       const reader = new FileReader();
 
       reader.onload = e => {
+        console.log(e.target.result)
         const lines = e.target.result
           .split('\n')
           .map( l => this.parseLine(l))
@@ -39,10 +40,22 @@ class FileParser {
     const line = structuredClone(Line.default);
     line.startSec = +sh*3600 + +sm*60 + +ss;
     line.endSec = +eh*3600 + +em*60 + +es;
-    line.text = text.replaceAll("/", "\n");
+    line.text = text;
+    let badges = line.badges;
+    if(this.containsAttachment(text)) badges += "a";
+    if(this.containsManagementNum(text)) badges += "s";
+    line.badges = badges;
     line.charsPerPara = text.split("\n");
     line.comments = new Array(line.charsPerPara.length).fill(false);
     line.responses = new Array(line.charsPerPara.length).fill(false);
     return line;
+  }
+
+  static containsAttachment(text){
+    return text.includes("添付");
+  }
+
+  static containsManagementNum(text){
+    return /20\d{2}-\d{3}/.test(text) || /\d{3}番/.test(text);
   }
 }

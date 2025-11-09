@@ -1,44 +1,106 @@
 @charset "utf-8";
 
 #file-drop-overlay {
+  cursor: pointer;
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(255, 192, 203, 0.3); /* ほんのりピンク半透明 */
+  background-color: rgba(0, 0, 0, 0.8);
   display: none;
   align-items: center;
   justify-content: center;
   padding: 20px;
   box-sizing: border-box;
   z-index: 9999;
+  transition: opacity 1s;
+  opacity: 1;
+}
+#file-drop-overlay.hide {
+  opacity: 0;
+  pointer-events: none;
 }
 
 #file-drop-border {
+  backdrop-filter: blur(5px);
   height: 100%;
   width: 100%;
   box-sizing: border-box;
-  border: 4px dashed #ff69b4; /* 点線＋ピンク */
+  border: 4px dashed #fffb0a;
   border-radius: 20px;
-  background-color: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 0 20px rgba(255,105,180,0.5); /* ピンクのふわっと影 */
+  background-color: rgba(0, 0, 0, 0.3);
   font-size: 1.8rem;
   font-weight: bold;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: border 0.2s, background-color 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 #file-drop-area {
+  color: #cccccc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   font-size: 1.8rem;
+  transition: transform 0.2s;
+}
+
+#file-drop-overlay img {
+  position: absolute;
+  transition: transform 0.2s, opacity 0.2s;
+}
+#load-by-selection-img,
+#load-by-drop-img {
+  opacity: 0;
+}
+#file-drop-overlay #load-by-selection,
+#file-drop-overlay #load-or,
+#file-drop-overlay #load-by-drop {
+  transition: transform 0.2s, color 0.2s;
+}
+
+#file-drop-overlay:hover #file-drop-border {
+  border: 4px dashed #41fff8;
+  background-color: #00292899;
+}
+#file-drop-overlay:hover #load-neutral-img {
+  transform: scale(1.1);
+  opacity: 0.5;
+}
+#file-drop-overlay:hover #load-by-selection-img {
+  transform: scale(1.1);
+  opacity: 1;
+}
+#file-drop-overlay:hover #load-by-selection {
+  transform: scale(1.1);
+  color: #41fff8;
+}
+#file-drop-overlay:hover #load-by-drop,
+#file-drop-overlay:hover #load-or {
+  transform: scale(0.9);
+  color: #676767;
 }
 
 #file-drop-overlay.active #file-drop-border {
-  background-color: rgb(245 241 222 / 80%);
+  border: 4px dashed #ff4010;
+  background-color: #270e0099;
 }
-#file-drop-overlay.active #file-drop-area {
-  transform: scale(1.05);
-  color: #ff3155;
+#file-drop-overlay.active #load-neutral-img {
+  transform: scale(1.1);
+  opacity: 0.5;
+}
+#file-drop-overlay.active #load-by-drop-img {
+  transform: scale(1.1);
+  opacity: 1;
+}
+#file-drop-overlay.active #load-by-selection,
+#file-drop-overlay.active #load-or {
+  transform: scale(0.9);
+  color: #676767;
+}
+#file-drop-overlay.active #load-by-drop {
+  transform: scale(1.1);
+  color: #ff4010;
 }

@@ -1,7 +1,7 @@
 class DocHeader {
   static elem = null;
-
   static height = 0;
+
   static getHeight(){
     return this.height;
   }
@@ -10,10 +10,12 @@ class DocHeader {
   }
 
   static init(){
-    const elem = Elem.create("div", {cl: "doc-header"});
+    const elem = Elem.create("div", {id: "doc-header", cl: `DC_${Theme.get()}`});
 
+    const lbl = Elem.create("label", {id: "all-selector-box"});
     const allSelector = Elem.create("input", {id: "all-selector"});
     allSelector.type = "checkbox";
+    allSelector.style.height = "20px";
     allSelector.style.width = "20px";
     allSelector.addEventListener("click", e => {
       if(e.target.checked){
@@ -29,11 +31,12 @@ class DocHeader {
         });
       }
     });
+    lbl.appendChild(allSelector);
 
     const fileName = Elem.create("span");
     fileName.textContent = TextFile.getName();
 
-    elem.appendChild(allSelector);
+    elem.appendChild(lbl);
     elem.appendChild(fileName);
 
     this.elem = elem;

@@ -1,22 +1,38 @@
 const isTest = true;
+const isGijiTest = false;
 
 const header = document.getElementById("header");
 
 const editorPanel = document.getElementById("editor-panel");
-const fileDropOverlay = document.getElementById('file-drop-overlay');
+const fileDropOverlay = document.getElementById("file-drop-overlay");
+const gijiFileInput = document.getElementById("giji-file-input");
 
-const lPanel = document.getElementById('left-panel');
+const lPanel = document.getElementById("left-panel");
+const rPanel = document.getElementById("right-panel")
 const audio = document.getElementById("audio");
+const playbackSlider = document.getElementById("playback-slider");
 const volumeSlider = document.getElementById("volume-slider");
 const volumeLabel = document.getElementById("volume-label");
 const speedSlider = document.getElementById("speed-slider");
 const speedLabel = document.getElementById("speed-label");
 
-const config = document.getElementById("config");
+const autoScrollCheckbox = document.getElementById("auto-scroll");
 
+const currentTime = document.getElementById("current-time");
+const durationTime = document.getElementById("duration-time");
+const playBtn = document.getElementById("play-btn");
+const pauseBtn = document.getElementById("pause-btn");
+const stopBtn = document.getElementById("stop-btn");
+const unmuteBtn = document.getElementById("unmute-btn");
+const muteBtn = document.getElementById("mute-btn");
+const normalSpeedBtn = document.getElementById("normal-speed-btn");
+
+const config = document.getElementById("config");
+const help = document.getElementById("help");
+
+const textFileInput = document.getElementById("text-file-input");
 const audioFileInput = document.getElementById("audio-file-input");
-const audioFileName = document.getElementById("audio-file-name");
-const autoScrollCheckbox = document.getElementById('auto-scroll');
+const reloadFileInput = document.getElementById("reload-file-input");
 
 let isWindowBlur = false;
 let isWindowResize = false;
@@ -24,18 +40,15 @@ let isWindowResize = false;
 const checkedSetGreen = document.getElementById("checked-set-green");
 const checkedShow = document.getElementById("checked-show");
 const checkedHide = document.getElementById("checked-hide");
+const editedSetGreen = document.getElementById("edited-set-green");
 
 const saveBtn = document.getElementById("save-btn");
 const namedSaveBtn = document.getElementById("named-save-btn");
 
-const exportGreen = document.getElementById('export-green');
+const hatchToExport = document.getElementById("hatch-to-export");
+const editedToExport = document.getElementById("edited-to-export");
 
-const reloadFileInput = document.getElementById('reload-file-input');
-
-const textFileInput = document.getElementById("text-file-input");
-const textFileName = document.getElementById("text-file-name");
-
-const menuContainer = document.getElementById('menu');
+const menuContainer = document.getElementById("menu");
 
 const speakers = document.getElementById("speakers");
 
@@ -51,6 +64,9 @@ const configList=document.getElementById("config-list");
 const configOk=document.getElementById("config-ok");
 const configCancel=document.getElementById("config-cancel");
 const configX=document.getElementById("config-x");
+
+const shortCutHelper = document.getElementById("shortcut-helper");
+const shortCutList = document.getElementById("shortcut-list");
 
 const audioInfo = {
   fileName: "",
@@ -98,10 +114,11 @@ window.addEventListener("resize", () => {
 });
 
 window.addEventListener("focus", () => {
+  if(isTest) return;
   isWindowBlur = false;
   setTimeout(() => {
     document.getElementById("inactive-overlay").style.display = "none";
-    if(AudioInput.isPlaying) audio.play();
+    if(AudioState.isPlaying() && !AudioState.isMuted()) AudioController.play();
     Meta.resetTitle();
   },500);
 });
@@ -110,24 +127,27 @@ window.addEventListener("blur", () => {
   if(isTest) return;
   isWindowBlur = true;
   document.getElementById("inactive-overlay").style.display = "flex";
-  if(!audio.paused) audio.pause();
+  if(AudioState.isPlaying()) AudioController.pause();
   Meta.resetTitle();
 });
 
 document.addEventListener('click', () => {
-  menuContainer.style.display = 'none';
-  TextBody.visible();
+  ContextMenu.hide();
 });
 
 window.addEventListener("mouseup", e => {
   if(e.button !== 0) return;
 
-  if(TextBody.dragover.i === -1){
+  if(TextBody.dragover.i !== -1){
     for(let j = 0; j < Doc.getDivs().length; j++){
       Array.from(Doc.getTextBodyBG(j).querySelectorAll("span")).forEach((_, k) => {
         TextBody.unemphasizeText(j, k);
       });
     }
-    TextBody.initDragover();
   }  
+});
+
+window.addEventListener("beforeunload", (e) => {
+  e.preventDefault();
+  e.returnValue = "aiueo"; // Chromeなどではこの書き方が必要
 });

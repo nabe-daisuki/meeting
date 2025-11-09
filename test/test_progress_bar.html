@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>カスタムスライダー</title>
+<style>
+body {
+  background: #0f1724;
+  color: white;
+  font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+input[type="range"] {
+  appearance: none;
+  width: 300px;
+  border-radius: 6px;
+  outline: none;
+  cursor: pointer;
+  height: 6px;
+  background: linear-gradient(
+    to right,
+    #8c00ff 40%,
+    #ccc 40%
+  );
+  transition: background 0.2s;
+}
+
+/* トラック部分（上書き） */
+input[type="range"]::-webkit-slider-runnable-track {
+  background: transparent;
+  height: 6px;
+  border-radius: 3px;
+}
+
+/* つまみ部分 */
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fffb0a;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  margin-top: -5px;
+  transition: background 0.2s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  background: #d4cb06;
+}
+</style>
+</head>
+<body>
+  <input type="range" min="0" max="100" value="40" id="slider">
+  <script>
+    const slider = document.getElementById("slider");
+    slider.addEventListener("input", e => {
+      const val = (slider.value - slider.min) / (slider.max - slider.min) * 100;
+      slider.style.background = `linear-gradient(to right, #8c00ff ${val}%, #ccc ${val}%)`;
+    });
+  </script>
+</body>
+</html>

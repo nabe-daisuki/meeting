@@ -42,7 +42,7 @@ class Doc{
   }
   static getEditedTextIndexes(){
     return this.getLines().reduce( ( acc, _, i ) => {
-      if(this.getEditedText(i)) acc.push(i);
+      if(this.getEditedText(i) || this.getComments(i).some(c => c) || this.getResponses(i).some(r => r)) acc.push(i);
       return acc;
     }, []);
   }
@@ -57,13 +57,13 @@ class Doc{
     return this.getDiv(i).querySelector(".badged");
   }
   static getTextBox(i){
-    return this.getDiv(i).querySelector(".FlexTextarea");
+    return this.getDiv(i).querySelector(".text-box");
   }
   static getTextBodyBG(i){
-    return this.getDiv(i).querySelector(".FlexTextarea__dummy");
+    return this.getDiv(i).querySelector(".text-body-bg");
   }
   static getTextBody(i){
-    return this.getDiv(i).querySelector(".FlexTextarea__textarea");
+    return this.getDiv(i).querySelector(".text-body");
   }
 
   static getText(i){
@@ -176,5 +176,8 @@ class Doc{
   }
   static clearLines(){
     this.lines.length = 0;
+  }
+  static clearRepInfos(){
+    this.repinfos.length = 0;
   }
 }

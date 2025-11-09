@@ -135,7 +135,7 @@ class Load {
 
 
       if(noAudio){
-        alert("前回保存時に読み込まれた会議音声はありませんでした。");
+        alert("前回保存時に読み込まれた音声はありませんでした。");
       }else{
         text.push("を前回保存時読み込んでいます。");
         alert(text.join("\n"));

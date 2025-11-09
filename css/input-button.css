@@ -2,7 +2,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-right: 20px;
 }
 
 .file-input-box input[type="file"] {
@@ -23,22 +22,6 @@
   box-shadow: none;
 }
 
-.file-input-box label img.tool-icon-btn {
-  width: 60px;
-  height: 60px;
-  transition: filter 0.2s ease;
-  pointer-events: none;
-}
-
-.file-input-box label .tool-caption {
-  margin-bottom: 6px;
-  font-size: 0.75rem;
-  color: #374151;
-  font-family: sans-serif;
-  pointer-events: none;
-  transition: color 0.2s ease;
-}
-
 .file-input-box label:hover {
   background-color: rgba(0, 123, 255, 0.05);
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
@@ -51,13 +34,13 @@
   box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
 }
 
-.file-input-box.theme-blue label:focus-within img.tool-icon-btn,
-.file-input-box.theme-blue label:active img.tool-icon-btn {
+.file-input-box.theme-blue label:focus-within .main-tool-icon,
+.file-input-box.theme-blue label:active .main-tool-icon {
   filter: brightness(0) invert(1);
 }
 
-.file-input-box.theme-blue label:focus-within .tool-caption,
-.file-input-box.theme-blue label:active .tool-caption {
+.file-input-box.theme-blue label:focus-within .main-tool-caption,
+.file-input-box.theme-blue label:active .main-tool-caption {
   color: #fff;
 }
 
@@ -72,13 +55,13 @@
   box-shadow: 0 4px 10px rgba(255, 159, 10, 0.4);
 }
 
-.file-input-box.theme-orange label:focus-within img.tool-icon-btn,
-.file-input-box.theme-orange label:active img.tool-icon-btn {
+.file-input-box.theme-orange label:focus-within .main-tool-icon,
+.file-input-box.theme-orange label:active .main-tool-icon {
   filter: brightness(0) invert(1);
 }
 
-.file-input-box.theme-orange label:focus-within .tool-caption,
-.file-input-box.theme-orange label:active .tool-caption {
+.file-input-box.theme-orange label:focus-within .main-tool-caption,
+.file-input-box.theme-orange label:active .main-tool-caption {
   color: #fff;
 }
 
@@ -93,13 +76,13 @@
   box-shadow: 0 4px 10px rgba(40, 167, 69, 0.4);
 }
 
-.file-input-box.theme-green label:focus-within img.tool-icon-btn,
-.file-input-box.theme-green label:active img.tool-icon-btn {
+.file-input-box.theme-green label:focus-within .main-tool-icon,
+.file-input-box.theme-green label:active .main-tool-icon {
   filter: brightness(0) invert(1);
 }
 
-.file-input-box.theme-green label:focus-within .tool-caption,
-.file-input-box.theme-green label:active .tool-caption {
+.file-input-box.theme-green label:focus-within .main-tool-caption,
+.file-input-box.theme-green label:active .main-tool-caption {
   color: #fff;
 }
 
@@ -116,12 +99,12 @@
   transform: none;
 }
 
-.file-input-box.theme-gray label:focus-within img.tool-icon-btn,
-.file-input-box.theme-gray label:active img.tool-icon-btn {
+.file-input-box.theme-gray label:focus-within .main-tool-icon,
+.file-input-box.theme-gray label:active .main-tool-icon {
   filter: brightness(0) invert(1); /* 白っぽく反転 */
 }
 
-.file-input-box.theme-gray label:focus-within .tool-caption,
-.file-input-box.theme-gray label:active .tool-caption {
+.file-input-box.theme-gray label:focus-within .main-tool-caption,
+.file-input-box.theme-gray label:active .main-tool-caption {
   color: #fff; /* 白文字 */
 }

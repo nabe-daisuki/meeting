@@ -13,6 +13,34 @@ class Badge {
         e.dataTransfer.setData("text/plain", `${this.name[c].toUpperCase()}_BADGE`);
         e.dataTransfer.effectAllowed = "copy";
       });
+
+      b.addEventListener("click", () => {
+        const j = Selection.idx;
+        if(j === -1) return;
+        if(Badged.can(c)){
+          Doc.addBadge(j, c);
+          Badged.set(j, Badged.createBadges(j));
+        }else{
+          const isMultiLine = Doc.getTextBody(j).value.slice(TextBody.selection.start, TextBody.selection.end).includes("\n");
+          const paraNum = TextBody.getSelectionParaNum(j);
+
+          if(c === "c"){
+            if(isMultiLine || TextBody.hasComment(j, paraNum) || !Doc.hasCharsInPara(j, paraNum)) return;
+            if(TextBody.hasResponse(j, paraNum)){
+              Doc.disableResponse(j, paraNum);
+            }
+            TextBody.setComment(j, paraNum);
+            TextBody.resetResponsePos(j);
+          }else if(c === "r"){
+            if(isMultiLine || TextBody.hasResponse(j, paraNum) || !Doc.hasCharsInPara(j, paraNum)) return;
+            if(TextBody.hasComment(j, paraNum)){
+              Doc.disableComment(j, paraNum);
+            }
+            TextBody.setResponse(j, paraNum);
+            TextBody.resetCommentPos(j);
+          }
+        }
+      });
     });
   }
 

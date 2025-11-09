@@ -1,6 +1,4 @@
 class AudioInput {
-  static isPlaying = false;
-
   static init() {
     audioFileInput.addEventListener("change", async(e) => {
       const file = e.target.files[0];
@@ -16,21 +14,37 @@ class AudioInput {
     });
 
     audio.addEventListener("play", () => {
-      this.isPlaying = true;
+      AudioState.play();
     });
 
     audio.addEventListener("pause", () => {
       if(isWindowBlur)return;
-      this.isPlaying = false;
+      AudioState.pause();
     });
 
-    audio.ontimeupdate = () => {
+    audio.addEventListener("volumechange", e => {
+      if(e.target.muted) AudioState.mute();
+      else AudioState.unmute();
+    });
+
+    audio.addEventListener("timeupdate", () => {
+      const curTime = AudioState.getTime();
+      const percent = Convert.secToPercent(curTime, AudioFile.getDuration());
+      AudioController.updatePlaybackSlider(percent);
+      AudioController.setPlaybackLabel(curTime);
+      AudioState.setPos(curTime);
       if(Scroll.isAuto){
-        const i = Doc.getLines().findIndex(l => this.isPlayingLine(AudioController.getTime(), l));
+        let offset = 0;
+        const i = Doc.getLines().findIndex( (l, j) => {
+          if(j !== 0){
+            offset = Doc.getLine(j - 1).endSec;
+          }
+          return offset <= curTime && curTime <= l.endSec;
+        });
         Scroll.scrollToLine(i);
       }
       this.showPlayLine();
-    }
+    });
 
     audio.addEventListener("loadedmetadata", () => {
       let totalSeconds = Math.floor(audio.duration);
@@ -40,7 +54,9 @@ class AudioInput {
       const seconds = totalSeconds % 60;
 
       const formattedTime = `${hours}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
-      audioInfo.length = formattedTime;
+      AudioFile.setLen(formattedTime);
+      AudioFile.setDuration(audio.duration);
+      AudioController.setDuration(audio.duration);
     });
 
     audio.addEventListener("focus", () => audio.blur());
@@ -52,7 +68,7 @@ class AudioInput {
 
   static showPlayLine() {
     for(let i = 0; i < Doc.getLines().length; i++){
-      if(this.isPlayingLine(AudioController.getTime(), Doc.getLine(i))) Hatching.yellow(Doc.getDiv(i));
+      if(this.isPlayingLine(AudioState.getTime(), Doc.getLine(i))) Hatching.yellow(Doc.getDiv(i));
       else Hatching.remove(i, true);
     }
   }
@@ -60,28 +76,40 @@ class AudioInput {
   static input(filename, bytes){
     const byteLen = bytes.byteLength;
 
-    audioInfo.bytes = byteLen.toLocaleString();
-    audioInfo.KB = (byteLen / 1024).toFixed(2);
-    audioInfo.MB = (byteLen / 1024 / 1024).toFixed(2);
+    const audioData = {length: ""};
+    audioData.bytes = bytes;
+    audioData.b = byteLen.toLocaleString();
+    audioData.kb = (byteLen / 1024).toFixed(2);
+    audioData.mb = (byteLen / 1024 / 1024).toFixed(2);
+    audioData.name = filename;
 
-    audioInfo.fileName = filename;
-    // audioFileName.textContent = filename;
+    AudioFile.set(audioData);
 
-    const blob = Convert.bytesToBlob(bytes);
+    const blob = Convert.bytesToBlob(AudioFile.getBytes());
     const url = URL.createObjectURL(blob);
     audio.src = url;
     audio.load();
 
-    const initVolume = AudioController.initVolume;
+    const initVolume = AudioState.getInitVolume();
     AudioController.setVolumeLabel(initVolume);
     AudioController.updateVolumeSlider(initVolume);
     AudioController.setVolume(initVolume);
+    AudioState.setVolume(initVolume);
 
-    const initSpeed = AudioController.initSpeed;
+    const initSpeed = AudioState.getInitSpeed();
     AudioController.setSpeedLabel(initSpeed);
     AudioController.updateSpeedSlider(initSpeed);
     AudioController.setSpeed(initSpeed);
+    AudioState.setSpeed(initSpeed);
 
     Meta.resetTitle();
+  }
+
+  static async getBytes(){
+    const url = audio.src;
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
+    return bytes;
   }
 }

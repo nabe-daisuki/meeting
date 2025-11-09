@@ -1,0 +1,198 @@
+@charset "utf-8";
+
+/* header */
+#header.HEADER_default {
+  --header-bg: #e7e7e7;
+  --header-fg: black;
+}
+#header.HEADER_dark {
+  --header-bg: #181818;
+  --header-fg: white;
+}
+#header hr.HEADER_HR_default {
+  --header-hr-border: inherit;
+}
+#header hr.HEADER_HR_dark {
+  --header-hr-border: #3f3f3f;
+}
+.slider.SLIDER_default {
+  --slider-bg: #f1f3f4;
+}
+.slider.SLIDER_dark {
+  --slider-bg: #2b2b2b;
+}
+.slider-label.SL_default {
+  --slider-label-fg: #444444;
+}
+.slider-label.SL_dark {
+  --slider-label-fg: #cccccc;
+}
+#auto-scroll-box.ASB_default {
+  --auto-scroll-box-bg: #f1f3f4;
+}
+#auto-scroll-box.ASB_dark {
+  --auto-scroll-box-bg: #2b2b2b;
+}
+#main-tools > div.MTS_DIV_default {
+  --main-tools-div-after-bg: rgba(0, 0, 0, 0.25);
+}
+#main-tools > div.MTS_DIV_dark {
+  --main-tools-div-after-bg: #cccccc40;
+}
+.main-tool-caption.MTC_default {
+  --main-tool-caption-fg: #374151;
+}
+.main-tool-caption.MTC_dark {
+  --main-tool-caption-fg: #cccccc;
+}
+
+/* panels */
+#editor-panel.EP_default {
+  --editor-panel-bg: inherit;
+}
+#editor-panel.EP_dark {
+  --editor-panel-bg: #1f1f1f;
+}
+#right-panel.RP_default {
+  --right-panel-bg: #f7f7f7;
+}
+#right-panel.RP_dark {
+  --right-panel-bg: #181818;
+}
+.panel.PANEL_default {
+  --panel-border: #ccc;
+}
+.panel.PANEL_dark {
+  --panel-border: #3f3f3f;
+}
+
+/* left-panel */
+#doc-header.DC_default {
+  --doc-header-bg: #f0f0f0;
+  --doc-header-fg: inherit;
+  --doc-header-border: #cccccc;
+}
+#doc-header.DC_dark {
+  --doc-header-bg: #181818;
+  --doc-header-fg: #cccccc;
+  --doc-header-border: #3f3f3f;
+}
+.chunk.CHUNK_default {
+  --chunk-border: 1px solid #ffffff;
+  --green-hatch-bg: repeating-linear-gradient(
+    45deg,
+    rgba(144,238,144,0.3),
+    rgba(144,238,144,0.3) 5px,
+    transparent 5px,
+    transparent 10px
+  );
+  --yellow-hatch-bg: rgba(255,255,0,0.2);
+}
+.chunk.CHUNK_dark {
+  --chunk-border: 1px solid #1f1f1f;
+  --green-hatch-bg: repeating-linear-gradient(
+    45deg,
+    rgb(0 119 0 / 30%),
+    rgb(0 0 0 / 30%) 5px,
+    transparent 5px,
+    transparent 10px
+  );
+  --yellow-hatch-bg: rgb(197 125 0 / 16%);
+}
+.timestamp.TS_default {
+  --ts-fg: blue;
+  --ts-hover-fg: #1a8cff;
+}
+.timestamp.TS_dark {
+  --ts-fg: #0064cf;
+  --ts-hover-fg: #1a7eff;
+}
+.badged.BADGED_default {
+  --badged-bg: white;
+}
+.badged.BADGED_dark {
+  --badged-bg: #1b1b1b;
+}
+
+/* textarea */
+.text-body-bg.TBB_default {
+  --text-body-bg-fg: inherit;
+}
+.text-body-bg.TBB_dark {
+  --text-body-bg-fg: white;
+}
+.text-body.TB_default {
+  --text-body-fg: inherit;
+}
+.text-body.TB_dark {
+  --text-body-fg: white;
+}
+.focus-para.FP_default {
+  --focus-para-bg: #d3d3d3;
+}
+.focus-para.FP_dark {
+  --focus-para-bg: #5b5b5b;
+}
+.has-replace.HR_default {
+  --has-replace-bg: yellow;
+}
+.has-replace.HR_dark {
+  --has-replace-bg: #797903;
+}
+
+/* sub-tool */
+.sub-tool-section.STS_default {
+  --sub-tool-section-bg: white;
+  --sub-tool-section-border: #cccccc;
+}
+.sub-tool-section.STS_dark {
+  --sub-tool-section-bg: #181818;
+  --sub-tool-section-border: #3f3f3f;
+}
+
+.sub-tool-header.STH_default {
+  --sub-tool-header-fg: #333;
+}
+.sub-tool-header.STH_dark {
+  --sub-tool-header-fg: white;
+}
+.sub-tool-buttons button.STB_BTN_default {
+  --sub-tool-buttons-btn-bg: #e0e0e0;
+  --sub-tool-buttons-btn-fg: inherit;
+}
+.sub-tool-buttons button.STB_BTN_dark {
+  --sub-tool-buttons-btn-bg: #505050;
+  --sub-tool-buttons-btn-fg: white;
+}
+.sub-tool-buttons button.STB_BTN_default:hover {
+  --sub-tool-buttons-btn-hover-bg: #ccc;
+  --sub-tool-buttons-btn-hover-fg: inherit;
+}
+.sub-tool-buttons button.STB_BTN_dark:hover {
+  --sub-tool-buttons-btn-hover-bg: white;
+  --sub-tool-buttons-btn-hover-fg: black;
+}
+
+/* replace */
+#repinfos.REPINFOS_default {
+  --repinfos-bg: #f0f4f8;
+  --repinfos-fg: black;
+}
+#repinfos.REPINFOS_dark {
+  --repinfos-bg: #1f1f1f;
+  --repinfos-fg: white;
+}
+
+#repinfos li.REPINFOS_LI_default {
+  --repinfos-li-bg: white;
+}
+#repinfos li.REPINFOS_LI_dark {
+  --repinfos-li-bg: #2f2f2f;
+}
+
+#repinfos li.REPINFOS_LI_default:hover {
+  --repinfos-li-hover-bg: #d0e7ff;
+}
+#repinfos li.REPINFOS_LI_dark:hover {
+  --repinfos-li-hover-bg: #444444;
+}

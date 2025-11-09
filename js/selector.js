@@ -10,15 +10,18 @@ class Selector {
   }
 
   static create(i){
-    const elem = Elem.create("input", {cl: "selector"});
-    elem.type = "checkbox";
-    elem.style.width = "20px";
-    elem.style.cursor = "pointer";
-    elem.addEventListener("focus", e => e.target.blur());
-    if(Doc.getDisabled(i)) elem.disabled = true;
-    if(Doc.getChecked(i)) elem.checked = true;
+    const lbl = Elem.create("label", {cl: "selector-box"});
+    lbl.addEventListener("dragover", e => e.preventDefault());
 
-    elem.addEventListener("click", e => {
+    const selector = Elem.create("input", {cl: "selector"});
+    selector.type = "checkbox";
+    selector.addEventListener("focus", e => e.target.blur());
+    if(Doc.getDisabled(i)) selector.disabled = true;
+    if(Doc.getChecked(i)){
+      selector.checked = true;
+      DocHeader.check();
+    }
+    selector.addEventListener("click", e => {
       const isChecked = e.target.checked;
       Doc.setChecked(i, isChecked);
       if(isChecked){
@@ -31,7 +34,9 @@ class Selector {
       }
     });
 
-    return elem;
+    lbl.appendChild(selector);
+
+    return lbl;
   }
 
   static check(i){

@@ -1,0 +1,593 @@
+<div style="display: flex; align-items: start;">
+<textarea
+  id="tainfo_init_1"
+  style="
+    resize: none;
+    font-size: xxx-large;
+    height: 350px;
+    width: 140px;
+">1
+2
+3
+4
+5
+6</textarea>
+<textarea
+  id="tainfo_pre_sel_1"
+  style="
+    resize: none;
+    font-size: xxx-large;
+    height: 350px;
+    width: 140px;
+"></textarea>
+<textarea
+  id="tainfo_sel_1"
+  style="
+    resize: none;
+    font-size: xxx-large;
+    height: 350px;
+    width: 140px;
+"></textarea>
+<textarea
+  id="textarea_1"
+  style="
+    resize: none;
+    font-size: xxx-large;
+    height: 350px;
+    width: 350px;
+">あいうえお
+かきくけこ
+さしすせそ
+たちつてと
+なにぬねの
+</textarea>
+<textarea
+  id="tainfo_str_1"
+  style="
+    resize: none;
+    font-size: xxx-large;
+    height: 350px;
+    width: 350px;
+"></textarea>
+<textarea
+  id="tainfo_line_count_1"
+  style="
+    resize: none;
+    font-size: xxx-large;
+    height: 350px;
+    width: 140px;
+"></textarea>
+<div style="display: flex; flex-direction: column; font-size: xx-large;">
+<div><span>is_chars: </span><span id="tainfo_chars_1"></span></div>
+<div><span>is_multi: </span><span id="tainfo_multi_1"></span></div>
+<div><span>前選択の接頭行: </span><span id="ta_prefix_pre_sel_1"></span></div>
+<div><span>前選択の接尾行: </span><span id="ta_suffix_pre_sel_1"></span></div>
+<div><span>選択行: </span><span id="ta_para_num_sel_1"></span></div>
+<div><span>カーソル以降の行数: </span><span id="ta_line_count_after_caret_1"></span></div>
+</div>
+</div>
+
+
+
+<div style="display: flex; align-items: start;">
+<textarea
+  id="tainfo_init_2"
+  style="
+    resize: none;
+    font-size: xxx-large;
+    height: 350px;
+    width: 140px;
+">1
+2
+3
+4
+5
+6</textarea>
+<textarea
+  id="tainfo_pre_sel_2"
+  style="
+    resize: none;
+    font-size: xxx-large;
+    height: 350px;
+    width: 140px;
+"></textarea>
+<textarea
+  id="tainfo_sel_2"
+  style="
+    resize: none;
+    font-size: xxx-large;
+    height: 350px;
+    width: 140px;
+"></textarea>
+<textarea
+  id="textarea_2"
+  style="
+    resize: none;
+    font-size: xxx-large;
+    height: 350px;
+    width: 350px;
+">はひふへほ
+まみむめも
+やいゆえよ
+らりるれろ
+わいうえを
+</textarea>
+<textarea
+  id="tainfo_str_2"
+  style="
+    resize: none;
+    font-size: xxx-large;
+    height: 350px;
+    width: 350px;
+"></textarea>
+<textarea
+  id="tainfo_line_count_2"
+  style="
+    resize: none;
+    font-size: xxx-large;
+    height: 350px;
+    width: 140px;
+"></textarea>
+<div style="display: flex; flex-direction: column; font-size: xx-large;">
+<div><span>is_chars: </span><span id="tainfo_chars_2"></span></div>
+<div><span>is_multi: </span><span id="tainfo_multi_2"></span></div>
+<div><span>前選択の接頭行: </span><span id="ta_prefix_pre_sel_2"></span></div>
+<div><span>前選択の接尾行: </span><span id="ta_suffix_pre_sel_2"></span></div>
+<div><span>選択行: </span><span id="ta_para_num_sel_2"></span></div>
+<div><span>カーソル以降の行数: </span><span id="ta_line_count_after_caret_2"></span></div>
+</div> 
+</div>
+
+<div style="display: flex; flex-direction: column; font-size: xx-large;">
+<div><span>ドラッグ元: </span><span id="tadragsrc"></span></div>
+<div><span>ドラッグ先: </span><span id="tadragdest"></span></div>
+</div>
+
+<script>
+const ta_pre = document.getElementById("tainfo_pre_sel_1");
+const ta_sel = document.getElementById("tainfo_sel_1");
+const ta = document.getElementById("textarea_1");
+const ta_str = document.getElementById("tainfo_str_1");
+const ta_lc = document.getElementById("tainfo_line_count_1");
+const ta_chars = document.getElementById("tainfo_chars_1");
+const ta_multi = document.getElementById("tainfo_multi_1");
+
+const ta1_init = document.getElementById("tainfo_init_1");
+const ta2_init = document.getElementById("tainfo_init_2");
+const ta_pps = document.getElementById("ta_prefix_pre_sel_1");
+const ta_sps = document.getElementById("ta_suffix_pre_sel_1");
+const ta_pns = document.getElementById("ta_para_num_sel_1");
+const ta_lcac = document.getElementById("ta_line_count_after_caret_1");
+
+
+
+const ta2 = document.getElementById("textarea_2");
+
+const ta_dragsrc = document.getElementById("tadragsrc");
+const ta_dragdest = document.getElementById("tadragdest");
+
+
+const ta1Init = [1, 2, 3, 4, 5, 6];
+const ta2Init = [1, 2, 3, 4, 5, 6];
+const taInfo = {
+  sel_start: 0,
+  sel_end: 0,
+  sel_str: "",
+  sel_paras: [],
+  pre_sel_start: 0,
+  pre_sel_end: 0,
+  pre_sel_paras: [],
+  chars_per_para: [],
+  is_chars: false,
+  is_multi: false,
+  is_mousedown: false,
+  is_keydown: false,
+  is_shift: false,
+  is_ctrl: false,
+  is_typed_arrow: false,
+  is_clicked_mouse: false,
+  is_cut: false,
+  is_copy: false,
+  is_paste: false,
+  is_selecting: 0,
+  is_backspace: false,
+  is_delete: false,
+  is_enter: false,
+  is_input: false,
+  is_drop: false,
+  is_rightClick: false
+}
+
+const drag = {
+  src: 0,
+  dest: 0
+}
+
+document.addEventListener("mouseup", () => {
+  if(taInfo.is_selecting !== 0){
+    taInfo.is_mousedown = false;
+    if(taInfo.is_selecting === 1){
+      ta.dispatchEvent(new Event("selectionchange"));
+    }else if(taInfo.is_selecting === 2){
+      ta2.dispatchEvent(new Event("selectionchange"));
+    }
+    taInfo.is_selecting = 0;
+  }
+});
+
+window.addEventListener("load", () => {
+  
+  ta.addEventListener("keydown", e => {
+    console.log("keydown_1");
+    if(e.shiftKey) taInfo.is_shift = true;
+    if(e.ctrlKey) taInfo.is_ctrl = true;
+    taInfo.is_keydown = true;
+  });
+  ta.addEventListener("keyup", e => {
+    console.log("keyup_1");
+    taInfo.is_keydown = false;
+    if(!e.shiftKey){
+      taInfo.is_shift = false;
+      if(taInfo.is_clicked_mouse || taInfo.is_typed_arrow){
+        taInfo.is_clicked_mouse = false;
+        taInfo.is_typed_arrow = false;
+        return;
+      }
+    }
+    if(!e.ctrlKey){
+      taInfo.is_ctrl = false;
+      if(taInfo.is_paste || taInfo.is_cut){
+        taInfo.is_paste = false;
+        taInfo.is_cut = false;
+        return;
+      }
+    }
+    if(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)){
+      if(taInfo.is_shift) taInfo.is_typed_arrow = true;
+    }
+
+    if(e.key === "x"){
+      if(taInfo.is_ctrl) taInfo.is_cut = true;
+    }else if(e.key === "v"){
+      if(taInfo.is_ctrl) taInfo.is_paste = true;
+    }else if(e.key === "c"){
+      if(taInfo.is_ctrl) return;
+    }
+
+    if(e.key === "Backspace"){taInfo.is_backspace = true}
+    if(e.key === "Delete"){taInfo.is_delete = true}
+    if(e.key === "Enter"){taInfo.is_enter = true}
+
+    e.target.dispatchEvent(new Event("selectionchange"));
+  });
+  ta.addEventListener("focusin", () => console.log("focusin_1"));
+  ta.addEventListener("focusout", () => console.log("focusout_1"));
+  ta.addEventListener("mousedown", e => {
+    console.log("mousedown_1");
+    taInfo.is_mousedown = true;
+    if(e.button === 2) taInfo.is_rightClick = true;
+    if(taInfo.is_shift) taInfo.is_clicked_mouse = true;
+  });
+  ta.addEventListener("mouseup", e => {
+    console.log("mouseup_1");
+    taInfo.is_mousedown = false;
+    if(taInfo.is_shift) taInfo.is_keydown = false;
+    if(taInfo.is_rightClick) return;
+    e.target.dispatchEvent(new Event("selectionchange"));
+  });
+  ta.addEventListener("contextmenu", e => {
+    console.log("contextmenu_1");
+    taInfo.is_rightClick = false;
+
+    e.target.dispatchEvent(new Event("selectionchange"));
+  });
+
+  ta.addEventListener("selectionchange", e => {
+    if(taInfo.is_mousedown || taInfo.is_keydown){
+      console.log("s_out_1");
+      taInfo.is_selecting = 1;
+      return;
+    }
+    console.log("selectionchange_1");
+    taInfo.is_selecting = false;
+    taInfo.pre_sel_start = taInfo.sel_start;
+    taInfo.pre_sel_end = taInfo.sel_end;
+    taInfo.pre_sel_paras.length = 0;
+    taInfo.pre_sel_paras.push(...taInfo.sel_paras);
+
+    const el = e.target;
+    taInfo.sel_start = el.selectionStart;
+    taInfo.sel_end = el.selectionEnd;
+    
+    const charsPerPara = el.value.split("\n");
+    taInfo.sel_paras = new Array(charsPerPara.length).fill("");
+    let startPos = 0;
+
+    for( let j = 0; j < charsPerPara.length; j++ ){
+      const endPos = startPos + charsPerPara[j].length;
+      const containsStart = startPos >= taInfo.sel_start && taInfo.sel_end >= startPos;
+      const containsEnd = endPos >= taInfo.sel_start && taInfo.sel_end >= endPos;
+      const containsInside = startPos < taInfo.sel_start && taInfo.sel_end < endPos;
+
+      if(containsInside){
+        taInfo.sel_paras[j] = "inside";
+      }else if(containsStart && !containsEnd){
+        taInfo.sel_paras[j] = "start";
+      }else if(containsEnd && !containsStart){
+        taInfo.sel_paras[j] = "end";
+      }else if(containsStart && containsEnd){
+        taInfo.sel_paras[j] = "all";
+      }else{
+        taInfo.sel_paras[j] = "none";
+      }
+
+      startPos += charsPerPara[j].length + 1;
+    }
+    ta_pre.value = taInfo.pre_sel_paras.join("\n");
+    ta_sel.value = taInfo.sel_paras.join("\n");
+    ta_str.value = el.value.slice(taInfo.sel_start, taInfo.sel_end);
+    ta_lc.value = ta_str.value.split("\n").reduce( (acc, cur, j) => {
+      if(j >= charsPerPara.length - 1) return acc;
+      acc.push(j + 1);
+      return acc;
+    }, []).join("\n");
+    taInfo.is_chars = taInfo.sel_start !== taInfo.sel_end ? true : false;
+    ta_chars.textContent = taInfo.is_chars ? "true" : "false";
+    taInfo.is_multi = ta_str.value.split("\n").length - 1 === 0 ? false : true;
+    ta_multi.textContent = taInfo.is_multi ? "true" : "false";
+
+    //
+    // ここから削除や入力後処理
+    //
+
+    if(!taInfo.is_backspace && !taInfo.is_delete && !taInfo.is_enter && !taInfo.is_paste && !taInfo.is_cut && !taInfo.is_drop) return;
+
+    const prefixPreSelParaNum = taInfo.pre_sel_paras.findIndex(p => p !== "none");
+    const suffixPreSelParaNum = taInfo.pre_sel_paras.length - [...taInfo.pre_sel_paras].reverse().findIndex(p => p !== "none");
+    const selParaNum = taInfo.sel_paras.findIndex(p => p !== "none");
+    const restParaCountAfterCaret = [...taInfo.sel_paras].reverse().findIndex(p => p !== "none");
+
+    const num = Number(e.target.id.split("_")[1]);
+    console.log(num, prefixPreSelParaNum, suffixPreSelParaNum, selParaNum, restParaCountAfterCaret);
+
+    ta_pps.textContent = prefixPreSelParaNum;
+    ta_sps.textContent = suffixPreSelParaNum;
+    ta_pns.textContent = selParaNum;
+    ta_lcac.textContent = restParaCountAfterCaret;
+
+    console.log(taInfo.is_drop, num, drag.dest);
+    console.log(taInfo.is_drop && num === drag.dest)
+    const caretBeforeState = [];
+    if(taInfo.is_backspace){
+      caretBeforeState.push(...ta1Init.slice(0, selParaNum + 1));
+    }else if(taInfo.is_drop && num === drag.dest){
+      caretBeforeState.push(...ta1Init.slice(0, selParaNum + 1));
+      const selParaCount = ta_str.value.split("\n").length - 1
+      caretBeforeState.push(...new Array(selParaCount).fill(-1));
+    }else{
+      caretBeforeState.push(...ta1Init.slice(0, prefixPreSelParaNum + 1));
+      if(taInfo.is_enter || taInfo.is_paste) caretBeforeState.push(...new Array(selParaNum - prefixPreSelParaNum).fill(-1));
+    }
+
+    const caretAfterState = [];
+    if(taInfo.is_delete){
+      taInfo.pre_sel_paras.length - suffixPreSelParaNum
+      caretAfterState.push(...ta1Init.slice(taInfo.pre_sel_paras.length - restParaCountAfterCaret));
+    }else if(taInfo.is_drop && num === drag.dest){
+      caretAfterState.push(...ta1Init.slice(selParaNum + 1));
+    }else{
+      caretAfterState.push(...ta1Init.slice(suffixPreSelParaNum));
+    }
+
+    const result = [...caretBeforeState, ...caretAfterState];
+
+    ta1_init.value = result.join("\n");
+
+    taInfo.is_backspace = false;
+    taInfo.is_delete = false;
+    taInfo.is_enter = false;
+    if(num === drag.dest) taInfo.is_drop = false;
+  });
+  ta.addEventListener("dragstart", () => {
+    console.log("dragstart_1");
+    drag.src = 1;
+    ta_dragsrc.textContent = drag.src;
+  });
+  ta.addEventListener("dragover", () => console.log("dragover_1"));
+  ta.addEventListener("drop", () => {
+    console.log("drop_1");
+    drag.dest = 1;
+    ta_dragdest.textContent = drag.dest;
+    
+    taInfo.is_mousedown = false;
+    taInfo.is_drop = true;
+  });
+
+
+  ta2.addEventListener("keydown", e => {
+    console.log("keydown_2");
+    if(e.shiftKey) taInfo.is_shift = true;
+    if(e.ctrlKey) taInfo.is_ctrl = true;
+    taInfo.is_keydown = true;
+  });
+  ta2.addEventListener("keyup", e => {
+    console.log("keyup_2");
+    taInfo.is_keydown = false;
+    if(!e.shiftKey){
+      taInfo.is_shift = false;
+      if(taInfo.is_clicked_mouse || taInfo.is_typed_arrow){
+        taInfo.is_clicked_mouse = false;
+        taInfo.is_typed_arrow = false;
+        return;
+      }
+    }
+    if(!e.ctrlKey){
+      taInfo.is_ctrl = false;
+      if(taInfo.is_paste || taInfo.is_cut){
+        taInfo.is_paste = false;
+        taInfo.is_cut = false;
+        return;
+      }
+    }
+    if(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)){
+      if(taInfo.is_shift) taInfo.is_typed_arrow = true;
+    }
+
+    if(e.key === "x"){
+      if(taInfo.is_ctrl) taInfo.is_cut = true;
+    }else if(e.key === "v"){
+      if(taInfo.is_ctrl) taInfo.is_paste = true;
+    }else if(e.key === "c"){
+      if(taInfo.is_ctrl) return;
+    }
+
+    if(e.key === "Backspace"){taInfo.is_backspace = true}
+    if(e.key === "Delete"){taInfo.is_delete = true}
+    if(e.key === "Enter"){taInfo.is_enter = true}
+
+    e.target.dispatchEvent(new Event("selectionchange"));
+  });
+  ta2.addEventListener("focusin", () => console.log("focusin_2"));
+  ta2.addEventListener("focusout", () => console.log("focusout_2"));
+  ta2.addEventListener("mousedown", e => {
+    console.log("mousedown_2");
+    taInfo.is_mousedown = true;
+    if(taInfo.is_shift) taInfo.is_clicked_mouse = true;
+    if(e.button === 2) taInfo.is_rightClick = true;
+  });
+  ta2.addEventListener("mouseup", e => {
+    console.log("mouseup_2");
+    taInfo.is_mousedown = false;
+    if(taInfo.is_shift) taInfo.is_keydown = false;
+    if(taInfo.is_rightClick) return;
+    e.target.dispatchEvent(new Event("selectionchange"));
+  });
+  ta2.addEventListener("contextmenu", e => {
+    console.log("contextmenu_2");
+    taInfo.is_rightClick = false;
+
+    e.target.dispatchEvent(new Event("selectionchange"));
+  });
+  ta2.addEventListener("selectionchange", e => {
+    if(taInfo.is_mousedown || taInfo.is_keydown){
+      console.log("s_out_2");
+      taInfo.is_selecting = 2;
+      return;
+    }
+    console.log("selectionchange_2");
+
+
+    taInfo.is_selecting = false;
+    taInfo.pre_sel_start = taInfo.sel_start;
+    taInfo.pre_sel_end = taInfo.sel_end;
+    taInfo.pre_sel_paras.length = 0;
+    taInfo.pre_sel_paras.push(...taInfo.sel_paras);
+
+    const el = e.target;
+    taInfo.sel_start = el.selectionStart;
+    taInfo.sel_end = el.selectionEnd;
+    
+    const charsPerPara = el.value.split("\n");
+    taInfo.sel_paras = new Array(charsPerPara.length).fill("");
+    let startPos = 0;
+
+    for( let j = 0; j < charsPerPara.length; j++ ){
+      const endPos = startPos + charsPerPara[j].length;
+      const containsStart = startPos >= taInfo.sel_start && taInfo.sel_end >= startPos;
+      const containsEnd = endPos >= taInfo.sel_start && taInfo.sel_end >= endPos;
+      const containsInside = startPos < taInfo.sel_start && taInfo.sel_end < endPos;
+
+      if(containsInside){
+        taInfo.sel_paras[j] = "inside";
+      }else if(containsStart && !containsEnd){
+        taInfo.sel_paras[j] = "start";
+      }else if(containsEnd && !containsStart){
+        taInfo.sel_paras[j] = "end";
+      }else if(containsStart && containsEnd){
+        taInfo.sel_paras[j] = "all";
+      }else{
+        taInfo.sel_paras[j] = "none";
+      }
+
+      startPos += charsPerPara[j].length + 1;
+    }
+    ta_pre.value = taInfo.pre_sel_paras.join("\n");
+    ta_sel.value = taInfo.sel_paras.join("\n");
+    ta_str.value = el.value.slice(taInfo.sel_start, taInfo.sel_end);
+    ta_lc.value = ta_str.value.split("\n").reduce( (acc, cur, j) => {
+      if(j >= charsPerPara.length - 1) return acc;
+      acc.push(j + 1);
+      return acc;
+    }, []).join("\n");
+    taInfo.is_chars = taInfo.sel_start !== taInfo.sel_end ? true : false;
+    ta_chars.textContent = taInfo.is_chars ? "true" : "false";
+    taInfo.is_multi = ta_str.value.split("\n").length - 1 === 0 ? false : true;
+    ta_multi.textContent = taInfo.is_multi ? "true" : "false";
+
+    //
+    // ここから削除や入力後処理
+    //
+
+    if(!taInfo.is_backspace && !taInfo.is_delete && !taInfo.is_enter && !taInfo.is_paste && !taInfo.is_cut && !taInfo.is_drop) return;
+
+    const prefixPreSelParaNum = taInfo.pre_sel_paras.findIndex(p => p !== "none");
+    const suffixPreSelParaNum = taInfo.pre_sel_paras.length - [...taInfo.pre_sel_paras].reverse().findIndex(p => p !== "none");
+    const selParaNum = taInfo.sel_paras.findIndex(p => p !== "none");
+    const restParaCountAfterCaret = [...taInfo.sel_paras].reverse().findIndex(p => p !== "none");
+
+    const num = Number(e.target.id.split("_")[1]);
+    console.log(num, prefixPreSelParaNum, suffixPreSelParaNum, selParaNum, restParaCountAfterCaret);
+
+    ta_pps.textContent = prefixPreSelParaNum;
+    ta_sps.textContent = suffixPreSelParaNum;
+    ta_pns.textContent = selParaNum;
+    ta_lcac.textContent = restParaCountAfterCaret;
+
+    const caretBeforeState = [];
+    if(taInfo.is_backspace){
+      caretBeforeState.push(...ta2Init.slice(0, selParaNum + 1));
+    }else if(taInfo.is_drop && num === drag.dest){
+      caretBeforeState.push(...ta2Init.slice(0, selParaNum + 1));
+      const selParaCount = ta_str.value.split("\n").length - 1
+      caretBeforeState.push(...new Array(selParaCount).fill(-1));
+    }else{
+      caretBeforeState.push(...ta2Init.slice(0, prefixPreSelParaNum + 1));
+      if(taInfo.is_enter || taInfo.is_paste) caretBeforeState.push(...new Array(selParaNum - prefixPreSelParaNum).fill(-1));
+    }
+
+    const caretAfterState = [];
+    if(taInfo.is_delete){
+      taInfo.pre_sel_paras.length - suffixPreSelParaNum
+      caretAfterState.push(...ta2Init.slice(taInfo.pre_sel_paras.length - restParaCountAfterCaret));
+    }else if(taInfo.is_drop && num === drag.dest){
+      const suffixSelParaNum = taInfo.sel_paras.length - [...taInfo.sel_paras].reverse().findIndex(p => p !== "none");
+      caretAfterState.push(...ta2Init.slice(suffixSelParaNum));
+    }else{
+      caretAfterState.push(...ta2Init.slice(suffixPreSelParaNum));
+    }
+
+    const result = [...caretBeforeState, ...caretAfterState];
+
+    ta2_init.value = result.join("\n");
+
+    taInfo.is_backspace = false;
+    taInfo.is_delete = false;
+    taInfo.is_enter = false;
+    if(num === drag.dest) taInfo.is_drop = false;
+  });
+  ta2.addEventListener("dragstart", () => {
+    console.log("dragstart_2");
+    drag.src = 2;
+    ta_dragsrc.textContent = drag.src;
+  });
+  ta2.addEventListener("dragover", () => console.log("dragover_2"));
+  ta2.addEventListener("drop", () => {
+    console.log("drop_2");
+    drag.dest = 2;
+    ta_dragdest.textContent = drag.dest;
+
+    taInfo.is_mousedown = false;
+    taInfo.is_drop = true;
+  });
+});
+</script>

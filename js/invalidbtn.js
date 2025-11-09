@@ -2,7 +2,7 @@ class InvalidBtn {
   static create(i){
     const line = Doc.getLine(i);
     
-    const elem = Elem.create("span", {cl: "invalid-button"});
+    const elem = Elem.create("span", {cl: "invalid-button hide"});
     elem.textContent = '×';
 
     elem.addEventListener("click", e => {

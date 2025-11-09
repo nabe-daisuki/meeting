@@ -1,4 +1,4 @@
-.FlexTextarea {
+.text-box {
   position: relative;
   font-size: 1rem;
   line-height: 1.8;
@@ -7,7 +7,7 @@
   flex: 1
 }
 
-.FlexTextarea__dummy {
+.text-body-bg {
   overflow: hidden;
   box-sizing: border-box;
   padding: 5px 15px 5px 45px;
@@ -16,9 +16,10 @@
   word-wrap: break-word;
   overflow-wrap: break-word;
   width: 100%;
+  color: var(--text-body-bg-fg);
 }
 
-.FlexTextarea__textarea {
+.text-body {
   position: absolute;
   top: 0;
   left: 0;
@@ -33,9 +34,30 @@
   letter-spacing: inherit;
   resize: none;
   z-index: 50;
+  color: var(--text-body-fg);
 }
 
-.FlexTextarea__textarea:focus {
+.text-body:focus {
   outline: none;
   border: none;
+}
+
+.TB_edited {
+  color: #ff6262;
+  font-weight: bold;
+}
+
+.TBB_hidden {
+  visibility: hidden;
+}
+
+.TB_transparent {
+  color: transparent;
+}
+
+.has-replace {
+  background-color: var(--has-replace-bg);
+}
+.focus-para {
+  background-color: var(--focus-para-bg);
 }

@@ -1,0 +1,28 @@
+<div id="child-div"></div>
+<style>
+#child-div {
+  height: 200px;
+  width: 200px;
+  background-color: orange;
+}
+</style>
+
+<script>
+const child = document.getElementById("child-div");
+
+window.addEventListener("load", () => {
+  if(window.top !== window.self){
+    child.style.backgroundColor = "purple";
+  }
+  window.parent.postMessage({ message: "yeah" }, "*");
+});
+
+window.addEventListener("message", e => {
+  console.log("受信:", e.data);
+  if(e.data.message === "foo"){
+    child.style.backgroundColor = "cyan";
+  }else if(e.data.message === "haa"){
+    child.style.backgroundColor = "pink";
+  }
+});
+</script>

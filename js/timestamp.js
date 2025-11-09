@@ -1,7 +1,7 @@
 class TimeStamp {
   static create(i) {
     const line = Doc.getLine(i);
-    const elem = Elem.create("div", {cl: "timestamp"});
+    const elem = Elem.create("div", {cl: `timestamp TS_${Theme.get()}`});
     elem.textContent = this.toTimeRangeStr(line.startSec, line.endSec);
     if(line.hided) elem.style.display = "none";
     
