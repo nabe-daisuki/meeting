@@ -149,6 +149,7 @@ class GijiInput {
     });
 
     Theme.set("dark");
+    Theme.setSub("yellow");
     if(Object.keys(sections).includes("speaker")){
       Render.speaker();
     }
@@ -183,9 +184,6 @@ class GijiInput {
     Theme.apply();
 
     fileDropOverlay.classList.add("hide");
-    setTimeout(() => {
-      fileDropOverlay.style.display = "none";
-    }, 2000);
   }
 
 }

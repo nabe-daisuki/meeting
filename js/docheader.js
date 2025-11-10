@@ -10,7 +10,7 @@ class DocHeader {
   }
 
   static init(){
-    const elem = Elem.create("div", {id: "doc-header", cl: `DC_${Theme.get()}`});
+    const elem = Elem.create("div", {id: "doc-header", cl: `DC_${Theme.get()} dark_theme_yellow`});
 
     const lbl = Elem.create("label", {id: "all-selector-box"});
     const allSelector = Elem.create("input", {id: "all-selector"});

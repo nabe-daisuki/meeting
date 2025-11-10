@@ -1,4 +1,4 @@
-const isTest = true;
+const isTest = false;
 const isGijiTest = false;
 
 const header = document.getElementById("header");
@@ -8,8 +8,13 @@ const fileDropOverlay = document.getElementById("file-drop-overlay");
 const gijiFileInput = document.getElementById("giji-file-input");
 
 const lPanel = document.getElementById("left-panel");
-const rPanel = document.getElementById("right-panel")
+const rPanel = document.getElementById("right-panel");
 const audio = document.getElementById("audio");
+
+const playbackBox = document.getElementById("playback-box");
+const volumeBox = document.getElementById("volume-box");
+const speedBox = document.getElementById("speed-box");
+
 const playbackSlider = document.getElementById("playback-slider");
 const volumeSlider = document.getElementById("volume-slider");
 const volumeLabel = document.getElementById("volume-label");
@@ -107,8 +112,7 @@ window.addEventListener("resize", () => {
   for(let i = 0; i < Doc.getLines().length; i++){
     TextBody.resetCharsPerPara(i);
     TextBody.resetParaHeights(i);
-    TextBody.resetCommentPos(i);
-    TextBody.resetResponsePos(i);
+    TextBody.resetMiniBadges(i);
   }
   isWindowResize = false;
 });

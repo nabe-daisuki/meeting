@@ -15,7 +15,6 @@ class TextInput {
     TextFile.setData(file);
     TextFile.setName(file.name);
 
-    Doc.clearRepInfos();
     Doc.clearLines();
     await FileParser.parse();
 

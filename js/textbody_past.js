@@ -93,6 +93,7 @@ class TextBody {
       const isMultiLine = e.target.value.slice(this.selection.start, this.selection.end).includes("\n");
       const paraNum = this.getSelectionParaNum(i);
       
+      // 保留
       switch(e.key){
         case "Tab":
           e.preventDefault();
@@ -151,8 +152,9 @@ class TextBody {
       this.resetCharsPerPara(i);
       this.resetParaHeights(i);
       this.setSelection(e.target, i);
-      this.resetCommentPos(i);
-      this.resetResponsePos(i);
+      this.resetMiniBadges(i);
+      // this.resetCommentPos(i);
+      // this.resetResponsePos(i);
 
       this.edit.isBackspace = false;
       this.edit.isDelete = false;
@@ -304,10 +306,11 @@ class TextBody {
       if(this.edit.isRightCut || this.edit.isSpeakerDrop){
         this.setSelection(e.target, i);
 
-        this.edit.isBackspace = true;
-        this.resetCommentPos(i);
-        this.resetResponsePos(i);
-        this.edit.isBackspace = false;
+        // this.edit.isBackspace = true;
+        this.resetMiniBadges(i);
+        // this.resetCommentPos(i);
+        // this.resetResponsePos(i);
+        // this.edit.isBackspace = false;
         this.edit.isRightCut = false;
         this.edit.isSpeakerDrop = false;
       }

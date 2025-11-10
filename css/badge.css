@@ -58,6 +58,10 @@
 .mini-badge img {
   width: 1.3em;
 }
+.mini-none {
+  height: 1.3em;
+  border: 0.5px dotted #676767;
+}
 
 .attachment-badge {
   background-color: #ebd600;

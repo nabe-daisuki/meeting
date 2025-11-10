@@ -56,6 +56,7 @@
   }
 </style>
   <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/sub-theme.css">
   <link rel="stylesheet" href="css/header.css">
   <link rel="stylesheet" href="css/panels.css">
   <link rel="stylesheet" href="css/left-panel.css">
@@ -83,26 +84,26 @@
 
     <div style = "flex: 1;">
       <audio id="audio" loop controls tabindex="-1"></audio>
-      <div title="音声をシークできます。" class="slider big">
+      <div id="playback-box"  title="音声をシークできます。" class="slider big">
         <div id="playback-time-box">
-          <span id="current-time">0:00:00</span>
+          <span id="current-time" class="dark_theme_yellow">0:00:00</span>
           <span id="duration-time">/0:00:10</span>
         </div>
         <img title="音声を再生します。" src="img/theme/default/play.png" id="play-btn">
         <img title="音声を一時停止します。" src="img/theme/default/pause.png" id="pause-btn" class="hide">
         <img title="音声を停止します。" src="img/theme/default/stop.png" id="stop-btn">
-        <input type="range" id="playback-slider" min="0.00" max="100.00" value="0.00" step="0.01">
+        <input type="range" id="playback-slider" class="dark_theme_yellow" min="0.00" max="100.00" value="0.00" step="0.01">
       </div>
       <div id="audio-controller">
-        <div title="音声のボリュームを操作できます。" class="slider">
+        <div id="volume-box" title="音声のボリュームを操作できます。" class="slider">
           <img title="音声をミュートします。" src="img/theme/default/volume.png" id="unmute-btn">
           <img title="音声のミュートを解除します。" src="img/theme/default/mute.png" id="mute-btn" class="hide">
-          <input type="range" id="volume-slider" min="0" max="100" value="10">
+          <input type="range" id="volume-slider" class="dark_theme_yellow" min="0" max="100" value="10">
           <span class="slider-label" id="volume-label">10%</span>
         </div>
-        <div title="音声の速度を操作できます。" class="slider">
+        <div id="speed-box" title="音声の速度を操作できます。" class="slider">
           <img title="音声の速度をx1.0にします。" src="img/theme/default/speed.png" id="normal-speed-btn">
-          <input type="range" id="speed-slider" min="0" max="2.00" value="1.00" step="0.01">
+          <input type="range" id="speed-slider" class="dark_theme_yellow" min="0" max="2.00" value="1.00" step="0.01">
           <span class="slider-label" id="speed-label">100%</span>
         </div>
 
@@ -257,10 +258,10 @@
 
 
 <div id="editor-panel">
-  <div class="panel" id="left-panel"></div>
+  <div class="panel dark_theme_yellow" id="left-panel"></div>
   <div class="panel" id="right-panel">
 
-    <div class="sub-tool-section" id="taraTool" style="display:none;">
+    <div class="sub-tool-section dark_theme_yellow" id="taraTool" style="display:none;">
       <div class="sub-tool-header">「たら」の言い換え</div>
       <div class="sub-tool-buttons">
         <button data-replace="した際">した際</button>
@@ -269,13 +270,13 @@
       </div>
     </div>
 
-    <div class="sub-tool-section">
+    <div class="sub-tool-section dark_theme_yellow">
       <div class="sub-tool-header">発言者</div>
       <div id="speakers" class="sub-tool-buttons">
       </div>
     </div>
 
-    <div class="sub-tool-section">
+    <div class="sub-tool-section dark_theme_yellow">
       <div class="sub-tool-header">バッジ</div>
       <div id = "badges" class="sub-tool-buttons">
         <div class="badge big-badge attachment-badge" id="attachment-badge" draggable="true">
@@ -293,7 +294,7 @@
       </div>
     </div>
 
-    <div class="sub-tool-section">
+    <div class="sub-tool-section dark_theme_yellow">
       <div class="sub-tool-header">置換履歴</div>
       <ul id="repinfos" class="sub-tool-buttons">
       </ul>

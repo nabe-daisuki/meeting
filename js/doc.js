@@ -94,6 +94,30 @@ class Doc{
     this.setBadges(i, this.getBadges(i).replace(c, ""));
   }
 
+  static getMiniBadges(i){
+    return this.getLine(i).miniBadges;
+  }
+  static setMiniBadges(i, bs){
+    this.getLine(i).miniBadges.length = 0;
+    this.getLine(i).miniBadges.push(...bs);
+  }
+  static getMiniBadge(i, j){
+    return this.getMiniBadges(i)[j];
+  }
+  static setMiniBadge(i, j, b){
+    this.getMiniBadges(i)[j] = b;
+  }
+  static hasMiniBadge(i, j, c){
+    return this.getLine(i).miniBadges[j].includes(c);
+  }
+  static addMiniBadge(i, j, c){
+    if(this.hasMiniBadge(i, j, c)) return;
+    this.setMiniBadge(i, j, c);
+  }
+  static removeMiniBadge(i, j){
+    this.setMiniBadge(i, j, "n");
+  }
+
   static getCharsPerPara(i){
     return this.getLine(i).charsPerPara;
   }

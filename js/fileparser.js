@@ -9,7 +9,6 @@ class FileParser {
       const reader = new FileReader();
 
       reader.onload = e => {
-        console.log(e.target.result)
         const lines = e.target.result
           .split('\n')
           .map( l => this.parseLine(l))
@@ -46,6 +45,7 @@ class FileParser {
     if(this.containsManagementNum(text)) badges += "s";
     line.badges = badges;
     line.charsPerPara = text.split("\n");
+    line.miniBadges = new Array(line.charsPerPara.length).fill("n");
     line.comments = new Array(line.charsPerPara.length).fill(false);
     line.responses = new Array(line.charsPerPara.length).fill(false);
     return line;

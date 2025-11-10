@@ -1,6 +1,7 @@
 class Config {
   static schema = [
     {key:"theme", type:"select", name:"テーマ", hint:"UIテーマを選択します。", options:["デフォルト", "ダーク"], value:["ダーク"]},
+    {key:"subTheme", type:"select", name:"サブテーマ", hint:"UIサブテーマを選択します。", options:["レッド", "オレンジ", "イエロー", "グリーン", "シアン", "パープル", "ピンク"], value:["イエロー"]},
     {key:"keyconfig", type:"button", name:"キーコンフィグを開く", hint:"ショートカットキーを設定できます。", value:"設定画面を開く"},
     {key:"hideInputText", type:"checkbox", name:"テキスト(.txt)を読み込むことはない", hint:"「テキストの読込」を非表示にします。", value:true},
     {key:"hideInputAudio", type:"checkbox", name:"音声(.mp3)を読み込むことはない", hint:"「音声の読込」を非表示にします。", value:true},
@@ -10,12 +11,13 @@ class Config {
   ];
 
   static SCDefaults = [
-    {type:"seek-forward", range:"1,10", init:"1", step:"1", prefix:"", suffix:"秒/",  name:"音声を指定秒数進める", hint:"1～10秒の間で指定できます。"},
-    {type:"seek-backward", range:"1,10", init:"1", step:"1", prefix:"", suffix:"秒/",name:"音声を指定秒数戻す", hint:"1～10秒の間で指定できます。"},
+    {type:"seek-forward", range:"1,10", init:"1", step:"1", prefix:"", suffix:"秒 /",  name:"音声を指定秒数進める", hint:"1～10秒の間で指定できます。"},
+    {type:"seek-backward", range:"1,10", init:"1", step:"1", prefix:"", suffix:"秒 /",name:"音声を指定秒数戻す", hint:"1～10秒の間で指定できます。"},
     {type:"speed", range:"0.10,2.00", init:"1.00", step:"0.01", prefix:"x", suffix:"/", name:"音声を指定速度に変更する", hint:"0.10～2.00の間で指定できます。"},
     {type:"volume", range:"1,100", init:"10", step:"1", prefix:"x", suffix:"/", name:"音声を指定音量に変更する", hint:"1～100の間で指定できます。"},
     {type:"save", name:"状態を保存する", hint:"現状を保存できます。"},
     {type:"play-pause", name:"再生/一時停止する", hint:"音声を再生/一時停止できます。"},
+    {type:"seek-backward-and-play-pause", range:"1,10", init:"1", step:"1", prefix:"", suffix:"秒 /", name:"音声を指定秒数戻り再生及び一時停止する", hint:"音声を指定秒数戻し再生及び一時停止できます。"},
     {type:"named-save", name:"名前を付けて保存する", hint:"名前を付けて現状を保存できます。"},
   ];
 
@@ -33,8 +35,10 @@ class Config {
 
   ];
 
-  static textBodyShortCut = [
-
+  static textBodyShortCuts = [
+    {key:"TBSC01", type:"add-comment", value:["Ctrl+Q"]},
+    {key:"TBSC02", type:"add-response", value:["Ctrl+R"]},
+    {key:"TBSC03", type:"add-speaker", value:["F1"]}
   ];
 
   static isKeyConfig = false;
@@ -57,7 +61,9 @@ class Config {
       Render.mainTool();
 
       const theme = Theme.jpnToCode(this.get().find(s => s.key === "theme").value[0]);
+      const subTheme = Theme.jpnToCode(this.get().find(s => s.key === "subTheme").value[0]);
       Theme.set(theme);
+      Theme.setSub(subTheme);
       Theme.apply();
       this.close();
     });
@@ -110,6 +116,8 @@ class Config {
         return acc;
       }, []);
 
+      if(!value.at(-1)) return;
+
       this.addShortCut(j, type, value);
     });
 
@@ -138,6 +146,7 @@ class Config {
 
     const general = Elem.create("div", {id: "config-general"});
     for(const s of this.get()){
+      console.log(s);
       const item = Elem.create("div", {cl: "config-item"});
       const control = Elem.create("label", {cl: `config-${s.type}`});
       if(["checkbox", "text"].includes(s.type)){
@@ -256,10 +265,15 @@ class Config {
     const scDefault = this.SCDefaults.find(d => d.type === type);
 
     const item = Elem.create("div", {cl: "config-item"});
-    const control = Elem.create("div", {cl: `config-${type}`});
+
+    let classNames = [`config-${type}`, "config-shortcut-item"];
+    if("init" in scDefault) classNames.push("config-with-value");
+    else classNames.push("config-notwith-value");
+    const control = Elem.create("div", {cl: classNames.join(" ")});
     item.dataset.key = key;
     item.dataset.type = type; 
-    if(["seek-forward", "seek-backward", "speed"].includes(type)){
+
+    if("init" in scDefault){
       const prefix = Elem.createT(scDefault.prefix);
       
       const text = Elem.create("input");
@@ -271,6 +285,15 @@ class Config {
       const suffix = Elem.createT(scDefault.suffix);
 
       const select = Elem.create("select");
+      select.addEventListener("change", e => {
+        for(const sl of document.querySelectorAll(".config-shortcut-item select")){
+          if(sl === e.target) continue;
+          if(sl.value !== e.target.value) continue;
+          sl.selectedIndex = -1;
+          break;
+        }
+        console.log("選択された値:", e.target.value);
+      });
       for(const o of KeyBoard.shortCut){
         const option = Elem.create("option");
         option.value = o;
@@ -285,8 +308,17 @@ class Config {
       control.appendChild(text);
       control.appendChild(suffix);
       control.appendChild(select);
-    }else if(["save", "named-save", "play-pause"].includes(type)){
+    }else{
       const select = Elem.create("select");
+      select.addEventListener("change", e => {
+        for(const sl of document.querySelectorAll(".config-shortcut-item select")){
+          if(sl === e.target) continue;
+          if(sl.value !== e.target.value) continue;
+          sl.selectedIndex = -1;
+          break;
+        }
+        console.log("選択された値:", e.target.value);
+      });
 
       for(const o of KeyBoard.shortCut){
         const option = Elem.create("option");

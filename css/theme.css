@@ -117,15 +117,19 @@
 /* textarea */
 .text-body-bg.TBB_default {
   --text-body-bg-fg: inherit;
+  --text-body-edited-fg: #ff6262;
 }
 .text-body-bg.TBB_dark {
-  --text-body-bg-fg: white;
+  --text-body-bg-fg: #cccccc;
+  --text-body-edited-fg: #bb4f4f;
 }
 .text-body.TB_default {
   --text-body-fg: inherit;
+  --text-body-edited-fg: #ff6262;
 }
 .text-body.TB_dark {
-  --text-body-fg: white;
+  --text-body-fg: #cccccc;
+  --text-body-edited-fg: #bb4f4f;
 }
 .focus-para.FP_default {
   --focus-para-bg: #d3d3d3;

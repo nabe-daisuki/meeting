@@ -4,6 +4,7 @@ class KeyBoard {
   static hasAlt = false;
 
   static otherKeyPressed = false;
+  static DOUBLE_TAP_THRESHOLD = 300;
 
   static shortCut = [
     "F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12", //"F1"
@@ -38,9 +39,18 @@ class KeyBoard {
 
 
 let ctrlTimer = null;
+let lastShiftTime = 0;
 
 document.addEventListener("keydown", e => {
-  if(e.shiftKey) KeyBoard.hasShift = true;
+  if(e.shiftKey){
+    KeyBoard.hasShift = true;
+    const now = Date.now();
+    if (now - lastShiftTime < KeyBoard.DOUBLE_TAP_THRESHOLD) {
+      console.log("Shift ダブルタップ検出！");
+      // ここに好きな処理を書く
+    }
+    lastShiftTime = now;
+  }
   if(e.ctrlKey){
     KeyBoard.hasCtrl = true;
     if(!ctrlTimer){
@@ -83,6 +93,15 @@ document.addEventListener("keydown", e => {
         else AudioController.play();
       }
       break;
+    case "seek-backward-and-play-pause":
+      if(AudioFile.getBytes()) {
+        if(AudioState.isPlaying()) AudioController.pause();
+        else{
+          AudioController.seek(Number(shortCuts.value[0]) * -1);
+          AudioController.play();
+        }
+      }
+      break;
     default:
       alert("キー操作に対する処理がプログラムされていません。");
       return;
@@ -104,7 +123,6 @@ document.addEventListener("keyup", e => {
     KeyBoard.otherKeyPressed = false;
     setTimeout(() => {
       ShortCutHelper.hide();
-      console.log("1000");
     }, 1000);
   }
 });

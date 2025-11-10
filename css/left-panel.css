@@ -32,10 +32,10 @@
   background: #707070;
 }
 #all-selector:checked {
-  background: #fffb0a;
+  background: var(--sub-theme);
 }
 #all-selector:checked:hover {
-  background: #f0d90a;
+  background: var(--sub-theme-hover);
 }
 #all-selector:checked::after {
   content: "";
@@ -87,10 +87,10 @@
   background: #707070;
 }
 .selector:checked {
-  background: #fffb0a;
+  background: var(--sub-theme);
 }
 .selector:checked:hover {
-  background: #f0d90a;
+  background: var(--sub-theme-hover);
 }
 .selector:checked::after {
   content: "";

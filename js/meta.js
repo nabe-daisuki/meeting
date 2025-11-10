@@ -30,7 +30,7 @@ class Meta {
     const filename = textFilename || audioFilename;
     if(filename){
       if(filename.includes("__")) text += filename.split("__")[0];
-      text += filename.split(".")[0];
+      else text += filename.split(".")[0];
     }
     if(text) parts.push(text);
 

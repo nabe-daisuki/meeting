@@ -13,7 +13,7 @@ class Selector {
     const lbl = Elem.create("label", {cl: "selector-box"});
     lbl.addEventListener("dragover", e => e.preventDefault());
 
-    const selector = Elem.create("input", {cl: "selector"});
+    const selector = Elem.create("input", {cl: "selector dark_theme_yellow"});
     selector.type = "checkbox";
     selector.addEventListener("focus", e => e.target.blur());
     if(Doc.getDisabled(i)) selector.disabled = true;

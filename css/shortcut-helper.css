@@ -24,7 +24,7 @@
   border-radius: 10px;
   top: 20px;
   gap: 5px;
-  background: rgb(60 65 0 / 80%);
+  background: var(--sub-theme-alpha);
   right: 20px;
   flex-direction: column;
   align-items: flex-start;

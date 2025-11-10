@@ -43,7 +43,7 @@
 }
 
 .TB_edited {
-  color: #ff6262;
+  color: var(--text-body-edited-fg);
   font-weight: bold;
 }
 

@@ -40,6 +40,12 @@ class TextBody {
     dest: -1
   }
 
+  static draggingMiniBadge = {
+    elem: null,
+    lineIdx: -1,
+    paraNum: -1
+  }
+
   static draggingMiniComment = {
     elem: null,
     lineIdx: -1,
@@ -51,9 +57,23 @@ class TextBody {
     responseIdx: -1
   }
 
+  static MINI_BADGE_LOOP = ["n", "c", "r"];
+
   static setDragover(_i, _paraNum){
     this.dragover.i = _i;
     this.dragover.paraNum = _paraNum;
+  }
+
+  static setDraggingMiniBadge(_elem, _lineIdx, _paraNum){
+    this.draggingMiniBadge.elem = _elem;
+    this.draggingMiniBadge.lineIdx = _lineIdx;
+    this.draggingMiniBadge.paraNum = _paraNum;
+  }
+  static getDraggingMiniBadge(){
+    return this.draggingMiniBadge;
+  }
+  static initDraggingMiniBadge(){
+    this.setDraggingMiniBadge(null, -1, -1);
   }
 
   static setDraggingMiniComment(_elem, _lineIdx, _commentIdx){
@@ -119,8 +139,14 @@ class TextBody {
           let newSpeakerIdx = 0;
           if(/\（.*?\）$/.test(Doc.getCharsPerPara(i)[paraNum])){
             const speaker = Doc.getCharsPerPara(i)[paraNum].match(/\（.*?\）$/)[0].replace(/[（）]/g, "");
+            
             const speakerIdx = Array.from(Speaker.getBtns()).findIndex(s => speaker === s.textContent.replace(/[（）]/g, ""));
-            if(speakerIdx !== Speaker.count() - 1) newSpeakerIdx = speakerIdx + 1;
+            if(KeyBoard.hasShift){
+              if(speakerIdx === 0) newSpeakerIdx = Speaker.count() - 1;
+              else newSpeakerIdx = speakerIdx - 1;
+            }else{
+              if(speakerIdx !== Speaker.count() - 1) newSpeakerIdx = speakerIdx + 1;
+            }
           }
           const newSpeaker = Speaker.getBtns()[newSpeakerIdx].textContent.replace(/[（）]/g, "");
 
@@ -130,36 +156,40 @@ class TextBody {
           }).join("\n");
 
           textBody.value = replacedText;
+          textBody.setSelectionRange(this.selection.start, this.selection.end);
           this.enableEdited(i);
           Doc.setEditedText(i, replacedText);
           
           this.resetCharsPerPara(i);
           this.resetParaHeights(i);
-          this.resetCommentPos(i);
-          this.resetResponsePos(i);
+          this.resetMiniBadges(i);
 
         case "q":
           if(!KeyBoard.hasCtrl) return;
           e.preventDefault();
 
-          if(isMultiLine || this.hasComment(i, paraNum) || !Doc.hasCharsInPara(i, paraNum)) return;
-          if(this.hasResponse(i, paraNum)){
-            Doc.disableResponse(i, paraNum);
+          if(isMultiLine) return;
+          if(Doc.hasMiniBadge(i, paraNum, "c")){
+            Doc.removeMiniBadge(i, paraNum);
+            return;
           }
-          this.setComment(i, paraNum);
-          this.resetResponsePos(i);
+          Doc.setMiniBadge(i, paraNum, "c");
+
+          TextBody.resetMiniBadges(i);
           break;
           
         case "r":
           if(!KeyBoard.hasCtrl) return;
           e.preventDefault();
 
-          if(isMultiLine || this.hasResponse(i, paraNum) || !Doc.hasCharsInPara(i, paraNum)) return;
-          if(this.hasComment(i, paraNum)){
-            Doc.disableComment(i, paraNum);
+          if(isMultiLine) return;
+          if(Doc.hasMiniBadge(i, paraNum, "r")){
+            Doc.removeMiniBadge(i, paraNum);
+            return;
           }
-          this.setResponse(i, paraNum);
-          this.resetCommentPos(i);
+          Doc.setMiniBadge(i, paraNum, "r");
+
+          TextBody.resetMiniBadges(i);
           break;
       }
     });
@@ -167,6 +197,7 @@ class TextBody {
     textBody.addEventListener("keyup", e => {
       // console.log("keyup");
       this.edit.isKeydown = false;
+      const isMultiLine = e.target.value.slice(this.selection.start, this.selection.end).includes("\n");
 
       if(!e.shiftKey){
         if(this.edit.isMouseClicked || this.edit.isArrowTyped){
@@ -196,7 +227,33 @@ class TextBody {
 
       if(e.key === "Backspace"){this.edit.isBackspace = true}
       if(e.key === "Delete"){this.edit.isDelete = true}
-      if(e.key === "Enter"){this.edit.isEnter = true}
+      if(e.key === "Enter"){
+        // if(KeyBoard.hasCtrl && !isMultiLine){
+        //   const idx = Selection.idx;
+        //   const paraNum = this.getSelectionParaNum(i);
+        //   const charCount = Doc.getCharsPerPara(i).reduce( (acc, cur, j) => {
+        //     if(j <= paraNum){
+        //       console.log(cur);
+        //       acc += cur.length;
+        //     }
+        //     return acc;
+        //   }, 0) + paraNum;
+        //   console.log(idx, paraNum, charCount);
+        //   e.target.setSelectionRange(charCount, charCount);
+
+        //   const prefix = e.target.value.slice(0, charCount);
+        //   const suffix = e.target.value.slice(charCount);
+        //   const replacedText = prefix + "\n" + suffix;
+        //   e.target.value = replacedText;
+        //   e.target.setSelectionRange(charCount + 1, charCount + 1);
+
+        //   textBodyBG.textContent = replacedText;
+          
+        //   this.resetCharsPerPara(i);
+        //   this.resetParaHeights(i);
+        // }
+        this.edit.isEnter = true
+      }
 
       e.target.dispatchEvent(new Event("selectionchange"));
     });
@@ -214,7 +271,7 @@ class TextBody {
 
       const isSelection = this.selection.start !== this.selection.end;
       const isMultiLine = text.slice(this.selection.start, this.selection.end).includes("\n");
-      
+
       await ContextMenu.reset(isSelection, isMultiLine);
       ContextMenu.show(x, y);
 
@@ -380,8 +437,9 @@ class TextBody {
 
       // console.log(`bs: ${this.edit.isBackspace}, dl: ${this.edit.isDelete}, en: ${this.edit.isEnter}, cu: ${this.edit.isCut}, pa: ${this.edit.isPaste}, dr: ${this.edit.isDrop}`);
 
-      this.resetCommentPos(i);
-      this.resetResponsePos(i);
+      this.resetMiniBadges(i);
+
+      console.log(Doc.getMiniBadges(i));
       
       this.edit.isBackspace = false;
       this.edit.isDelete = false;
@@ -428,46 +486,26 @@ class TextBody {
         
         this.resetCharsPerPara(i);
         this.resetParaHeights(i);
-        this.resetCommentPos(i);
-        this.resetResponsePos(i);
+        this.resetMiniBadges(i);
 
       }else if(content === "ATTACHMENT_BADGE" || content === "START_BADGE"){
         e.preventDefault();
-      }else if(["COMMENT_BADGE", "MINI_COMMENT_BADGE"].includes(content)){
+      }else if(content.includes("COMMENT") || content.includes("RESPONSE")){
         e.preventDefault();
-        
-        const paraNum = this.getDroppedParaNum(i, e.clientY);
-        if(this.hasComment(i, paraNum)) return;
-        if(!Doc.hasCharsInPara(i, paraNum)) return;
-        if(this.hasResponse(i, paraNum)){
-          Doc.disableResponse(i, paraNum);
-        }
-        if(content === "MINI_COMMENT_BADGE"){
-          const comment = this.getDraggingMiniComment();
-          comment.elem.remove();
-          Doc.disableComment(comment.lineIdx, comment.commentIdx);
-          this.initDraggingMiniComment();
-        }
-        this.setComment(i, paraNum);
-        this.resetResponsePos(i);
 
-      }else if(["RESPONSE_BADGE", "MINI_RESPONSE_BADGE"].includes(content)){
-        e.preventDefault();
-        
+        const badgeCode = content.slice(0, 1).toLowerCase();
         const paraNum = this.getDroppedParaNum(i, e.clientY);
-        if(this.hasResponse(i, paraNum)) return;
-        if(!Doc.hasCharsInPara(i, paraNum)) return;
-        if(this.hasComment(i, paraNum)){
-          Doc.disableComment(i, paraNum);
+        if(Doc.hasMiniBadge(i, paraNum, badgeCode)) return;
+        Doc.setMiniBadge(i, paraNum, badgeCode);
+        if(content.includes("MINI")){
+          const dragSrc = this.getDraggingMiniBadge();
+          dragSrc.elem.remove();
+          Doc.removeMiniBadge(dragSrc.lineIdx, dragSrc.paraNum);
+          this.resetMiniBadges(dragSrc.lineIdx);
+          this.initDraggingMiniBadge();
         }
-        if(content === "MINI_RESPONSE_BADGE"){
-          const response = this.getDraggingMiniResponse();
-          response.elem.remove();
-          Doc.disableResponse(response.lineIdx, response.responseIdx);
-          this.initDraggingMiniResponse();
-        }
-        this.setResponse(i, paraNum);
-        this.resetCommentPos(i);
+
+        this.resetMiniBadges(i);
       }else{
         this.draggingText.dest = i;
         this.edit.isMouseDown = false;
@@ -673,9 +711,7 @@ class TextBody {
     });
   }
 
-
-  static resetCommentPos(i){
-
+  static resetMiniBadges(i){
     if(this.edit.isBackspace 
       || this.edit.isDelete
       || this.edit.isEnter
@@ -688,158 +724,137 @@ class TextBody {
       const selParaNum = this.selection.paras.findIndex(p => p !== "none");
       const restParaCountAfterCaret = [...this.selection.paras].reverse().findIndex(p => p !== "none");
 
-      console.log(`i: ${i}, pps: ${prefixPreSelParaNum}, sps: ${suffixPreSelParaNum}, sp: ${selParaNum}, rpc: ${restParaCountAfterCaret}`);
+      // console.log(`i: ${i}, pps: ${prefixPreSelParaNum}, sps: ${suffixPreSelParaNum}, sp: ${selParaNum}, rpc: ${restParaCountAfterCaret}`);
 
       const caretBeforeState = [];
       if(this.edit.isBackspace){
-        caretBeforeState.push(...Doc.getComments(i).slice(0, selParaNum + 1));
+        caretBeforeState.push(...Doc.getMiniBadges(i).slice(0, selParaNum + 1));
       }else if(this.edit.isDrop && i === this.draggingText.dest){
-        caretBeforeState.push(...Doc.getComments(i).slice(0, selParaNum + 1));
+        caretBeforeState.push(...Doc.getMiniBadges(i).slice(0, selParaNum + 1));
         const selText = Doc.getTextBody(i).value.slice(this.selection.start, this.selection.end);
         const selParaCount = selText.split("\n").length - 1
-        caretBeforeState.push(...new Array(selParaCount).fill(false));
+        caretBeforeState.push(...new Array(selParaCount).fill("n"));
       }else{
-        caretBeforeState.push(...Doc.getComments(i).slice(0, prefixPreSelParaNum + 1));
-        if(this.edit.isEnter || this.edit.isPaste) caretBeforeState.push(...new Array(selParaNum - prefixPreSelParaNum).fill(false));
+        caretBeforeState.push(...Doc.getMiniBadges(i).slice(0, prefixPreSelParaNum + 1));
+        if(this.edit.isEnter || this.edit.isPaste) caretBeforeState.push(...new Array(selParaNum - prefixPreSelParaNum).fill("n"));
       }
 
       const caretAfterState = [];
       if(this.edit.isDelete){
-        caretAfterState.push(...Doc.getComments(i).slice(this.preSelection.paras.length - restParaCountAfterCaret));
+        caretAfterState.push(...Doc.getMiniBadges(i).slice(this.preSelection.paras.length - restParaCountAfterCaret));
       }else if(this.edit.isDrop && i === this.draggingText.dest){
-        caretAfterState.push(...Doc.getComments(i).slice(selParaNum + 1));
+        caretAfterState.push(...Doc.getMiniBadges(i).slice(selParaNum + 1));
       }else{
-        caretAfterState.push(...Doc.getComments(i).slice(suffixPreSelParaNum));
+        caretAfterState.push(...Doc.getMiniBadges(i).slice(suffixPreSelParaNum));
       }
 
       const result = [...caretBeforeState, ...caretAfterState];
-      Doc.setComments(i, [...result]);
+      Doc.setMiniBadges(i, [...result]);
     }
 
-    this.clearComments(i);
+    this.clearMiniBadges(i);
 
-    Doc.getComments(i).forEach((b, j) => {
-      if(!b) return;
-      this.setComment(i, j);
-    });
-  }
-  static clearComments(i){
-    const div = Doc.getDiv(i);
-    Array.from(div.querySelectorAll("div.text-box div.mini-comment")).forEach(commentBadge => {
-      commentBadge.remove();
-    });
-  }
-  static hasComment(i, paraNum){
-    return Doc.getComment(i, paraNum);
-  }
-  static setComment(i, paraNum){
-    const el = Elem.create("div", {cl: "badge mini-badge mini-comment"});
-    el.draggable = true;
-    el.style.top = parseFloat(Doc.getParaHeight(i, paraNum).split(":")[0]) + 2 + "px";
-    el.style.cursor = "pointer";
-
-    const icon = Elem.create("img");
-    icon.src = `img/theme/${Theme.get()}/comment-mini.png`;
-
-    el.addEventListener("contextmenu", e => {
-      e.stopPropagation();
-      e.preventDefault();
-      e.target.remove();
-      Doc.disableComment(i, paraNum);
-    });
-
-    el.addEventListener("dragstart", e => {
-      this.setDraggingMiniComment(e.target, i, paraNum);
-      e.dataTransfer.setData("text/plain", "MINI_COMMENT_BADGE");
-      e.dataTransfer.effectAllowed = "copy";
-    });
-
-    el.appendChild(icon);
-    Doc.getTextBox(i).appendChild(el);
-    Doc.enableComment(i, paraNum);
+    this.setMiniBadges(i);
   }
 
-
-  static resetResponsePos(i){
-    if(this.edit.isBackspace 
-      || this.edit.isDelete
-      || this.edit.isEnter
-      || this.edit.isPaste
-      || this.edit.isCut
-      || this.edit.isDrop){
-
-      const prefixPreSelParaNum = this.preSelection.paras.findIndex(p => p !== "none");
-      const suffixPreSelParaNum = this.preSelection.paras.length - [...this.preSelection.paras].reverse().findIndex(p => p !== "none");
-      const selParaNum = this.selection.paras.findIndex(p => p !== "none");
-      const restParaCountAfterCaret = [...this.selection.paras].reverse().findIndex(p => p !== "none");
-
-      const caretBeforeState = [];
-      if(this.edit.isBackspace){
-        caretBeforeState.push(...Doc.getResponses(i).slice(0, selParaNum + 1));
-      }else if(this.edit.isDrop && i === this.draggingText.dest){
-        caretBeforeState.push(...Doc.getResponses(i).slice(0, selParaNum + 1));
-        const selText = Doc.getTextBody(i).value.slice(this.selection.start, this.selection.end);
-        const selParaCount = selText.split("\n").length - 1
-        caretBeforeState.push(...new Array(selParaCount).fill(false));
-      }else{
-        caretBeforeState.push(...Doc.getResponses(i).slice(0, prefixPreSelParaNum + 1));
-        if(this.edit.isEnter || this.edit.isPaste) caretBeforeState.push(...new Array(selParaNum - prefixPreSelParaNum).fill(false));
-      }
-
-      const caretAfterState = [];
-      if(this.edit.isDelete){
-        caretAfterState.push(...Doc.getResponses(i).slice(this.preSelection.paras.length - restParaCountAfterCaret));
-      }else if(this.edit.isDrop && i === this.draggingText.dest){
-        caretAfterState.push(...Doc.getResponses(i).slice(selParaNum + 1));
-      }else{
-        caretAfterState.push(...Doc.getResponses(i).slice(suffixPreSelParaNum));
-      }
-
-      const result = [...caretBeforeState, ...caretAfterState];
-      Doc.setResponses(i, [...result]);
-    }
-
-    this.clearResponses(i);
-
-    Doc.getResponses(i).forEach((b, j) => {
-      if(!b) return;
-      this.setResponse(i, j);
-    });
-  }
-  static clearResponses(i){
-    const div = Doc.getDiv(i);
-    Array.from(div.querySelectorAll("div.text-box div.mini-response")).forEach(b => {
+  static clearMiniBadges(i){
+    Array.from(Doc.getTextBox(i).querySelectorAll(".mini-badge")).forEach(b => {
       b.remove();
     });
   }
-  static hasResponse(i, paraNum){
-    return Doc.getResponse(i, paraNum);
-  }
-  static setResponse(i, paraNum){
-    const el = Elem.create("div", {cl: "badge mini-badge mini-response"});
-    el.draggable = true;
-    el.style.top = parseFloat(Doc.getParaHeight(i, paraNum).split(":")[0]) + 2 + "px";
-    el.style.cursor = "pointer";
 
-    const icon = Elem.create("img");
-    icon.src = `img/theme/${Theme.get()}/response-mini.png`;
+  static setMiniBadges(i){
+    Doc.getMiniBadges(i).forEach( (mb, j) => {
+      if(mb === "n"){
+        const el = Elem.create("div", {cl: `badge mini-badge mini-none`});
+        el.style.top = parseFloat(Doc.getParaHeight(i, j).split(":")[0]) + 2 + "px";
 
-    el.addEventListener("contextmenu", e => {
-      e.stopPropagation();
-      e.preventDefault();
-      e.target.remove();
-      Doc.disableResponse(i, paraNum);
+        el.addEventListener("click", e => {
+          e.stopPropagation();
+          e.preventDefault();
+          Doc.setMiniBadge(i, j, "c");
+          this.resetMiniBadges(i);
+        });
+
+        el.addEventListener("dragover", e => e.preventDefault());
+        el.addEventListener("drop", e => {
+          const content = e.dataTransfer.getData('text/plain');
+          if(!content.includes("COMMENT") && !content.includes("RESPONSE")) return;
+          e.preventDefault();
+
+          const badgeCode = content.slice(0, 1).toLowerCase();
+          const paraNum = this.getDroppedParaNum(i, e.clientY);
+          if(Doc.hasMiniBadge(i, paraNum, badgeCode)) return;
+          Doc.setMiniBadge(i, paraNum, badgeCode);
+          if(content.includes("MINI")){
+            const dragSrc = this.getDraggingMiniBadge();
+            dragSrc.elem.remove();
+            Doc.removeMiniBadge(dragSrc.lineIdx, dragSrc.paraNum);
+            this.resetMiniBadges(dragSrc.lineIdx);
+            this.initDraggingMiniBadge();
+          }
+
+          this.resetMiniBadges(i);
+        });
+
+        Doc.getTextBox(i).appendChild(el);
+        return;  
+      }
+      const badgeName = Badge.name[mb];
+
+      const el = Elem.create("div", {cl: `badge mini-badge mini-${badgeName}`});
+      el.draggable = true;
+      el.style.top = parseFloat(Doc.getParaHeight(i, j).split(":")[0]) + 2 + "px";
+
+      const icon = Elem.create("img");
+      icon.src = `img/theme/${Theme.get()}/${badgeName}-mini.png`;
+
+      el.addEventListener("click", e => {
+        e.stopPropagation();
+        e.preventDefault();
+        const miniBadgeIdx = this.MINI_BADGE_LOOP.indexOf(mb);
+        const nextMiniBadgeIdx = miniBadgeIdx === this.MINI_BADGE_LOOP.length - 1 ? 0 : miniBadgeIdx + 1;
+        Doc.setMiniBadge(i, j, this.MINI_BADGE_LOOP[nextMiniBadgeIdx]);
+        this.resetMiniBadges(i);
+      });
+
+      el.addEventListener("contextmenu", e => {
+        e.stopPropagation();
+        e.preventDefault();
+        Doc.removeMiniBadge(i, j, mb);
+        this.resetMiniBadges(i);
+      });
+
+      el.addEventListener("dragstart", e => {
+        this.setDraggingMiniBadge(e.target, i, j);
+        e.dataTransfer.setData("text/plain", `${badgeName.toUpperCase()}_MINI_BADGE`);
+        e.dataTransfer.effectAllowed = "copy";
+      });
+
+      el.addEventListener("dragover", e => e.preventDefault());
+      el.addEventListener("drop", e => {
+        const content = e.dataTransfer.getData('text/plain');
+        if(!content.includes("COMMENT") && !content.includes("RESPONSE")) return;
+        e.preventDefault();
+
+        const badgeCode = content.slice(0, 1).toLowerCase();
+        const paraNum = this.getDroppedParaNum(i, e.clientY);
+        if(Doc.hasMiniBadge(i, paraNum, badgeCode)) return;
+        Doc.setMiniBadge(i, paraNum, badgeCode);
+        if(content.includes("MINI")){
+          const dragSrc = this.getDraggingMiniBadge();
+          dragSrc.elem.remove();
+          Doc.removeMiniBadge(dragSrc.lineIdx, dragSrc.paraNum);
+          this.resetMiniBadges(dragSrc.lineIdx);
+          this.initDraggingMiniBadge();
+        }
+
+        this.resetMiniBadges(i);
+      });
+      
+      el.appendChild(icon);
+      Doc.getTextBox(i).appendChild(el);
     });
-
-    el.addEventListener("dragstart", e => {
-      this.setDraggingMiniResponse(e.target, i, paraNum);
-      e.dataTransfer.setData("text/plain", "MINI_RESPONSE_BADGE");
-      e.dataTransfer.effectAllowed = "copy";
-    });
-
-    el.appendChild(icon);
-    Doc.getTextBox(i).appendChild(el);
-    Doc.enableResponse(i, paraNum);
   }
 
 
@@ -892,8 +907,7 @@ class TextBody {
 
     this.resetCharsPerPara(i);
     this.resetParaHeights(i);
-    this.resetCommentPos(i);
-    this.resetResponsePos(i);
+    this.resetMiniBadges(i);
   }
 
   static replace(before, after, i){
@@ -921,8 +935,7 @@ class TextBody {
 
     this.resetCharsPerPara(i);
     this.resetParaHeights(i);
-    this.resetCommentPos(i);
-    this.resetResponsePos(i);
+    this.resetMiniBadges(i);
   }
 
   static isEdited(newText, i){

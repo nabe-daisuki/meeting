@@ -1,7 +1,26 @@
 class AudioController {
   static init(){
+    playbackBox.addEventListener("wheel", e => {
+      e.preventDefault();
+      const delta = KeyBoard.hasCtrl ? KeyBoard.hasShift ? 5 : 3 : KeyBoard.hasShift ? 5 : 1;
+      const pos = AudioState.getTime() + (e.deltaY < 0 ? delta : -delta);
+      this.setTime(pos);
+      this.setPlaybackLabel(pos);
+    });
+    volumeBox.addEventListener("wheel", e => {
+      e.preventDefault();
+      const delta = KeyBoard.hasCtrl ? KeyBoard.hasShift ? 5 : 3 : KeyBoard.hasShift ? 5 : 1;
+      const v = AudioState.getVolume() + (e.deltaY < 0 ? delta : -delta);
+      this.volume(v);
+    });
+    speedBox.addEventListener("wheel", e => {
+      e.preventDefault();
+      const delta = 0.05;
+      const v = AudioState.getSpeed() + (e.deltaY < 0 ? delta : -delta);
+      this.speed(v);
+    });
 
-    currentTime.addEventListener("wheel", (e) => {
+    currentTime.addEventListener("wheel", e => {
       e.preventDefault();
       const delta = KeyBoard.hasCtrl ? KeyBoard.hasShift ? 5 : 3 : KeyBoard.hasShift ? 5 : 1;
       const pos = AudioState.getTime() + (e.deltaY < 0 ? delta : -delta);
@@ -16,10 +35,12 @@ class AudioController {
       this.setPlaybackLabel(sec);
     });
     playbackSlider.addEventListener("mouseover", e => {
-      e.target.style.setProperty("--thumb-color", "#f0d90a");
+      e.target.style.setProperty("--sub-theme", Theme.subThemeColor.hover);
+      e.target.style.setProperty("--thumb-scale", "1.2");
     });
     playbackSlider.addEventListener("mouseout", e => {
-      e.target.style.setProperty("--thumb-color", "#fffb0a");
+      e.target.style.setProperty("--sub-theme", Theme.subThemeColor.normal);
+      e.target.style.setProperty("--thumb-scale", "1.0");
     });
 
     volumeSlider.addEventListener("input", e => {
@@ -27,10 +48,12 @@ class AudioController {
       this.volume(v);
     });
     volumeSlider.addEventListener("mouseover", e => {
-      e.target.style.setProperty("--thumb-color", "#f0d90a");
+      e.target.style.setProperty("--sub-theme", Theme.subThemeColor.hover);
+      e.target.style.setProperty("--thumb-scale", "1.2");
     });
     volumeSlider.addEventListener("mouseout", e => {
-      e.target.style.setProperty("--thumb-color", "#fffb0a");
+      e.target.style.setProperty("--sub-theme", Theme.subThemeColor.normal);
+      e.target.style.setProperty("--thumb-scale", "1.0");
     });
 
     speedSlider.addEventListener("input", e => {
@@ -38,10 +61,12 @@ class AudioController {
       this.speed(v);
     });
     speedSlider.addEventListener("mouseover", e => {
-      e.target.style.setProperty("--thumb-color", "#d4cb06");
+      e.target.style.setProperty("--sub-theme", Theme.subThemeColor.hover);
+      e.target.style.setProperty("--thumb-scale", "1.2");
     });
     speedSlider.addEventListener("mouseout", e => {
-      e.target.style.setProperty("--thumb-color", "#fffb0a");
+      e.target.style.setProperty("--sub-theme", Theme.subThemeColor.normal);
+      e.target.style.setProperty("--thumb-scale", "1.0");
     });
 
     playBtn.addEventListener("click", () => this.play());

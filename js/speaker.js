@@ -46,8 +46,7 @@ class Speaker {
       
       TextBody.resetCharsPerPara(j);
       TextBody.resetParaHeights(j);
-      TextBody.resetCommentPos(j);
-      TextBody.resetResponsePos(j);
+      TextBody.resetMiniBadges(j);
     });
     return el;
   }

@@ -20,8 +20,7 @@ class Render {
 
     for(let i = 0; i < Doc.getLines().length; i++){
       TextBody.resetParaHeights(i);
-      TextBody.resetCommentPos(i);
-      TextBody.resetResponsePos(i);
+      TextBody.resetMiniBadges(i);
       if(Doc.getLine(i).badges !== "n") Badged.set(i, Badged.createBadges(i));
     }
     AudioInput.showPlayLine();

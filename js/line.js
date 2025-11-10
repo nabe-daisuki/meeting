@@ -5,6 +5,7 @@ class Line {
     text        : "",
     editedText  : null,
     badges      : "n",
+    miniBadges  : [],
     charsPerPara: [],
     paraHeights : [],
     comments    : [],

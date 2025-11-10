@@ -16,7 +16,7 @@
 
 #left-panel::-webkit-scrollbar-thumb {
   cursor: pointer;
-  background-color: #fffb0a;
+  background-color: var(--sub-theme);
   border-radius: 6px;
   border: 2px solid #505050;
   transition: background-color 0.2s;
@@ -27,7 +27,7 @@
 }
 
 #left-panel::-webkit-scrollbar-thumb:hover {
-  background-color: #f0d90a;
+  background-color: var(--sub-theme-hover);
 }
 
 #right-panel {

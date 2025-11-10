@@ -185,23 +185,14 @@
 }
 
 
-.config-seek-forward,
-.config-seek-backward,
-.config-speed,
-.config-volume,
-.config-named-save,
-.config-save,
-.config-play-pause {
+.config-shortcut-item {
   gap: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-.config-seek-forward input[type="number"],
-.config-seek-backward input[type="number"],
-.config-speed input[type="number"],
-.config-volume input[type="number"] {
+.config-shortcut-item input[type="number"] {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
@@ -211,16 +202,11 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-.config-seek-forward input[type="number"]:hover,
-.config-seek-backward input[type="number"]:hover,
-.config-speed input[type="number"]:hover,
-.config-volume input[type="number"]:hover {
+.config-shortcut-item input[type="number"]:hover {
   background: #3a4455;
 }
-.config-seek-forward select,
-.config-seek-backward select,
-.config-speed select,
-.config-volume select {
+
+.config-shortcut-item select {
   background:rgba(255,255,255,0.08);
   border:none;
   color:#fff;
@@ -230,43 +216,15 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-.config-seek-forward select:hover,
-.config-seek-backward select:hover,
-.config-speed select:hover,
-.config-volume select:hover {
+.config-shortcut-item select:hover {
   background: #3a4455;
 }
-.config-seek-forward select option,
-.config-seek-backward select option,
-.config-speed select option,
-.config-volume select option {
-  color:#fff;
-  padding:6px;
-  cursor: pointer;
-  background-color: #262f3d;
-}
-
-
-.config-save select,
-.config-named-save select,
-.config-play-pause select {
-  background:rgba(255,255,255,0.08);
-  border:none;
-  color:#fff;
-  padding:6px 8px;
-  width:180px;
-  border-radius:6px;
-  cursor: pointer;
-}
-.config-save select:focus,
-.config-named-save select:focus,
-.config-play-pause select:focus {
+.config-shortcut-item select:focus {
   outline:2px solid var(--accent);
   background:rgba(255,255,255,0.12);
 }
-.config-save select option,
-.config-named-save select option,
-.config-play-pause select option {
+
+.config-shortcut-item select option {
   color:#fff;
   padding:6px;
   cursor: pointer;

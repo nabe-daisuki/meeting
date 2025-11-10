@@ -44,6 +44,10 @@ class ShortCutHelper {
           imgName = "play-pause";
           text = "音声の再生/一時停止";
           break;
+        case "seek-backward-and-play-pause":
+          imgName = "play-pause";
+          text = `音声を${sc.value[0]}秒戻し再生及び一時停止`;
+          break;
         default:
           alert("ヘルパーで表示できないショートカットがあります。");
           continue;

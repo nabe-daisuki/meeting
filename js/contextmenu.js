@@ -131,30 +131,12 @@ class ContextMenu {
     const i = Selection.idx;
     const paraNum = TextBody.getSelectionParaNum(i);
 
-    console.log(id);
-    switch(id){
-      case "comment":
-        if(TextBody.hasComment(i, paraNum) || !Doc.hasCharsInPara(i, paraNum)) return;
-        if(TextBody.hasResponse(i, paraNum)){
-          Doc.disableResponse(i, paraNum);
-        }
-        TextBody.setComment(i, paraNum);
-        TextBody.resetResponsePos(i);
-        break;
-      case "response":
-        if(TextBody.hasResponse(i, paraNum) || !Doc.hasCharsInPara(i, paraNum)) return;
-        if(TextBody.hasComment(i, paraNum)){
-          Doc.disableComment(i, paraNum);
-        }
-        TextBody.setResponse(i, paraNum);
-        TextBody.resetCommentPos(i);
-        break;
-      case "cut":
-        break;
-      case "copy":
-        break;
-      case "paste":
-        break;
+    if(id === "comment" || id === "response"){
+      const badgeCode = id.slice(0, 1).toLowerCase();
+      if(Doc.hasMiniBadge(i, paraNum, badgeCode)) return;
+      Doc.setMiniBadge(i, paraNum, badgeCode);
+
+      TextBody.resetMiniBadges(i);
     }
   }
 
@@ -178,7 +160,6 @@ class ContextMenu {
 
     TextBody.resetCharsPerPara(i);
     TextBody.resetParaHeights(i);
-    TextBody.resetCommentPos(i);
-    TextBody.resetResponsePos(i);
+    TextBody.resetMiniBadges(i);
   }
 }

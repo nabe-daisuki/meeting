@@ -2,6 +2,25 @@ class Theme {
   static type = "default";
   static preType = "";
 
+  static subType = "yellow";
+  static preSubType = "";
+
+  static subThemeColor = {
+    normal: null,
+    hover: null
+  }
+
+  static getSub(){
+    return this.subType;
+  }
+  static getPreSub(){
+    return this.preSubType;
+  }
+  static setSub(v){
+    this.preSubType = this.subType;
+    this.subType = v;
+  }
+
   static get(){
     return this.type;
   }
@@ -15,6 +34,13 @@ class Theme {
   static jpnToCode(v){
     if(v === "ダーク") return "dark";
     else if(v === "デフォルト") return "default";
+    else if(v === "イエロー") return "yellow";
+    else if(v === "レッド") return "red";
+    else if(v === "オレンジ") return "orange";
+    else if(v === "シアン") return "cyan";
+    else if(v === "グリーン") return "green";
+    else if(v === "パープル") return "purple";
+    else if(v === "ピンク") return "pink";
     else return "default";
   }
 
@@ -175,5 +201,64 @@ class Theme {
         el.classList.add(`REPINFOS_LI_${type}`);
       }
     }
+
+
+    // sub
+    const subType = this.getSub();
+    const preSubType = this.getPreSub();
+
+    // remove(sub)
+    const preClass = `${preType}_theme_${preSubType}`;
+
+    currentTime.classList.remove(preClass);
+    playbackSlider.classList.remove(preClass);
+    volumeSlider.classList.remove(preClass);
+    speedSlider.classList.remove(preClass);
+    lPanel.classList.remove(preClass);
+
+    const allSelector = document.getElementById("all-selector");
+    if(allSelector) allSelector.classList.remove(preClass);
+
+    for(const j in Doc.getDivs()){
+      Doc.getSelector(j).classList.remove(preClass);
+    }
+
+    for(const el of document.querySelectorAll(".sub-tool-section")){
+      el.classList.remove(preClass);
+    }
+
+    shortCutList.classList.remove(preClass);
+
+    // add(sub)
+    const newClass = `${type}_theme_${subType}`;
+
+    currentTime.classList.add(newClass);
+    playbackSlider.classList.add(newClass);
+    volumeSlider.classList.add(newClass);
+    speedSlider.classList.add(newClass);
+    lPanel.classList.add(newClass);
+
+    if(allSelector) allSelector.classList.add(newClass);
+
+    for(const j in Doc.getDivs()){
+      Doc.getSelector(j).classList.add(newClass);
+    }
+
+    for(const el of document.querySelectorAll(".sub-tool-section")){
+      el.classList.add(newClass);
+    }
+
+    shortCutList.classList.add(newClass);
+    
+    // sub-theme-color
+    const subThemeStyle = getComputedStyle(currentTime);
+    this.subThemeColor.normal = subThemeStyle.getPropertyValue('--sub-theme').trim();
+    this.subThemeColor.hover = subThemeStyle.getPropertyValue('--sub-theme-hover').trim();
+    console.log(this.subThemeColor);
+
+    
+    playbackSlider.style.setProperty("--sub-theme", this.subThemeColor.normal);
+    volumeSlider.style.setProperty("--sub-theme", this.subThemeColor.normal);
+    speedSlider.style.setProperty("--sub-theme", this.subThemeColor.normal);
   }
 }
