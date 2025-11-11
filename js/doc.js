@@ -122,7 +122,7 @@ class Doc{
     return this.getLine(i).charsPerPara;
   }
   static hasCharsInPara(i, j){
-    return this.getCharsPerPara(i)[j] !== undefined;
+    return this.getCharsPerPara(i)[j].length !== 0;
   }
 
   static getParaHeights(i){

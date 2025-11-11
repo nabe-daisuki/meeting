@@ -5,13 +5,13 @@
   display: flex;
 }
 
-#main-tools > div {
+#main-tools > .main-tool {
   position: relative;
   padding-right: 24px;
   gap: 20px;
 }
 
-#main-tools > div:not(:last-child)::after {
+#main-tools > .main-tool:not(:last-child)::after {
   content: "";
   position: absolute;
   right: 0;
@@ -19,4 +19,23 @@
   bottom: 5%;
   width: 1px;
   background-color: var(--main-tools-div-after-bg);
+}
+
+#main-tools > .main-tool.hide {
+  display: none;
+}
+
+#main-tool-open-close {
+  position: absolute;
+  right: 4px;
+  bottom: -2px;
+  cursor: pointer;
+}
+#main-tool-open-close img {
+  width: 35px;
+  transition: transform 0.2s, filter 0.2s;
+}
+#main-tool-open-close:hover img {
+  transform: scale(1.2);
+  filter: brightness(1.5);
 }

@@ -64,11 +64,11 @@
 }
 
 .attachment-badge {
-  background-color: #ebd600;
+  background-color: #c3b633;
 }
 
 .comment-badge {
-  background-color: rgb(54, 136, 0);
+  background-color: #245b00;
 }
 
 .start-badge {
@@ -83,5 +83,9 @@
 }
 
 .response-badge {
-  background-color: #ababab;
+  background-color: #6dbbb7;
+}
+
+.donthear-badge {
+  background-color: #a9a9a9;
 }

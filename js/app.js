@@ -1,4 +1,4 @@
-const isTest = false;
+const isTest = true;
 const isGijiTest = false;
 
 const header = document.getElementById("header");
@@ -35,6 +35,9 @@ const normalSpeedBtn = document.getElementById("normal-speed-btn");
 const config = document.getElementById("config");
 const help = document.getElementById("help");
 
+const mainToolsArea = document.getElementById("main-tools")
+
+const inputerArea = document.getElementById("inputer");
 const textFileInput = document.getElementById("text-file-input");
 const audioFileInput = document.getElementById("audio-file-input");
 const reloadFileInput = document.getElementById("reload-file-input");
@@ -42,16 +45,21 @@ const reloadFileInput = document.getElementById("reload-file-input");
 let isWindowBlur = false;
 let isWindowResize = false;
 
+const effectArea = document.getElementById("effect");
 const checkedSetGreen = document.getElementById("checked-set-green");
 const checkedShow = document.getElementById("checked-show");
 const checkedHide = document.getElementById("checked-hide");
 const editedSetGreen = document.getElementById("edited-set-green");
 
+const saveArea = document.getElementById("save");
 const saveBtn = document.getElementById("save-btn");
 const namedSaveBtn = document.getElementById("named-save-btn");
 
+const exportArea = document.getElementById("export");
 const hatchToExport = document.getElementById("hatch-to-export");
 const editedToExport = document.getElementById("edited-to-export");
+
+const mainToolOpenCloseBtn = document.getElementById("main-tool-open-close");
 
 const menuContainer = document.getElementById("menu");
 
@@ -73,16 +81,16 @@ const configX=document.getElementById("config-x");
 const shortCutHelper = document.getElementById("shortcut-helper");
 const shortCutList = document.getElementById("shortcut-list");
 
-const audioInfo = {
-  fileName: "",
-  bytes: "",
-  KB: 0,
-  MB: 0,
-  length: ""
-}
+const searchHelper = document.getElementById("search-helper");
+const searchContainer = document.getElementById("search-container");
+const searchInput = document.getElementById("search-input");
+const searchResult = document.getElementById("search-result");
+const canMoveAudioBtn = document.getElementById("can-move-audio");
+const searchCloseBtn = document.getElementById("search-close");
+
 
 function setEditorPanelH(){
-  editorPanel.style.height = `calc(100vh - ${header.offsetHeight}px)`;
+  editorPanel.style.height = `calc(100vh - ${Header.getHeight()}px)`;
 }
 
 let docHeader = null;
@@ -90,6 +98,7 @@ let docHeader = null;
 window.onload= () =>{
   setEditorPanelH();
 
+  Header.init();
   GijiInput.init();
   TextInput.init();
   AudioInput.init();
@@ -101,6 +110,7 @@ window.onload= () =>{
   Badge.init();
   Export.init();
   AudioController.init();
+  SearchHelper.init();
   Meta.init();
 }
 
@@ -128,6 +138,7 @@ window.addEventListener("focus", () => {
 });
 
 window.addEventListener("blur", () => {
+  console.log(`window.onblur: true`);
   if(isTest) return;
   isWindowBlur = true;
   document.getElementById("inactive-overlay").style.display = "flex";
@@ -135,8 +146,13 @@ window.addEventListener("blur", () => {
   Meta.resetTitle();
 });
 
+document.addEventListener("visibilitychange", () => {
+  console.log(`document.visibilitychange: ${document.visibilityState}`);
+});
+
 document.addEventListener('click', () => {
   ContextMenu.hide();
+  // SearchHelper.hide();
 });
 
 window.addEventListener("mouseup", e => {
@@ -153,5 +169,5 @@ window.addEventListener("mouseup", e => {
 
 window.addEventListener("beforeunload", (e) => {
   e.preventDefault();
-  e.returnValue = "aiueo"; // Chromeなどではこの書き方が必要
+  e.returnValue = "";
 });

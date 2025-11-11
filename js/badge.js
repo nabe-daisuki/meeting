@@ -3,7 +3,8 @@ class Badge {
     a: "attachment",
     c: "comment",
     s: "start",
-    r: "response"
+    r: "response",
+    d: "donthear"
   }
 
   static init(){

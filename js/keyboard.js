@@ -2,6 +2,7 @@ class KeyBoard {
   static hasShift = false;
   static hasCtrl = false;
   static hasAlt = false;
+  static finding = false;
 
   static otherKeyPressed = false;
   static DOUBLE_TAP_THRESHOLD = 300;
@@ -9,7 +10,7 @@ class KeyBoard {
   static shortCut = [
     "F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12", //"F1"
     "Ctrl+1","Ctrl+2","Ctrl+3","Ctrl+4","Ctrl+5","Ctrl+6","Ctrl+7","Ctrl+8","Ctrl+9","Ctrl+0",
-    "Ctrl+D","Ctrl+E","Ctrl+F","Ctrl+S", //"Ctrl+Q", "Ctrl+R"
+    "Ctrl+E","Ctrl+S", //"Ctrl+Q", "Ctrl+R", "Ctrl+F", "Ctrl+D"
     "Ctrl+F1","Ctrl+F2","Ctrl+F3","Ctrl+F4","Ctrl+F5","Ctrl+F6","Ctrl+F7","Ctrl+F8","Ctrl+F9","Ctrl+F10","Ctrl+F11","Ctrl+F12",
     "Ctrl+Shift+1","Ctrl+Shift+2","Ctrl+Shift+3","Ctrl+Shift+4","Ctrl+Shift+5","Ctrl+Shift+6","Ctrl+Shift+7","Ctrl+Shift+8","Ctrl+Shift+9",
     "Ctrl+Shift+A","Ctrl+Shift+C","Ctrl+Shift+D","Ctrl+Shift+E","Ctrl+Shift+F","Ctrl+Shift+Q","Ctrl+Shift+R","Ctrl+Shift+V","Ctrl+Shift+X","Ctrl+Shift+Z",
@@ -42,6 +43,7 @@ let ctrlTimer = null;
 let lastShiftTime = 0;
 
 document.addEventListener("keydown", e => {
+  console.log(e.key);
   if(e.shiftKey){
     KeyBoard.hasShift = true;
     const now = Date.now();
@@ -64,6 +66,13 @@ document.addEventListener("keydown", e => {
   if(e.altKey) KeyBoard.hasAlt = true;
 
   if(e.key !== "Control") KeyBoard.otherKeyPressed = true;
+  if(e.key === "f" && e.ctrlKey){
+    console.log("in!!");
+    if(SearchHelper.isActive) SearchHelper.hide();
+    else SearchHelper.show();
+    e.preventDefault();
+    return;
+  }
 
   const keyString = KeyBoard.getKeyString(e);
   const shortCuts = Config.getShortCuts().find(s => keyString === s.value.at(-1));

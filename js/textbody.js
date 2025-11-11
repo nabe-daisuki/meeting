@@ -163,7 +163,35 @@ class TextBody {
           this.resetCharsPerPara(i);
           this.resetParaHeights(i);
           this.resetMiniBadges(i);
+          break;
 
+        case "d":
+          if(!KeyBoard.hasCtrl) return;
+          e.preventDefault();
+
+          const hms = Convert.secToStr(AudioState.getTime());
+          const format = Convert.secToStr(AudioFile.getDuration).slice(0,2) === "00" ? `(${hms.slice(-5)})` : `(${hms})`;
+
+          const textBody = Doc.getTextBody(i);
+          const textBodyBG = Doc.getTextBodyBG(i);    
+
+          const prefix = textBody.value.slice(0, this.selection.end);
+          const suffix = textBody.value.slice(this.selection.end);
+          const replacedText2 = prefix + format + suffix;
+
+          textBody.value = replacedText2;
+          textBodyBG.innerHTML = replacedText2.value;
+
+          const pos2 = prefix + format;
+          textBody.setSelectionRange(pos2, pos2);
+
+          this.enableEdited(i);
+          Doc.setEditedText(i, replacedText2);
+          
+          this.resetCharsPerPara(i);
+          this.resetParaHeights(i);
+          this.resetMiniBadges(i);
+          break;
         case "q":
           if(!KeyBoard.hasCtrl) return;
           e.preventDefault();
@@ -228,30 +256,23 @@ class TextBody {
       if(e.key === "Backspace"){this.edit.isBackspace = true}
       if(e.key === "Delete"){this.edit.isDelete = true}
       if(e.key === "Enter"){
-        // if(KeyBoard.hasCtrl && !isMultiLine){
-        //   const idx = Selection.idx;
-        //   const paraNum = this.getSelectionParaNum(i);
-        //   const charCount = Doc.getCharsPerPara(i).reduce( (acc, cur, j) => {
-        //     if(j <= paraNum){
-        //       console.log(cur);
-        //       acc += cur.length;
-        //     }
-        //     return acc;
-        //   }, 0) + paraNum;
-        //   console.log(idx, paraNum, charCount);
-        //   e.target.setSelectionRange(charCount, charCount);
+        if(KeyBoard.hasCtrl && !isMultiLine){
+          const paraNum = this.getSelectionParaNum(i);
+          const charCount = Doc.getCharsPerPara(i).reduce( (acc, cur, j) => {
+            if(j <= paraNum){
+              acc += cur.length;
+            }
+            return acc;
+          }, 0) + paraNum;
 
-        //   const prefix = e.target.value.slice(0, charCount);
-        //   const suffix = e.target.value.slice(charCount);
-        //   const replacedText = prefix + "\n" + suffix;
-        //   e.target.value = replacedText;
-        //   e.target.setSelectionRange(charCount + 1, charCount + 1);
+          const prefix = e.target.value.slice(0, charCount);
+          const suffix = e.target.value.slice(charCount);
+          const replacedText = prefix + "\n" + suffix;
+          e.target.value = replacedText;
+          e.target.setSelectionRange(charCount + 1, charCount + 1);
 
-        //   textBodyBG.textContent = replacedText;
-          
-        //   this.resetCharsPerPara(i);
-        //   this.resetParaHeights(i);
-        // }
+          textBodyBG.textContent = replacedText;
+        }
         this.edit.isEnter = true
       }
 
@@ -418,6 +439,7 @@ class TextBody {
         this.edit.isSelecting = i;
         return;
       }
+      console.log(`isSkipEnter: ${this.edit.isSkipEnter}`)
       // console.log("selectionchange");
       this.edit.isSelecting = false;
 
@@ -488,7 +510,7 @@ class TextBody {
         this.resetParaHeights(i);
         this.resetMiniBadges(i);
 
-      }else if(content === "ATTACHMENT_BADGE" || content === "START_BADGE"){
+      }else if(["ATTACHMENT_BADGE", "START_BADGE", "DONTHEAR_BADGE"].includes(content)){
         e.preventDefault();
       }else if(content.includes("COMMENT") || content.includes("RESPONSE")){
         e.preventDefault();
@@ -676,10 +698,40 @@ class TextBody {
     });
 
     Doc.setParaHeights(i, [...reCalcPparaHeights]);
-
-    this.setReplacementHighlights(i);
+    
+    if(SearchHelper.isActive){
+      SearchHelper.research();
+    }else{
+      this.setReplacementHighlights(i);
+    }
   }
 
+  static setSearchResultHighlights(i){
+
+    const textBodyBG = Doc.getTextBodyBG(i);
+    const spans = new Array(Doc.getParaHeights(i).length).fill(null).map(v => Elem.create("span"));
+    const searchResultPerLine = SearchHelper.searchInfo.resultPerLine[i];
+
+    const flag = document.createDocumentFragment();
+    let paraCount = 0;
+    Doc.getTextBody(i).value.split("").forEach( (c, j) => {
+      const italic = Elem.create("i");
+      italic.textContent = c;
+      italic.style.fontStyle = "normal";
+      if(searchResultPerLine.includes(j)){
+        italic.classList.add("is-searched");
+        italic.setAttribute("idx", j);
+      }
+      spans[paraCount].appendChild(italic);
+      if(c === "\n" || Doc.getTextBody(i).value.length - 1 === j){
+        flag.appendChild(spans[paraCount]);
+        paraCount++;
+      }
+    });
+    
+    textBodyBG.innerHTML = "";
+    textBodyBG.appendChild(flag);
+  }
 
   static setReplacementHighlights(i){
     if(Doc.getEditedText(i)) return;
@@ -862,9 +914,9 @@ class TextBody {
     let offset = 0;
     const charsPerPara = Doc.getCharsPerPara(i);
     for(let j = 0; j < charsPerPara.length; j++){
-      const charCount = offset + charsPerPara[j].length;
+      const charCount = offset + (Doc.hasCharsInPara(i, j) ? charsPerPara[j].length : 1);
       if(this.selection.start <=  charCount) return j;
-      offset += charsPerPara[j].length;
+      offset += (Doc.hasCharsInPara(i, j) ? charsPerPara[j].length : 1);
     }
     return charsPerPara.length - 1;
   }

@@ -229,6 +229,8 @@ class Theme {
 
     shortCutList.classList.remove(preClass);
 
+    canMoveAudioBtn.classList.remove(preClass);
+
     // add(sub)
     const newClass = `${type}_theme_${subType}`;
 
@@ -250,6 +252,9 @@ class Theme {
 
     shortCutList.classList.add(newClass);
     
+    canMoveAudioBtn.classList.add(newClass);
+
+  
     // sub-theme-color
     const subThemeStyle = getComputedStyle(currentTime);
     this.subThemeColor.normal = subThemeStyle.getPropertyValue('--sub-theme').trim();

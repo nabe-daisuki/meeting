@@ -73,6 +73,7 @@
   <link rel="stylesheet" href="css/config.css">
   <link rel="stylesheet" href="css/input-button.css">
   <link rel="stylesheet" href="css/shortcut-helper.css">
+  <link rel="stylesheet" href="css/search-helper.css">
 </head>
 <body>
 
@@ -127,7 +128,7 @@
   <hr style="width:100%">
 
   <div id="main-tools">
-    <div id="inputer">
+    <div id="inputer" class="main-tool">
       <div id="text-file-input-box" class="file-input-box theme-blue">
         <label 
           for="text-file-input" 
@@ -163,7 +164,7 @@
     
     </div>
 
-    <div id="effect">
+    <div id="effect" class="main-tool">
       <div
         id="checked-set-green"
         title="チェックされた行を緑ハッチします。"
@@ -206,8 +207,7 @@
 
     </div>
 
-
-    <div id="save">
+    <div id="save" class="main-tool">
       <div
         id="save-btn"
         title="状態を保存します。"
@@ -231,7 +231,7 @@
       </div>
     </div>
 
-    <div id="export">
+    <div id="export" class="main-tool">
       <div
         id="hatch-to-export"
         title="緑ハッチされた行を出力します。"
@@ -253,6 +253,7 @@
       </div>
     </div>
 
+    <div id="main-tool-open-close"><img src="img/theme/dark/close.png"></div>
   </div>
 </div>
 
@@ -279,17 +280,20 @@
     <div class="sub-tool-section dark_theme_yellow">
       <div class="sub-tool-header">バッジ</div>
       <div id = "badges" class="sub-tool-buttons">
-        <div class="badge big-badge attachment-badge" id="attachment-badge" draggable="true">
-          <img src="img/attachment.png">
+        <div class="badge big-badge donthear-badge" id="donthear-badge" draggable="true">
+          <img src="img/donthear.png">
         </div>
         <div class="badge big-badge comment-badge" id="comment-badge" draggable="true">
           <img src="img/comment.png">
         </div>
-        <div class="badge big-badge start-badge" id="start-badge" draggable="true">
-          <img src="img/start.png">
-        </div>
         <div class="badge big-badge response-badge" id="response-badge" draggable="true">
           <img src="img/response.png">
+        </div>
+        <div class="badge big-badge attachment-badge" id="attachment-badge" draggable="true">
+          <img src="img/attachment.png">
+        </div>
+        <div class="badge big-badge start-badge" id="start-badge" draggable="true">
+          <img src="img/start.png">
         </div>
       </div>
     </div>
@@ -362,6 +366,17 @@
   </div>
 </div>
 
+<div id="search-helper">
+  <div id="search-container" class="hide">
+    <div id="search-box">
+      <input type="text" id="search-input" placeholder="検索文字を入力ください🙇">
+      <div id="search-result">0/0</div>
+      <div id="can-move-audio"></div>
+      <div id="search-close">✕</div>
+    </div>
+  </div>
+</div>
+
 
 <style>
 .hide { display: none; }
@@ -403,6 +418,7 @@
 <script src="js/speaker.js"></script>
 <script src="js/keyboard.js"></script>
 <script src="js/shortcuthelper.js"></script>
+<script src="js/searchhelper.js"></script>
 <script src="js/clipboard.js"></script>
 <script src="js/replace.js"></script>
 <script src="js/config.js"></script>

@@ -1,5 +1,5 @@
 class Badged {
-  static target = ["a", "s"];
+  static target = ["a", "d", "s"];
   static create(i){
     const line = Doc.getLine(i);
 

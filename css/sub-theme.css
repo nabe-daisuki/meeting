@@ -8,7 +8,8 @@
 #all-selector.dark_theme_red,
 .selector.dark_theme_red,
 .sub-tool-section.dark_theme_red,
-#shortcut-list.dark_theme_red {
+#shortcut-list.dark_theme_red
+#can-move-audio.dark_theme_red {
   --sub-theme: #a90000;
   --sub-theme-hover: #ce0000;
   --sub-theme-alpha: #530000cc;
@@ -22,7 +23,8 @@
 #all-selector.dark_theme_orange,
 .selector.dark_theme_orange,
 .sub-tool-section.dark_theme_orange,
-#shortcut-list.dark_theme_orange {
+#shortcut-list.dark_theme_orange,
+#can-move-audio.dark_theme_orange {
   --sub-theme: #a97b00;
   --sub-theme-hover: #ffae00;
   --sub-theme-alpha: #5b2600cc;
@@ -36,7 +38,8 @@
 #all-selector.dark_theme_yellow,
 .selector.dark_theme_yellow,
 .sub-tool-section.dark_theme_yellow,
-#shortcut-list.dark_theme_yellow {
+#shortcut-list.dark_theme_yellow,
+#can-move-audio.dark_theme_yellow {
   --sub-theme: #d1cd00;
   --sub-theme-hover: #fffa00;
   --sub-theme-alpha: #3c4100cc
@@ -50,7 +53,8 @@
 #all-selector.dark_theme_green,
 .selector.dark_theme_green,
 .sub-tool-section.dark_theme_green,
-#shortcut-list.dark_theme_green {
+#shortcut-list.dark_theme_green,
+#can-move-audio.dark_theme_green {
   --sub-theme: #1c8700;
   --sub-theme-hover: #32fa00;
   --sub-theme-alpha: #0e3300cc;
@@ -64,7 +68,8 @@
 #all-selector.dark_theme_cyan,
 .selector.dark_theme_cyan,
 .sub-tool-section.dark_theme_cyan,
-#shortcut-list.dark_theme_cyan {
+#shortcut-list.dark_theme_cyan,
+#can-move-audio.dark_theme_cyan {
   --sub-theme: #009095;
   --sub-theme-hover: #00f7ff;
   --sub-theme-alpha: #003033cc;
@@ -78,7 +83,8 @@
 #all-selector.dark_theme_purple,
 .selector.dark_theme_purple,
 .sub-tool-section.dark_theme_purple,
-#shortcut-list.dark_theme_purple {
+#shortcut-list.dark_theme_purple,
+#can-move-audio.dark_theme_purple {
   --sub-theme: #8300ff;
   --sub-theme-hover: #b669ff;
   --sub-theme-alpha: #170035cc;
@@ -92,7 +98,8 @@
 #all-selector.dark_theme_pink,
 .selector.dark_theme_pink,
 .sub-tool-section.dark_theme_pink,
-#shortcut-list.dark_theme_pink {
+#shortcut-list.dark_theme_pink,
+#can-move-audio.dark_theme_pink {
   --sub-theme: #9b00a7;
   --sub-theme-hover: #ee00ff;
   --sub-theme-alpha: #3d0041cc

@@ -121,7 +121,7 @@
 }
 .text-body-bg.TBB_dark {
   --text-body-bg-fg: #cccccc;
-  --text-body-edited-fg: #bb4f4f;
+  --text-body-edited-fg: #ff8b8b;
 }
 .text-body.TB_default {
   --text-body-fg: inherit;
@@ -129,7 +129,7 @@
 }
 .text-body.TB_dark {
   --text-body-fg: #cccccc;
-  --text-body-edited-fg: #bb4f4f;
+  --text-body-edited-fg: #ff8b8b;
 }
 .focus-para.FP_default {
   --focus-para-bg: #d3d3d3;
@@ -141,7 +141,7 @@
   --has-replace-bg: yellow;
 }
 .has-replace.HR_dark {
-  --has-replace-bg: #797903;
+  --has-replace-bg: #00323d;
 }
 
 /* sub-tool */
