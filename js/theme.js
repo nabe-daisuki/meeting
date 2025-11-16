@@ -152,6 +152,7 @@ class Theme {
     saveBtn.querySelector("img").src = `img/theme/${type}/save.png`;
     namedSaveBtn.querySelector("img").src = `img/theme/${type}/named-save.png`;
 
+    configToExport.querySelector("img").src = `img/theme/${type}/config-to-export.png`;
     hatchToExport.querySelector("img").src = `img/theme/${type}/hatch-to-export.png`;
     editedToExport.querySelector("img").src = `img/theme/${type}/edited-to-export.png`;
 
@@ -231,6 +232,13 @@ class Theme {
 
     canMoveAudioBtn.classList.remove(preClass);
 
+    replaceCompare.classList.remove(preClass);
+    for(const el of document.querySelectorAll("#replace-compare .replace-selector")){
+      el.classList.remove(preClass);
+    }
+
+
+
     // add(sub)
     const newClass = `${type}_theme_${subType}`;
 
@@ -254,13 +262,16 @@ class Theme {
     
     canMoveAudioBtn.classList.add(newClass);
 
+    replaceCompare.classList.add(newClass);
+    for(const el of document.querySelectorAll("#replace-compare .replace-selector")){
+      el.classList.add(newClass);
+    }
+
   
     // sub-theme-color
     const subThemeStyle = getComputedStyle(currentTime);
     this.subThemeColor.normal = subThemeStyle.getPropertyValue('--sub-theme').trim();
     this.subThemeColor.hover = subThemeStyle.getPropertyValue('--sub-theme-hover').trim();
-    console.log(this.subThemeColor);
-
     
     playbackSlider.style.setProperty("--sub-theme", this.subThemeColor.normal);
     volumeSlider.style.setProperty("--sub-theme", this.subThemeColor.normal);

@@ -223,7 +223,7 @@ class TextBody {
     });
     
     textBody.addEventListener("keyup", e => {
-      // console.log("keyup");
+      console.log("keyup");
       this.edit.isKeydown = false;
       const isMultiLine = e.target.value.slice(this.selection.start, this.selection.end).includes("\n");
 
@@ -280,7 +280,7 @@ class TextBody {
     });
 
     textBody.addEventListener("contextmenu", async(e) => {
-      // console.log("contextmenu");
+      console.log("contextmenu");
       if(this.selection.start === -1) return;
 
       this.edit.isRightClick = false;
@@ -378,7 +378,7 @@ class TextBody {
     });
 
     textBody.addEventListener("mouseup", e => {
-      // console.log("mouseup");
+      console.log("mouseup");
 
       this.edit.isMouseDown = false;
       if(KeyBoard.hasShift) this.edit.isKeydown = false;
@@ -388,6 +388,7 @@ class TextBody {
 
     textBody.addEventListener("mousemove", e => {
       if(Doc.getEditedText(i)) return;
+      if(Doc.getRepInfos().length === 0) return;
       const x = e.clientX;
       const y = e.clientY;
 
@@ -434,13 +435,16 @@ class TextBody {
     });
 
     textBody.addEventListener("selectionchange", e => {
+      if(ReplaceHelper.replaceInfo.isApply[i]){
+        ReplaceHelper.replaceInfo.isApply[i] = false;
+        return;
+      }
       if(this.edit.isMouseDown || this.edit.isKeydown){
         // console.log("s_out");
         this.edit.isSelecting = i;
         return;
       }
-      console.log(`isSkipEnter: ${this.edit.isSkipEnter}`)
-      // console.log("selectionchange");
+      console.log(i, "selectionchange");
       this.edit.isSelecting = false;
 
       const el = e.target;
@@ -460,8 +464,6 @@ class TextBody {
       // console.log(`bs: ${this.edit.isBackspace}, dl: ${this.edit.isDelete}, en: ${this.edit.isEnter}, cu: ${this.edit.isCut}, pa: ${this.edit.isPaste}, dr: ${this.edit.isDrop}`);
 
       this.resetMiniBadges(i);
-
-      console.log(Doc.getMiniBadges(i));
       
       this.edit.isBackspace = false;
       this.edit.isDelete = false;
@@ -588,11 +590,6 @@ class TextBody {
     console.log(this.selection);
   }
 
-  static initSelection(){
-    this.selection.start = -1;
-    this.selection.end = -1;
-  }
-
   static emphasizeSelection(i){
     this.resetCharsPerPara(i);
     this.resetParaHeights(i);
@@ -700,14 +697,18 @@ class TextBody {
     Doc.setParaHeights(i, [...reCalcPparaHeights]);
     
     if(SearchHelper.isActive){
-      SearchHelper.research();
+      console.log(ReplaceHelper.replaceInfo.isApply.some(Boolean))
+      if(ReplaceHelper.replaceInfo.isApply.some(Boolean)){
+        this.setReplaceResultHighlights(i);
+      }else{
+        SearchHelper.research();
+      }
     }else{
       this.setReplacementHighlights(i);
     }
   }
 
   static setSearchResultHighlights(i){
-
     const textBodyBG = Doc.getTextBodyBG(i);
     const spans = new Array(Doc.getParaHeights(i).length).fill(null).map(v => Elem.create("span"));
     const searchResultPerLine = SearchHelper.searchInfo.resultPerLine[i];
@@ -720,7 +721,6 @@ class TextBody {
       italic.style.fontStyle = "normal";
       if(searchResultPerLine.includes(j)){
         italic.classList.add("is-searched");
-        italic.setAttribute("idx", j);
       }
       spans[paraCount].appendChild(italic);
       if(c === "\n" || Doc.getTextBody(i).value.length - 1 === j){
@@ -733,9 +733,47 @@ class TextBody {
     textBodyBG.appendChild(flag);
   }
 
+  static setReplaceResultHighlights(i){
+    const textBodyBG = Doc.getTextBodyBG(i);
+    const spans = new Array(Doc.getParaHeights(i).length).fill(null).map(v => Elem.create("span"));
+    const replaceSearchPerLine = SearchHelper.searchInfo.resultPerLine[i];
+    const replaceResultPerLine = ReplaceHelper.replaceInfo.resultPerLine[i];
+
+    const flag = document.createDocumentFragment();
+    let paraCount = 0;
+    Doc.getTextBody(i).value.split("").forEach( (c, j) => {
+      const italic = Elem.create("i");
+      italic.textContent = c;
+      italic.style.fontStyle = "normal";
+      if(replaceSearchPerLine.includes(j)){
+        italic.classList.add("is-searched");
+      }else if(replaceResultPerLine.includes(j)){
+        italic.classList.add("is-replaced");
+      }
+      spans[paraCount].appendChild(italic);
+      if(c === "\n" || Doc.getTextBody(i).value.length - 1 === j){
+        flag.appendChild(spans[paraCount]);
+        paraCount++;
+      }
+    });
+    
+    textBodyBG.innerHTML = "";
+    textBodyBG.appendChild(flag);
+  }
+
+  static unsetReplaceResultHighlights(){
+    for(const i in Doc.getLines()){
+      const isReplacedIs = Doc.getTextBodyBG(i).querySelectorAll(".is-replaced");
+      for(const j of isReplacedIs){
+        j.classList.remove("is-replaced");
+      }
+    }
+  }
+
   static setReplacementHighlights(i){
     if(Doc.getEditedText(i)) return;
-    
+    if(Doc.getRepInfos().length === 0) return;
+        
     const textBodyBG = Doc.getTextBodyBG(i);
     textBodyBG.innerHTML = "";
 
@@ -910,6 +948,15 @@ class TextBody {
   }
 
 
+  static posToParaNum(i, pos){
+    let offset = 0;
+    const charsPerPara = Doc.getCharsPerPara(i);
+    for(let j = 0; j < charsPerPara.length; j++){
+      const charCount = offset + (Doc.hasCharsInPara(i, j) ? charsPerPara[j].length : 1);
+      if(pos <=  charCount) return j;
+      offset += (Doc.hasCharsInPara(i, j) ? charsPerPara[j].length : 1);
+    }
+  }
   static getSelectionParaNum(i){
     let offset = 0;
     const charsPerPara = Doc.getCharsPerPara(i);
@@ -1018,6 +1065,7 @@ class TextBody {
   }
 
   static select(i, start, end){
+    console.log("aiuei")
     const textBody = Doc.getTextBody(i);
     textBody.focus();
     textBody.setSelectionRange(start, end);

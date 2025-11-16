@@ -74,6 +74,7 @@
   <link rel="stylesheet" href="css/input-button.css">
   <link rel="stylesheet" href="css/shortcut-helper.css">
   <link rel="stylesheet" href="css/search-helper.css">
+  <link rel="stylesheet" href="css/replace-helper.css">
 </head>
 <body>
 
@@ -233,6 +234,16 @@
 
     <div id="export" class="main-tool">
       <div
+        id="config-to-export"
+        title="設定を出力します。"
+        class="main-tool-button theme-yellow"
+        tabindex="-1"
+      >
+        <img src="img/theme/default/config-to-export.png" alt="緑ハッチを出力" class="main-tool-icon">
+        <div class="main-tool-caption">設定を出力</div>
+      </div>
+
+      <div
         id="hatch-to-export"
         title="緑ハッチされた行を出力します。"
         class="main-tool-button theme-yellow"
@@ -377,6 +388,17 @@
   </div>
 </div>
 
+<div id="replace-helper">
+  <div id="replace-container" class="hide">
+    <div id="replace-box">
+      <input type="text" id="replace-input" placeholder="置換文字を入力ください🙇">
+      <img id="replacing" src="img/theme/dark/replace.png">
+      <div id="replace-close">✕</div>
+    </div>
+  </div>
+  <ul id="replace-compare" class="hide"></ul>
+</div>
+
 
 <style>
 .hide { display: none; }
@@ -419,6 +441,7 @@
 <script src="js/keyboard.js"></script>
 <script src="js/shortcuthelper.js"></script>
 <script src="js/searchhelper.js"></script>
+<script src="js/replacehelper.js"></script>
 <script src="js/clipboard.js"></script>
 <script src="js/replace.js"></script>
 <script src="js/config.js"></script>

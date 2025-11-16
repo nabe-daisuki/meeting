@@ -59,12 +59,18 @@
   background-color: var(--has-replace-bg);
 }
 .is-searched {
-  background-color: #337eff;
+  background: #337eff80;
   color: black;
 }
 .is-searched.focus {
   box-shadow: 0 0 20px 3px #337eff;
 }
+.is-replaced {
+  background-color: #5abc007a;
+}
+.is-replaced.focus {
+}
+
 .focus-para {
   background-color: var(--focus-para-bg);
 }

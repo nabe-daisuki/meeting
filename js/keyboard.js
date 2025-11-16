@@ -67,9 +67,23 @@ document.addEventListener("keydown", e => {
 
   if(e.key !== "Control") KeyBoard.otherKeyPressed = true;
   if(e.key === "f" && e.ctrlKey){
-    console.log("in!!");
-    if(SearchHelper.isActive) SearchHelper.hide();
+    if(SearchHelper.isActive){
+      SearchHelper.hide();
+      if(ReplaceHelper.isActive) ReplaceHelper.hide();
+    }
     else SearchHelper.show();
+    e.preventDefault();
+    return;
+  }
+
+  if(e.key === "h" && e.ctrlKey){
+    if(ReplaceHelper.isActive){
+      ReplaceHelper.hide();
+      SearchHelper.hide();
+    }else{
+      SearchHelper.show();
+      ReplaceHelper.show();
+    }
     e.preventDefault();
     return;
   }

@@ -14,7 +14,9 @@ class SearchHelper {
       this.clearResult();
       this.searchInfo.text = e.target.value;
       this.searchInfo.charCount = this.searchInfo.text.length;
-      if(this.searchInfo.text !== ""){
+      if(this.searchInfo.text === ""){
+        if(ReplaceHelper.isActive) ReplaceHelper.hideCompare();
+      }else{
         this.searchInfo.result.push(...this.search(this.searchInfo.text));
         this.searchInfo.resultCount = this.searchInfo.result.length;
       }
@@ -26,14 +28,17 @@ class SearchHelper {
       for(const i in Doc.getLines()){
         TextBody.setSearchResultHighlights(i);
       }
+      
+      this.selectFirst();
 
-      if(!this.searchInfo.resultCount) return;
-      const lineIdx = this.searchInfo.result[0].lineIdx;
-      if(Selection.preIdx === lineIdx) return;
-      Scroll.scrollToLine(lineIdx);
-      Selection.relocateHighlight(lineIdx);
+      if(!ReplaceHelper.isActive) return;
+      if(ReplaceHelper.replaceInfo.text === "") return;
+      ReplaceHelper.clearReult();
+      ReplaceHelper.update();
+      ReplaceHelper.createResultList();
 
-      if(this.canMoveAudio) Doc.getTimeStamp(lineIdx).click();
+      ReplaceHelper.showCompare();
+      ReplaceHelper.updateBottomFade();
     });
 
     searchInput.addEventListener("click", e => {
@@ -52,13 +57,13 @@ class SearchHelper {
       let startIdx = 0;
 
       if(KeyBoard.hasShift){
-        if(currentCount > 0){
+        if(currentCount > 1){
           const preCount = currentCount - 1;
           searchResult.textContent = `${preCount}/${resultCount}`;
 
           lineIdx = this.searchInfo.result[preCount - 1].lineIdx;
           startIdx = this.searchInfo.result[preCount - 1].startIdx;
-        }else if(currentCount === 0){
+        }else if(currentCount === 1){
           searchResult.textContent = `${resultCount}/${resultCount}`;
           
           lineIdx = this.searchInfo.result[resultCount - 1].lineIdx;
@@ -117,6 +122,9 @@ class SearchHelper {
   static clearResult(){
     this.searchInfo.result.length = 0;
     this.searchInfo.resultCount = 0;
+    this.clearResultPerLine();
+  }
+  static clearResultPerLine(){
     this.searchInfo.resultPerLine.length = 0;
   }
 
@@ -129,8 +137,8 @@ class SearchHelper {
     this.isActive = false;
     searchContainer.classList.add("hide");
 
-    for(const j in Doc.getLines()){
-      TextBody.setReplacementHighlights(j);
+    for(let i = 0; i < Doc.getLines().length; i++){
+      TextBody.resetParaHeights(i);
     }
   }
 
@@ -169,6 +177,13 @@ class SearchHelper {
     return structuredClone(result);
   }
 
+  static removeFromResult(idx){
+    this.searchInfo.result.splice(idx, 1);
+  }
+  static decrementResult(){
+    this.searchInfo.resultCount -= 1;
+  }
+
   static update(){
     searchResult.textContent = this.searchInfo.resultCount
       ? `1/${this.searchInfo.resultCount}`
@@ -183,7 +198,6 @@ class SearchHelper {
       for(const j in this.searchInfo.result.slice(offset)){
         if(Number(i) !== this.searchInfo.result[offset + Number(j)].lineIdx) break;
         const startIdx = this.searchInfo.result[offset + Number(j)].startIdx;
-        console.log(`arr :`,Array.from({ length: this.searchInfo.charCount }, (_, k) => startIdx + k))
         resultLine.push(...Array.from({ length: this.searchInfo.charCount }, (_, k) => startIdx + k))
         offsetBuf++;
       }
@@ -192,5 +206,30 @@ class SearchHelper {
     }
 
     return structuredClone(resultPerLine);
+  }
+
+  static selectFirst(){
+    if(!this.searchInfo.resultCount) return;
+
+    // 検索文字のフォーカスを解除
+    const allIsSearchedI = document.querySelectorAll(".text-body-bg i.is-searched.focus");
+    for(let j = 0; j < allIsSearchedI.length; j++){
+      allIsSearchedI.classList.remove("focus");
+    }
+
+    // 最初の検索結果をフォーカス
+    const i = this.searchInfo.result[0].lineIdx;
+    const isSearchedIs = Doc.getTextBodyBG(i).querySelectorAll("i.is-searched");
+    for(let j = 0; j < this.searchInfo.charCount; j++){
+      isSearchedIs[j].classList.add("focus");
+    }
+
+    // フォーカス行へスクロール×フォーカス行をハイライト
+    if(Selection.preIdx === i) return;
+    Scroll.scrollToLine(i);
+    Selection.relocateHighlight(i);
+
+    // フォーカス行へ音声をシーク
+    if(this.canMoveAudio) Doc.getTimeStamp(i).click();
   }
 }

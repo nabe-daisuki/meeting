@@ -56,6 +56,7 @@ const saveBtn = document.getElementById("save-btn");
 const namedSaveBtn = document.getElementById("named-save-btn");
 
 const exportArea = document.getElementById("export");
+const configToExport = document.getElementById("config-to-export");
 const hatchToExport = document.getElementById("hatch-to-export");
 const editedToExport = document.getElementById("edited-to-export");
 
@@ -88,6 +89,13 @@ const searchResult = document.getElementById("search-result");
 const canMoveAudioBtn = document.getElementById("can-move-audio");
 const searchCloseBtn = document.getElementById("search-close");
 
+const replaceHelper = document.getElementById("replace-helper");
+const replaceContainer = document.getElementById("replace-container");
+const replaceInput = document.getElementById("replace-input");
+const replacingBtn = document.getElementById("replacing");
+const replaceCompare = document.getElementById("replace-compare");
+const replaceCloseBtn = document.getElementById("replace-close");
+
 
 function setEditorPanelH(){
   editorPanel.style.height = `calc(100vh - ${Header.getHeight()}px)`;
@@ -111,6 +119,7 @@ window.onload= () =>{
   Export.init();
   AudioController.init();
   SearchHelper.init();
+  ReplaceHelper.init();
   Meta.init();
 }
 
@@ -138,16 +147,11 @@ window.addEventListener("focus", () => {
 });
 
 window.addEventListener("blur", () => {
-  console.log(`window.onblur: true`);
   if(isTest) return;
   isWindowBlur = true;
   document.getElementById("inactive-overlay").style.display = "flex";
   if(AudioState.isPlaying()) AudioController.pause();
   Meta.resetTitle();
-});
-
-document.addEventListener("visibilitychange", () => {
-  console.log(`document.visibilitychange: ${document.visibilityState}`);
 });
 
 document.addEventListener('click', () => {

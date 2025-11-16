@@ -1,5 +1,8 @@
 class Export {
   static init(){
+    configToExport.addEventListener("click", () => this.exportConfig());
+    configToExport.addEventListener("focus", () => configToExport.blur());
+
     hatchToExport.addEventListener("click", () => this.export("hatch"));
     hatchToExport.addEventListener("focus", () => hatchToExport.blur());
 
@@ -48,8 +51,8 @@ class Export {
       transcriptions.push(text.split("\n").map( (l, j) => {
         console.log(l);
         console.log(typeof l === "string");
-        if(line.comments[j] && !l.startsWith("・")) return `・${l}`;
-        else if(line.responses[j] && !l.startsWith("→")) return `→${l}`;
+        if(line.miniBadges[j] === "c" && !l.startsWith("・")) return `・${l}`;
+        else if(line.miniBadges[j] === "r" && !l.startsWith("→")) return `→${l}`;
         else return l;
       }).join("\n"));
       console.log(transcriptions);
@@ -73,8 +76,8 @@ class Export {
       const text = line.editedText || line.text;
       console.log(text);
       transcriptions.push(text.split("\n").map( (l, j) => {
-        if(line.comments[j] && !l.startsWith("・")) return `・${l}`;
-        else if(line.responses[j] && !l.startsWith("→")) return `→${l}`;
+        if(line.miniBadges[j] === "c" && !l.startsWith("・")) return `・${l}`;
+        else if(line.miniBadges[j] === "r" && !l.startsWith("→")) return `→${l}`;
         else return l;
       }).join("\n"));
       console.log(transcriptions);
@@ -125,5 +128,29 @@ class Export {
     }
 
     return result;
+  }
+
+  static exportConfig(){
+    const config = {
+      general: structuredClone(Config.get()),
+      shortCut: structuredClone(Config.getShortCuts())
+    };
+    const gijiParts = [new GijiPart("config", config, 0, "json")];
+
+    const now = new Date();
+    
+    // ゼロ埋め用関数
+    const pad = (n) => n.toString().padStart(2, '0');
+
+    const yy = now.getFullYear() % 100;
+    const MM = pad(now.getMonth() + 1); // 月は0始まり
+    const dd = pad(now.getDate());
+    const hh = pad(now.getHours());
+    const mm = pad(now.getMinutes());
+    const ss = pad(now.getSeconds());
+
+    const fileName = `config__${yy}${MM}${dd}-${hh}${mm}${ss}.gijiconf`;
+    
+    Save.save(fileName, GijiEncoder.encode(gijiParts));
   }
 }
