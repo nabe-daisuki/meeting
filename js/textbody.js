@@ -108,7 +108,10 @@ class TextBody {
     if(line.hided) textBox.style.display = "none";
 
     const textBodyBG = Elem.create("div", {cl: `text text-body-bg TBB_${themeType}`});
-    
+    textBodyBG.addEventListener("contextmenu", ()=> {
+      console.log("bg_contextmenu");
+    });
+
     const textBody = Elem.create("textarea", {cl: `text text-body TB_${themeType}`});
     textBody.textContent = line.editedText || line.text;
     if(line.editedText){
@@ -180,7 +183,7 @@ class TextBody {
           const replacedText2 = prefix + format + suffix;
 
           textBody.value = replacedText2;
-          textBodyBG.innerHTML = replacedText2.value;
+          textBodyBG.innerHTML = replacedText2.value + '\u200b';
 
           const pos2 = prefix + format;
           textBody.setSelectionRange(pos2, pos2);
@@ -271,7 +274,7 @@ class TextBody {
           e.target.value = replacedText;
           e.target.setSelectionRange(charCount + 1, charCount + 1);
 
-          textBodyBG.textContent = replacedText;
+          textBodyBG.textContent = replacedText += '\u200b';
         }
         this.edit.isEnter = true
       }
@@ -298,6 +301,7 @@ class TextBody {
 
       if(isSelection) this.emphasizeSelection(i);
       this.setTransparent(i);
+      this.visible(i);
 
       this.contextmenu.i = i;
       e.stopPropagation();
@@ -323,6 +327,9 @@ class TextBody {
     });
 
     textBody.addEventListener("click", e => {
+      if(ContextMenu.isShow) ContextMenu.hide();
+      this.invisible(i);
+      this.unsetTransparent(i);
       e.stopPropagation();
     });
 
@@ -591,46 +598,117 @@ class TextBody {
   }
 
   static emphasizeSelection(i){
-    this.resetCharsPerPara(i);
-    this.resetParaHeights(i);
-
-    const paraNum = this.getSelectionParaNum(i);
-    const charsPerPara = Doc.getCharsPerPara(i);
-    const chars = charsPerPara[paraNum];
-    const offset = charsPerPara.reduce((acc, cur, i) => {
-      if(paraNum <= i) return acc;
-      acc += cur.length + 1;
-      return acc;
-    }, 0);
+    // this.resetCharsPerPara(i);
+    // this.resetParaHeights(i);
 
     const textBody = Doc.getTextBody(i);
-    const prefix = textBody.value.slice(offset, this.selection.start);
-    const targets = textBody.value.slice(this.selection.start, this.selection.end).split("\n");
-    const suffix = textBody.value.slice(this.selection.end, offset + chars.length);
+    const splittedPrefix = textBody.value.slice(0, this.selection.start).split("\n"); 
+    const splittedTarget = textBody.value.slice(this.selection.start, this.selection.end).split("\n");
+    const splittedSuffix = textBody.value.slice(this.selection.end).split("\n");
 
-    const prefixNode = Elem.createT(prefix);
-    const targetNodes = targets.flatMap( (target, j) => {
-      const nodes = [];
-      const textSpan = Elem.create("span");
-      textSpan.textContent = target;
-      // textSpan.style.display = "inline-block";
-      textSpan.style.color = "white";
-      textSpan.style.backgroundColor = "#2A61D1";
-      nodes.push(textSpan);
-      if(j !== targets.length - 1){
-        const newLine = Elem.createT("\n");
-        nodes.push(newLine);
+    const isSelectionInside = this.selection.paras.includes("inside");
+
+    const spanContainingPrefixAndTarget = Elem.create("span");
+    const spanContainingTargetAndSuffix = Elem.create("span");
+    const spans = document.createDocumentFragment();;
+    for(let j = 0; j < splittedPrefix.length; j++){
+      const isLast = j === splittedPrefix.length - 1;
+      const span = Elem.create("span");
+      span.textContent = splittedPrefix[j];
+      
+      if(isLast){
+        spanContainingPrefixAndTarget.appendChild(span);
+      }else{
+        spans.appendChild(span);
       }
-      return nodes;
-    });
-    const suffixNode = Elem.createT(suffix);
+    }
+
+    for(let j = 0; j < splittedTarget.length; j++){
+      const isFirst = j === 0;
+      const isLast = j === splittedTarget.length - 1;
+      const span = Elem.create("span", {cl: "is-selected"});
+      span.textContent = splittedTarget[j];
+      span.style.display = "inline-block";
+
+      if(isFirst === isLast){
+        spanContainingPrefixAndTarget.appendChild(span);
+      }else if(isFirst){
+        spanContainingPrefixAndTarget.appendChild(span);
+        spans.appendChild(spanContainingPrefixAndTarget);
+      }else if(isFirst){
+        spanContainingTargetAndSuffix.appendChild(span);
+      }else{
+        spans.appendChild(span);
+      }
+    }
+
+    for(let j = 0; j < splittedSuffix.length; j++){
+      const isFirst = j === 0;
+      const isLast = j === splittedSuffix.length - 1;
+      const span = Elem.create("span");
+      span.textContent = splittedSuffix[j];
+
+      if(isFirst){
+        if(isSelectionInside){
+          spanContainingPrefixAndTarget.appendChild(span);
+          spans.appendChild(spanContainingPrefixAndTarget);
+        }else{
+          spanContainingTargetAndSuffix.appendChild(span);
+          spans.appendChild(spanContainingTargetAndSuffix);
+        }
+      }else if(isLast){
+        span.textContent += '\u200b';
+        spans.appendChild(span);
+      }else{
+        spans.appendChild(span);
+      }
+    }
+
+    for(let j = 0; j < spans.childNodes.length; j++){
+      const textNode = Elem.createT("\n");
+      spans.childNodes[j].appendChild(textNode);
+    }
 
     const textBodyBG = Doc.getTextBodyBG(i);
-    const paraSpan = textBodyBG.querySelectorAll("span")[paraNum];
-    paraSpan.innerHTML = "";
-    paraSpan.appendChild(prefixNode);
-    targetNodes.forEach( targetNode => paraSpan.appendChild(targetNode));
-    paraSpan.appendChild(suffixNode);
+    textBodyBG.innerHTML = "";
+    textBodyBG.appendChild(spans);
+
+    // const paraNum = this.getSelectionParaNum(i);
+    // const charsPerPara = Doc.getCharsPerPara(i);
+    // const chars = charsPerPara[paraNum];
+    // const offset = charsPerPara.reduce((acc, cur, j) => {
+    //   if(paraNum <= j) return acc;
+    //   acc += cur.length + 1;
+    //   return acc;
+    // }, 0);
+
+    // const prefix = textBody.value.slice(offset, this.selection.start);
+    // const targets = textBody.value.slice(this.selection.start, this.selection.end).split("\n");
+    // const suffix = textBody.value.slice(this.selection.end, offset + chars.length);
+
+    // const prefixNode = Elem.createT(prefix);
+    // const targetNodes = targets.flatMap( (target, j) => {
+    //   const nodes = [];
+    //   const textSpan = Elem.create("span");
+    //   textSpan.textContent = target;
+    //   // textSpan.style.display = "inline-block";
+    //   textSpan.style.color = "white";
+    //   textSpan.style.backgroundColor = "#2A61D1";
+    //   nodes.push(textSpan);
+    //   if(j !== targets.length - 1){
+    //     const newLine = Elem.createT("\n");
+    //     nodes.push(newLine);
+    //   }
+    //   return nodes;
+    // });
+    // const suffixNode = Elem.createT(suffix);
+
+    // const textBodyBG = Doc.getTextBodyBG(i);
+    // const paraSpan = textBodyBG.querySelectorAll("span")[paraNum];
+    // paraSpan.innerHTML = "";
+    // paraSpan.appendChild(prefixNode);
+    // targetNodes.forEach( targetNode => paraSpan.appendChild(targetNode));
+    // paraSpan.appendChild(suffixNode);
   }
 
 
@@ -661,7 +739,8 @@ class TextBody {
     for(let j = 0; j < paraCount; j++){
       const newPara = Elem.create("span");
       newPara.textContent = charsPerPara[j];
-      if(j !== paraCount -1) newPara.textContent += "\n";
+      if(j !== paraCount - 1) newPara.textContent += "\n";
+      else newPara.textContent += '\u200b';
       textBodyBG.appendChild(newPara);
 
       const rect = newPara.getBoundingClientRect();
@@ -722,6 +801,7 @@ class TextBody {
       if(searchResultPerLine.includes(j)){
         italic.classList.add("is-searched");
       }
+      if(Doc.getTextBody(i).value.length - 1 === j) italic.textContent += '\u200b';
       spans[paraCount].appendChild(italic);
       if(c === "\n" || Doc.getTextBody(i).value.length - 1 === j){
         flag.appendChild(spans[paraCount]);
@@ -750,6 +830,7 @@ class TextBody {
       }else if(replaceResultPerLine.includes(j)){
         italic.classList.add("is-replaced");
       }
+      if(Doc.getTextBody(i).value.length - 1 === j) italic.textContent += '\u200b';
       spans[paraCount].appendChild(italic);
       if(c === "\n" || Doc.getTextBody(i).value.length - 1 === j){
         flag.appendChild(spans[paraCount]);
@@ -773,7 +854,7 @@ class TextBody {
   static setReplacementHighlights(i){
     if(Doc.getEditedText(i)) return;
     if(Doc.getRepInfos().length === 0) return;
-        
+
     const textBodyBG = Doc.getTextBodyBG(i);
     textBodyBG.innerHTML = "";
 
@@ -793,6 +874,7 @@ class TextBody {
           repInfosUl.textContent = rephist;
         });
       }
+      if(Doc.getRepInfo(i)["replace_histories"].length - 1 === j) italic.textContent += '\u200b';
       spans[paraCount].appendChild(italic);
       if(char === "\n" || Doc.getRepInfo(i)["replace_histories"].length - 1 === j){
         textBodyBG.appendChild(spans[paraCount]);
@@ -994,7 +1076,7 @@ class TextBody {
     const replacedText = prefix + text + suffix;
 
     textBody.value = replacedText;
-    textBodyBG.innerHTML = textBody.value;
+    textBodyBG.innerHTML = textBody.value + '\u200b';
 
     // ↓ 要修正
     this.setLineText(replacedText, i);
@@ -1022,7 +1104,7 @@ class TextBody {
     const newText = prefix + replacedText + suffix;
 
     textBody.value = newText;
-    textBodyBG.value = textBody.value;
+    textBodyBG.value = textBody.value + '\u200b';
 
     // ↓ 要修正
     this.setLineText(replacedText, i);

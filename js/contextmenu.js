@@ -115,10 +115,12 @@ class ContextMenu {
 
     menuContainer.style.left = posX + "px";
     menuContainer.style.top = posY + "px";
-
-    menuContainer.querySelector(".menu-row").focus();
-
     this.isShow = true;
+
+    const topMenu = menuContainer.querySelector(".menu-row");
+    if(!topMenu) return;
+    topMenu.focus();
+
   }
 
   static hide(){
@@ -150,7 +152,7 @@ class ContextMenu {
     const replacedText = prefix + destStr + suffix;
 
     textBody.value = replacedText;
-    textBodyBG.innerHTML = textBody.value;
+    textBodyBG.innerHTML = textBody.value + "\u200b";
 
     TextBody.setLineText(replacedText, i);
 

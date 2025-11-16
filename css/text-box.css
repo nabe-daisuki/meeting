@@ -74,3 +74,8 @@
 .focus-para {
   background-color: var(--focus-para-bg);
 }
+
+span.is-selected {
+  color: white;
+  background-color: rgb(42, 97, 209);
+}
