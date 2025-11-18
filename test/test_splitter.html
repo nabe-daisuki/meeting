@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Resizable Split</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  .container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+  }
+
+  .left {
+    background: #f0f0f0;
+    width: 50%;
+    min-width: 50px;
+    box-sizing: border-box;
+    padding: 10px;
+  }
+
+  .right {
+    background: #e0e0ff;
+    width: 50%;
+    min-width: 50px;
+    box-sizing: border-box;
+    padding: 10px;
+  }
+
+  .bar {
+    width: 6px;
+    background: #888;
+    cursor: col-resize;
+    user-select: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="left">LEFT</div>
+  <div class="bar"></div>
+  <div class="right">RIGHT</div>
+</div>
+
+<script>
+  const container = document.querySelector('.container');
+  const left = document.querySelector('.left');
+  const right = document.querySelector('.right');
+  const bar = document.querySelector('.bar');
+
+  let isDragging = false;
+
+  bar.addEventListener('mousedown', () => {
+    isDragging = true;
+    document.body.style.cursor = 'col-resize';
+  });
+
+  document.addEventListener('mouseup', () => {
+    isDragging = false;
+    document.body.style.cursor = 'default';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+
+    const rect = container.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+
+    const min = 50;
+    const max = rect.width - 50;
+
+    const leftWidth = Math.min(Math.max(offsetX, min), max);
+    const rightWidth = rect.width - leftWidth - bar.offsetWidth;
+
+    left.style.width = leftWidth + 'px';
+    right.style.width = rightWidth + 'px';
+  });
+</script>
+
+</body>
+</html>

@@ -8,13 +8,16 @@ const fileDropOverlay = document.getElementById("file-drop-overlay");
 const gijiFileInput = document.getElementById("giji-file-input");
 
 const lPanel = document.getElementById("left-panel");
+const resizeBar = document.getElementById("resize-bar");
 const rPanel = document.getElementById("right-panel");
+
 const audio = document.getElementById("audio");
 
 const playbackBox = document.getElementById("playback-box");
 const volumeBox = document.getElementById("volume-box");
 const speedBox = document.getElementById("speed-box");
 
+const playbackSliderBox = document.getElementById("playback-slider-box");
 const playbackSlider = document.getElementById("playback-slider");
 const volumeSlider = document.getElementById("volume-slider");
 const volumeLabel = document.getElementById("volume-label");
@@ -64,12 +67,19 @@ const mainToolOpenCloseBtn = document.getElementById("main-tool-open-close");
 
 const menuContainer = document.getElementById("menu");
 
+const subToolTabButtons = document.querySelectorAll("#tabs .tab-btn");
+const subToolTabContents = document.querySelectorAll("#sub-tools .tab-content");
+
 const speakers = document.getElementById("speakers");
 
 const badges = document.getElementById("badges");
 const attachmentBadge = document.getElementById("attachment-badge");
 const commentBadge = document.getElementById("comment-badge");
 const startBadge = document.getElementById("start-badge");
+
+const caseIdsWrapper = document.getElementById("case-ids-wrapper");
+const caseIds = document.getElementById("case-ids");
+const caseContent = document.getElementById("case-content");
 
 const repInfosUl = document.getElementById("repinfos");
 
@@ -107,6 +117,9 @@ window.onload= () =>{
   setEditorPanelH();
 
   Header.init();
+  ResizeBar.init();
+  SubTools.init();
+  CRList.init();
   GijiInput.init();
   TextInput.init();
   AudioInput.init();

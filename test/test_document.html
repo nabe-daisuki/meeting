@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>高さで省略表示</title>
+<style>
+  body {
+    background: #111;
+    color: #eee;
+    font-family: sans-serif;
+  }
+
+  select {
+    padding: 6px;
+    margin-top: 16px;
+    background: #222;
+    color: #eee;
+    border: 1px solid #555;
+  }
+
+  #resultList {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+  }
+
+  #resultList li {
+    background: #222;
+    color: #eee;
+    border-bottom: 1px solid #444;
+    padding: 12px;
+  }
+
+  #resultList li:last-child {
+    border-bottom: none;
+  }
+
+  .item-title {
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+
+  .item-content {
+    font-size: 0.9em;
+    opacity: 0.9;
+    cursor: pointer;
+    overflow: hidden;
+    max-height: 50px; /* 高さ制限 */
+    transition: max-height 0.3s ease;
+  }
+
+  .item-content.expanded {
+    max-height: 1000px; /* 十分大きい値で全文表示 */
+  }
+</style>
+</head>
+<body>
+
+<select id="mySelect">
+  <option value="" disabled selected>選択してください</option>
+  <option value="1"
+          data-title="りんご"
+          data-content="甘くて赤い果物。昔から親しまれ、品種も非常に多く、地域によって味や食感が異なる。">りんご</option>
+
+  <option value="2"
+          data-title="バナナ"
+          data-content="黄色くて柔らかい果物。エネルギー補給に向いており、スポーツ前や朝食としてもよく食べられる。栄養価も高い。">バナナ</option>
+
+  <option value="3"
+          data-title="ぶどう"
+          data-content="小粒で甘酸っぱい果物。皮ごと食べられる種類もあり、ワインの原料としても重要。品種ごとに香りが大きく変わる。">ぶどう</option>
+</select>
+
+<ul id="resultList"></ul>
+
+<script>
+const select = document.querySelector("#mySelect");
+const list = document.querySelector("#resultList");
+
+function createItem(title, content) {
+  const li = document.createElement("li");
+
+  const titleDiv = document.createElement("div");
+  titleDiv.className = "item-title";
+  titleDiv.textContent = title;
+
+  const contentDiv = document.createElement("div");
+  contentDiv.className = "item-content";
+  contentDiv.textContent = content;
+
+  li.appendChild(titleDiv);
+  li.appendChild(contentDiv);
+
+  // 高さチェックと hover 展開
+  let timer = null;
+
+  contentDiv.addEventListener("mouseenter", () => {
+    // 実際の scrollHeight で全文かどうか判断
+    if (contentDiv.scrollHeight > contentDiv.clientHeight) {
+      timer = setTimeout(() => {
+        contentDiv.classList.add("expanded");
+      }, 1000); // 1秒後
+    }
+  });
+
+  contentDiv.addEventListener("mouseleave", () => {
+    clearTimeout(timer);
+    contentDiv.classList.remove("expanded");
+  });
+
+  return li;
+}
+
+select.addEventListener("change", (e) => {
+  const opt = e.target.selectedOptions[0];
+  if (!opt) return;
+
+  const title = opt.dataset.title;
+  const content = opt.dataset.content;
+
+  list.appendChild(createItem(title, content));
+});
+</script>
+
+</body>
+</html>

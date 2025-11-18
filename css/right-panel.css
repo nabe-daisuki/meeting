@@ -1,0 +1,10 @@
+@charset "utf-8";
+
+#sub-tools>.tab-content {
+  display: none;
+  flex-direction: column;
+  gap: 1rem;
+}
+#sub-tools>.tab-content.active {
+  display: flex;
+}

@@ -5,6 +5,9 @@
   <title>議事録作成支援ページ</title>
 <style>
   body { margin:0; font-family: sans-serif; }
+  body.active {
+    cursor: col-resize;
+  }
 
   /************/
   /* hatching */
@@ -59,8 +62,11 @@
   <link rel="stylesheet" href="css/sub-theme.css">
   <link rel="stylesheet" href="css/header.css">
   <link rel="stylesheet" href="css/panels.css">
+  <link rel="stylesheet" href="css/resize-bar.css">
   <link rel="stylesheet" href="css/left-panel.css">
+  <link rel="stylesheet" href="css/right-panel.css">
   <link rel="stylesheet" href="css/auto-scroll-switch.css">
+  <link rel="stylesheet" href="css/seek-label.css">
   <link rel="stylesheet" href="css/action-button.css">
   <link rel="stylesheet" href="css/text-box.css">
   <link rel="stylesheet" href="css/contextmenu.css">
@@ -94,7 +100,9 @@
         <img title="音声を再生します。" src="img/theme/default/play.png" id="play-btn">
         <img title="音声を一時停止します。" src="img/theme/default/pause.png" id="pause-btn" class="hide">
         <img title="音声を停止します。" src="img/theme/default/stop.png" id="stop-btn">
-        <input type="range" id="playback-slider" class="dark_theme_yellow" min="0.00" max="100.00" value="0.00" step="0.01">
+        <div id="playback-slider-box">
+          <input type="range" id="playback-slider" class="dark_theme_yellow" min="0.00" max="100.00" value="0.00" step="0.01">
+        </div>
       </div>
       <div id="audio-controller">
         <div id="volume-box" title="音声のボリュームを操作できます。" class="slider">
@@ -271,49 +279,74 @@
 
 <div id="editor-panel">
   <div class="panel dark_theme_yellow" id="left-panel"></div>
+
+  <div id="resize-bar"></div>
+
   <div class="panel" id="right-panel">
+    <div id="tabs">
+      <button class="tab-btn active" data-tab="edit-tools">編集補助</button>
+      <button class="tab-btn" data-tab="reference-tools">CRリスト</button>
+      <button class="tab-btn" data-tab="output-tools">出力</button>
+      <button class="tab-btn" data-tab="analyze-tools">解析</button>
+    </div>
 
-    <div class="sub-tool-section dark_theme_yellow" id="taraTool" style="display:none;">
-      <div class="sub-tool-header">「たら」の言い換え</div>
-      <div class="sub-tool-buttons">
-        <button data-replace="した際">した際</button>
-        <button data-replace="した場合">した場合</button>
-        <button data-replace="したが">したが</button>
+    <div id="sub-tools">
+      <div id="edit-tools" class="tab-content active">
+        <div class="sub-tool-section dark_theme_yellow">
+          <div class="sub-tool-header">発言者</div>
+          <div id="speakers" class="sub-tool-buttons">
+          </div>
+        </div>
+
+        <div class="sub-tool-section dark_theme_yellow">
+          <div class="sub-tool-header">バッジ</div>
+          <div id="badges" class="sub-tool-buttons">
+            <div class="badge big-badge donthear-badge" id="donthear-badge" draggable="true">
+              <img src="img/donthear.png">
+            </div>
+            <div class="badge big-badge comment-badge" id="comment-badge" draggable="true">
+              <img src="img/comment.png">
+            </div>
+            <div class="badge big-badge response-badge" id="response-badge" draggable="true">
+              <img src="img/response.png">
+            </div>
+            <div class="badge big-badge attachment-badge" id="attachment-badge" draggable="true">
+              <img src="img/attachment.png">
+            </div>
+            <div class="badge big-badge start-badge" id="start-badge" draggable="true">
+              <img src="img/start.png">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="reference-tools" class="tab-content">
+        <div class="sub-tool-section dark_theme_yellow">
+          <div class="sub-tool-header">件名</div>
+          <div id="case-ids-wrapper" draggable="true">
+            <div id="case-ids-handle"></div>
+            <select id="case-ids" class="sub-tool-select"></select>
+          </div>
+          <ul id="case-content"></ul>
+        </div>
+      </div>
+
+      <div id="output-tools" class="tab-content">
+        <div class="sub-tool-section dark_theme_yellow">
+          <div class="sub-tool-header">出力</div>
+          <div id="output"></div>
+        </div>
+      </div>
+
+      <div id="analyze-tools" class="tab-content">
+        <div class="sub-tool-section dark_theme_yellow">
+          <div class="sub-tool-header">置換履歴</div>
+          <ul id="repinfos" class="sub-tool-buttons">
+          </ul>
+        </div>
       </div>
     </div>
-
-    <div class="sub-tool-section dark_theme_yellow">
-      <div class="sub-tool-header">発言者</div>
-      <div id="speakers" class="sub-tool-buttons">
-      </div>
-    </div>
-
-    <div class="sub-tool-section dark_theme_yellow">
-      <div class="sub-tool-header">バッジ</div>
-      <div id = "badges" class="sub-tool-buttons">
-        <div class="badge big-badge donthear-badge" id="donthear-badge" draggable="true">
-          <img src="img/donthear.png">
-        </div>
-        <div class="badge big-badge comment-badge" id="comment-badge" draggable="true">
-          <img src="img/comment.png">
-        </div>
-        <div class="badge big-badge response-badge" id="response-badge" draggable="true">
-          <img src="img/response.png">
-        </div>
-        <div class="badge big-badge attachment-badge" id="attachment-badge" draggable="true">
-          <img src="img/attachment.png">
-        </div>
-        <div class="badge big-badge start-badge" id="start-badge" draggable="true">
-          <img src="img/start.png">
-        </div>
-      </div>
-    </div>
-
-    <div class="sub-tool-section dark_theme_yellow">
-      <div class="sub-tool-header">置換履歴</div>
-      <ul id="repinfos" class="sub-tool-buttons">
-      </ul>
-    </div>
+    
   </div>
 
   
@@ -405,6 +438,8 @@
 </style>
 <script src="js/elem.js"></script>
 <script src="js/header.js"></script>
+<script src="js/resizebar.js"></script>
+<script src="js/subtools.js"></script>
 <script src="js/line.js"></script>
 <script src="js/doc.js"></script>
 <script src="js/textfile.js"></script>
@@ -431,6 +466,7 @@
 <script src="js/audiofile.js"></script>
 <script src="js/audioinput.js"></script>
 <script src="js/audiocontroller.js"></script>
+<script src="js/seeklabel.js"></script>
 <script src="js/menudata.js"></script>
 <script src="js/contextmenu.js"></script>
 <script src="js/save.js"></script>
@@ -438,6 +474,7 @@
 <script src="js/load.js"></script>
 <script src="js/badge.js"></script>
 <script src="js/speaker.js"></script>
+<script src="js/crlist.js"></script>
 <script src="js/keyboard.js"></script>
 <script src="js/shortcuthelper.js"></script>
 <script src="js/searchhelper.js"></script>

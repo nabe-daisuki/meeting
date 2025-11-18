@@ -1,4 +1,11 @@
 class AudioController {
+  static getPlaybackSliderW(){
+    return playbackSlider.offsetWidth;
+  }
+  static getPlaybackSliderMarginLeft(){
+    return parseFloat(getComputedStyle(playbackSlider).margin);
+  }
+
   static init(){
     playbackBox.addEventListener("wheel", e => {
       e.preventDefault();

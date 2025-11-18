@@ -166,7 +166,11 @@ class SearchHelper {
 
       let offset = 0;
       let startIdx = 0;
+      let j = 0;
       while( (startIdx = text.indexOf(target, offset)) !== -1){
+        j += 1;
+        console.log("fdfd")
+        if(j === 1000) break;
         result.push({
           lineIdx: Number(i),
           startIdx

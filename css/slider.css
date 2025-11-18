@@ -57,6 +57,12 @@
   width: 16px;
 }
 
+#playback-slider-box {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+}
 #playback-slider {
   --value: 0;
   --thumb-scale: 1.0;

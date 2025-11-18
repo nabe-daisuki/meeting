@@ -31,7 +31,7 @@ class Convert {
   static strToSectionTag(str){
     const encoder = new TextEncoder();
     const u8arr = new Uint8Array(GijiInput.SECTION_TAG_BYTES);
-    u8arr.set(encoder.encode(str))
+    u8arr.set(encoder.encode(str));
     return u8arr;
   }
 

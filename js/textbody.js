@@ -126,6 +126,11 @@ class TextBody {
 
       const isMultiLine = e.target.value.slice(this.selection.start, this.selection.end).includes("\n");
       const paraNum = this.getSelectionParaNum(i);
+
+      const textBody = Doc.getTextBody(i);
+      const textBodyBG = Doc.getTextBodyBG(i);
+      
+      let replacedText = "";
       
       switch(e.key){
         case "Tab":
@@ -153,12 +158,14 @@ class TextBody {
           }
           const newSpeaker = Speaker.getBtns()[newSpeakerIdx].textContent.replace(/[（）]/g, "");
 
-          const replacedText = textBody.value.split("\n").map((l, j) => {
+          replacedText = textBody.value.split("\n").map((l, j) => {
             if(j === paraNum) return this.resetSpeaker(l, newSpeaker);
             else return l;
           }).join("\n");
 
           textBody.value = replacedText;
+          textBodyBG.innerHTML = replacedText + '\u200b';
+
           textBody.setSelectionRange(this.selection.start, this.selection.end);
           this.enableEdited(i);
           Doc.setEditedText(i, replacedText);
@@ -172,28 +179,33 @@ class TextBody {
           if(!KeyBoard.hasCtrl) return;
           e.preventDefault();
 
-          const hms = Convert.secToStr(AudioState.getTime());
-          const format = Convert.secToStr(AudioFile.getDuration).slice(0,2) === "00" ? `(${hms.slice(-5)})` : `(${hms})`;
+          const curTime = AudioState.getTime();
 
-          const textBody = Doc.getTextBody(i);
-          const textBodyBG = Doc.getTextBodyBG(i);    
+          const hms = Convert.secToStr(curTime);
+          const format = Convert.secToStr(AudioFile.getDuration()).slice(0,2) === "00" ? `(${hms.slice(-5)})` : `(${hms})`;
+
 
           const prefix = textBody.value.slice(0, this.selection.end);
           const suffix = textBody.value.slice(this.selection.end);
-          const replacedText2 = prefix + format + suffix;
+          replacedText = prefix + format + suffix;
 
-          textBody.value = replacedText2;
-          textBodyBG.innerHTML = replacedText2.value + '\u200b';
+          textBody.value = replacedText;
+          textBodyBG.innerHTML = replacedText + '\u200b';
 
-          const pos2 = prefix + format;
-          textBody.setSelectionRange(pos2, pos2);
+          const pos = prefix.length + format.length;
+          textBody.setSelectionRange(pos, pos);
 
           this.enableEdited(i);
-          Doc.setEditedText(i, replacedText2);
+          Doc.setEditedText(i, replacedText);
           
           this.resetCharsPerPara(i);
           this.resetParaHeights(i);
           this.resetMiniBadges(i);
+
+          if(!SeekLabel.exists(curTime)){
+            const seekLabel = SeekLabel.create(curTime);
+            playbackSliderBox.appendChild(seekLabel);
+          }
           break;
         case "q":
           if(!KeyBoard.hasCtrl) return;
@@ -274,7 +286,7 @@ class TextBody {
           e.target.value = replacedText;
           e.target.setSelectionRange(charCount + 1, charCount + 1);
 
-          textBodyBG.textContent = replacedText += '\u200b';
+          textBodyBG.textContent = replacedText + '\u200b';
         }
         this.edit.isEnter = true
       }
@@ -451,7 +463,7 @@ class TextBody {
         this.edit.isSelecting = i;
         return;
       }
-      console.log(i, "selectionchange");
+      // console.log(i, "selectionchange");
       this.edit.isSelecting = false;
 
       const el = e.target;
@@ -504,6 +516,7 @@ class TextBody {
         const paraNum = this.getDroppedParaNum(i, e.clientY);
 
         const textBody = e.target;
+        const textBodyBG = Doc.getTextBodyBG(i);
 
         const speaker = content.split("_")[0];
         const replacedText = textBody.value.split("\n").map((l, i) => {
@@ -512,12 +525,9 @@ class TextBody {
         }).join("\n");
 
         textBody.value = replacedText;
+        textBodyBG.innerHTML = replacedText + '\u200b';
         this.enableEdited(i);
         Doc.setEditedText(i, replacedText);
-        
-        this.resetCharsPerPara(i);
-        this.resetParaHeights(i);
-        this.resetMiniBadges(i);
 
       }else if(["ATTACHMENT_BADGE", "START_BADGE", "DONTHEAR_BADGE"].includes(content)){
         e.preventDefault();
@@ -537,6 +547,32 @@ class TextBody {
         }
 
         this.resetMiniBadges(i);
+      }else if(content.includes("CASE_")){
+        e.preventDefault();
+
+        const caseId = `【${content.replace("CASE_", "")}】`;
+        const paraNum = this.getDroppedParaNum(i, e.clientY);
+
+        const textBody = e.target;
+        const textBodyBG = Doc.getTextBodyBG(i);
+
+        const replacedText = textBody.value.split("\n").map((l, i) => {
+          if(i === paraNum) return `${caseId}\n${l}`;
+          else return l;
+        }).join("\n");
+
+        textBody.value = replacedText;
+        textBodyBG.innerHTML = replacedText + '\u200b';
+
+        const pos = replacedText.indexOf(caseId) + caseId.length;
+        textBody.setSelectionRange(pos, pos);
+        this.setSelection(textBody, i);
+        textBody.setSelectionRange(pos + 1, pos + 1);
+
+        this.enableEdited(i);
+        Doc.setEditedText(i, replacedText);
+
+        this.edit.isEnter = true;
       }else{
         this.draggingText.dest = i;
         this.edit.isMouseDown = false;

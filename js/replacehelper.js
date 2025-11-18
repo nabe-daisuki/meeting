@@ -15,10 +15,6 @@ class ReplaceHelper {
       this.replaceInfo.text = e.target.value;
       this.replaceInfo.charCount = this.replaceInfo.text.length;
       if(SearchHelper.searchInfo.resultCount === 0) return;
-      // if(this.replaceInfo.text === ""){
-      //   this.hideCompare();
-      //   return;
-      // }
       this.clearReult();
       this.update();
       this.createResultList();
@@ -98,6 +94,8 @@ class ReplaceHelper {
         console.log(structuredClone(replaceResultPerLine));
       });
 
+
+
       console.log(structuredClone(replaceResultPerLine));
       this.clearResultPerLine();
       this.replaceInfo.resultPerLine.push(...structuredClone(replaceResultPerLine));
@@ -133,6 +131,10 @@ class ReplaceHelper {
         before: beforeStr,
         after: afterStr
       });
+    });
+
+    replaceCloseBtn.addEventListener("click", () => {
+      this.hide();
     });
   }
 
