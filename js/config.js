@@ -132,6 +132,14 @@ class Config {
     });
   }
 
+  static active(){
+    Render.mainTool();
+    const theme = Theme.jpnToCode(this.get().find(s => s.key === "theme").value[0]);
+    Theme.set(theme);
+
+    Theme.apply();
+  }
+
   static update(k, v){
     for(const s of this.get()){
       if(k !== s.key) continue;

@@ -25,7 +25,7 @@ class Header {
         mainToolsArea.style.height = "auto";
         this.isClosedMainTools = false;
       }
-      setEditorPanelH();
+      Panel.setEditorPanelH();
     });
   }
 }

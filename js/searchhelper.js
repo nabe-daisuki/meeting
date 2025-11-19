@@ -116,6 +116,7 @@ class SearchHelper {
 
     searchCloseBtn.addEventListener("click", () => {
       this.hide();
+      ReplaceHelper.hide();
     });
   }
 

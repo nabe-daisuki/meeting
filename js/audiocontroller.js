@@ -2,8 +2,14 @@ class AudioController {
   static getPlaybackSliderW(){
     return playbackSlider.offsetWidth;
   }
-  static getPlaybackSliderMarginLeft(){
+  static getPlaybackSliderMargin(){
     return parseFloat(getComputedStyle(playbackSlider).margin);
+  }
+  static getPlaybackSliderThumbW(){
+    return parseFloat(getComputedStyle(playbackSlider).getPropertyValue('--thumb-width'));
+  }
+  static getPlaybackSliderThumbBorderW(){
+    return parseFloat(getComputedStyle(playbackSlider).getPropertyValue('--thumb-border-width'));
   }
 
   static init(){

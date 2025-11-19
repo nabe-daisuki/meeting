@@ -83,6 +83,9 @@ const caseContent = document.getElementById("case-content");
 
 const repInfosUl = document.getElementById("repinfos");
 
+const userSelectOverlay = document.getElementById("user-select-overlay");
+const userButtons = document.getElementById("user-buttons");
+
 const configOverlay=document.getElementById("config-overlay");
 const configList=document.getElementById("config-list");
 const configOk=document.getElementById("config-ok");
@@ -114,12 +117,13 @@ function setEditorPanelH(){
 let docHeader = null;
 
 window.onload= () =>{
-  setEditorPanelH();
+  // setEditorPanelH();
+  // Panel.setPreReplaceH();
 
   Header.init();
   ResizeBar.init();
+  Panel.init();
   SubTools.init();
-  CRList.init();
   GijiInput.init();
   TextInput.init();
   AudioInput.init();
@@ -138,7 +142,8 @@ window.onload= () =>{
 
 window.addEventListener("resize", () => {
   isWindowResize = true;
-  setEditorPanelH();
+  Panel.setEditorPanelH();
+  SeekLabel.reposition();
   Render.syncRowHeights();
 
   for(let i = 0; i < Doc.getLines().length; i++){
@@ -169,7 +174,6 @@ window.addEventListener("blur", () => {
 
 document.addEventListener('click', () => {
   ContextMenu.hide();
-  // SearchHelper.hide();
 });
 
 window.addEventListener("mouseup", e => {

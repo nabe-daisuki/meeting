@@ -143,6 +143,11 @@ class Save {
         type: "json"
       },
       {
+        tag: "crlist",
+        data: structuredClone(CRList.get()),
+        type: "json"
+      },
+      {
         tag: "saveother",
         data: {
           scroll: {

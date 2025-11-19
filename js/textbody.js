@@ -206,6 +206,11 @@ class TextBody {
             const seekLabel = SeekLabel.create(curTime);
             playbackSliderBox.appendChild(seekLabel);
           }
+
+          if(!Badged.can("d")) return;
+          Doc.addBadge(i, "d");
+          Badged.set(i, Badged.createBadges(i));
+
           break;
         case "q":
           if(!KeyBoard.hasCtrl) return;
@@ -397,7 +402,7 @@ class TextBody {
     });
 
     textBody.addEventListener("mouseup", e => {
-      console.log("mouseup");
+      console.log(i, "mouseup");
 
       this.edit.isMouseDown = false;
       if(KeyBoard.hasShift) this.edit.isKeydown = false;
@@ -468,6 +473,7 @@ class TextBody {
 
       const el = e.target;
       const currentText = el.value;
+
       if(this.isEdited(currentText, i)){
         this.enableEdited(i);
         Doc.setEditedText(i, currentText);
@@ -506,7 +512,7 @@ class TextBody {
     });
 
     textBody.addEventListener("drop", e => {
-      // console.log("drop");
+      console.log(i, "drop");
 
       const content = e.dataTransfer.getData('text/plain');
       if(content.includes("_SPEAKER")){
@@ -760,8 +766,10 @@ class TextBody {
 
   static resetCharsPerPara(i){
     const line = Doc.getLine(i);
-    const text = line.editedText || line.text;
+    const text = line.editedText || (line.editedText === "" ? "(空)" : line.text);
+    // const text = line.editedText || line.text;
     line.charsPerPara = text.split("\n");
+    console.log(i, line.charsPerPara);
   }
 
   static resetParaHeights(i){
@@ -808,6 +816,8 @@ class TextBody {
       }
       return `${top}:${bottom}`;
     });
+
+    console.log(i, reCalcPparaHeights);
 
     Doc.setParaHeights(i, [...reCalcPparaHeights]);
     
@@ -888,7 +898,7 @@ class TextBody {
   }
 
   static setReplacementHighlights(i){
-    if(Doc.getEditedText(i)) return;
+    if(Doc.getEditedText(i) || Doc.getEditedText(i) === "") return;
     if(Doc.getRepInfos().length === 0) return;
 
     const textBodyBG = Doc.getTextBodyBG(i);
@@ -957,6 +967,7 @@ class TextBody {
       }
 
       const result = [...caretBeforeState, ...caretAfterState];
+      if(result.length === 0) result.push("n");
       Doc.setMiniBadges(i, [...result]);
     }
 

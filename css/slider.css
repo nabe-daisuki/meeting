@@ -64,6 +64,8 @@
   width: 100%;
 }
 #playback-slider {
+  --thumb-width: 16px;
+  --thumb-border-width: 1px;
   --value: 0;
   --thumb-scale: 1.0;
   appearance: none;
@@ -74,6 +76,8 @@
 }
 #volume-slider,
 #speed-slider {
+  --thumb-width: 16px;
+  --thumb-border-width: 1px;
   appearance: none;
   width: 220px;
   border-radius: 6px;
@@ -108,12 +112,12 @@
 #volume-slider::-webkit-slider-thumb,
 #speed-slider::-webkit-slider-thumb {
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: var(--thumb-width);
+  height: var(--thumb-width);
   border-radius: 50%;
   background: var(--sub-theme);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  border: 1px solid #ccc;
+  border: var(--thumb-border-width) solid #ccc;
   transition: background 0.2s, transform 0.2s;
   margin-top: -6px;
   transform: scale(var(--thumb-scale));

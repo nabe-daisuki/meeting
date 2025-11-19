@@ -18,12 +18,85 @@ class CRList {
 人の記憶って、派手な出来事より、こういう何でもない瞬間のほうが深く残る。
 理由なんてなくていい。ただ、その場が自分の感性に刺さった。それだけで十分だ。
 
+また来たいと思える場所は、案外こういうところなのかもしれない。`,
+      case_content2: `古い町並みを歩いていると、ふと足を止めたくなる瞬間がある。
+石畳の隙間から伸びた小さな草や、誰が置いたのか分からない錆びたベンチ。
+どれも特別なものではないのに、妙に心を落ち着かせる。
+
+観光地として有名な場所でもないし、人通りもまばらだ。
+それでも、夕方の柔らかい光が差し込むだけで、そこは急に「大切な景色」になる。
+
+人の記憶って、派手な出来事より、こういう何でもない瞬間のほうが深く残る。
+理由なんてなくていい。ただ、その場が自分の感性に刺さった。それだけで十分だ。
+
+また来たいと思える場所は、案外こういうところなのかもしれない。`,
+      case_content3: `古い町並みを歩いていると、ふと足を止めたくなる瞬間がある。
+石畳の隙間から伸びた小さな草や、誰が置いたのか分からない錆びたベンチ。
+どれも特別なものではないのに、妙に心を落ち着かせる。
+
+観光地として有名な場所でもないし、人通りもまばらだ。
+それでも、夕方の柔らかい光が差し込むだけで、そこは急に「大切な景色」になる。
+
+人の記憶って、派手な出来事より、こういう何でもない瞬間のほうが深く残る。
+理由なんてなくていい。ただ、その場が自分の感性に刺さった。それだけで十分だ。
+
+また来たいと思える場所は、案外こういうところなのかもしれない。`,
+      case_content3: `古い町並みを歩いていると、ふと足を止めたくなる瞬間がある。
+石畳の隙間から伸びた小さな草や、誰が置いたのか分からない錆びたベンチ。
+どれも特別なものではないのに、妙に心を落ち着かせる。
+
+観光地として有名な場所でもないし、人通りもまばらだ。
+それでも、夕方の柔らかい光が差し込むだけで、そこは急に「大切な景色」になる。
+
+人の記憶って、派手な出来事より、こういう何でもない瞬間のほうが深く残る。
+理由なんてなくていい。ただ、その場が自分の感性に刺さった。それだけで十分だ。
+
+また来たいと思える場所は、案外こういうところなのかもしれない。`,
+      case_content4: `古い町並みを歩いていると、ふと足を止めたくなる瞬間がある。
+石畳の隙間から伸びた小さな草や、誰が置いたのか分からない錆びたベンチ。
+どれも特別なものではないのに、妙に心を落ち着かせる。
+
+観光地として有名な場所でもないし、人通りもまばらだ。
+それでも、夕方の柔らかい光が差し込むだけで、そこは急に「大切な景色」になる。
+
+人の記憶って、派手な出来事より、こういう何でもない瞬間のほうが深く残る。
+理由なんてなくていい。ただ、その場が自分の感性に刺さった。それだけで十分だ。
+
+また来たいと思える場所は、案外こういうところなのかもしれない。`,
+      case_content5: `古い町並みを歩いていると、ふと足を止めたくなる瞬間がある。
+石畳の隙間から伸びた小さな草や、誰が置いたのか分からない錆びたベンチ。
+どれも特別なものではないのに、妙に心を落ち着かせる。
+
+観光地として有名な場所でもないし、人通りもまばらだ。
+それでも、夕方の柔らかい光が差し込むだけで、そこは急に「大切な景色」になる。
+
+人の記憶って、派手な出来事より、こういう何でもない瞬間のほうが深く残る。
+理由なんてなくていい。ただ、その場が自分の感性に刺さった。それだけで十分だ。
+
+また来たいと思える場所は、案外こういうところなのかもしれない。`,
+      case_content6: `古い町並みを歩いていると、ふと足を止めたくなる瞬間がある。
+石畳の隙間から伸びた小さな草や、誰が置いたのか分からない錆びたベンチ。
+どれも特別なものではないのに、妙に心を落ち着かせる。
+
+観光地として有名な場所でもないし、人通りもまばらだ。
+それでも、夕方の柔らかい光が差し込むだけで、そこは急に「大切な景色」になる。
+
+人の記憶って、派手な出来事より、こういう何でもない瞬間のほうが深く残る。
+理由なんてなくていい。ただ、その場が自分の感性に刺さった。それだけで十分だ。
+
 また来たいと思える場所は、案外こういうところなのかもしれない。`
     }
   ];
 
   static timer = null;
 
+  static keyToJpn(key){
+    switch(key){
+      default:
+        return key;
+    }
+  }
+  
   static init(){
     for(let i = 0; i < this.data.length; i++){
       const data = this.data[i];
@@ -36,47 +109,90 @@ class CRList {
     });
 
     caseIds.addEventListener("change", e => {
-      const data = this.data.find( d => d.case_id === e.target.value );
-      const keys = Object.keys(data);
+      const data = this.get().find( d => d.case_id === e.target.value );
+      this.select(data);
+      // const keys = Object.keys(data);
 
-      const flag = document.createDocumentFragment();
-      for(let i = 0; i < keys.length; i++){
-        const li = Elem.create("li");
+      // const flag = document.createDocumentFragment();
+      // for(let i = 0; i < keys.length; i++){
+      //   const li = Elem.create("li");
 
-        const title = Elem.create("div", {cl: "item-title"});
-        title.textContent = keys[i];
-        const content = Elem.create("div", {cl: "item-content"});
-        content.textContent = data[keys[i]];
+      //   const title = Elem.create("div", {cl: "item-title"});
+      //   title.textContent = this.keyToJpn(keys[i]);
+      //   const content = Elem.create("div", {cl: "item-content"});
+      //   content.textContent = data[keys[i]];
 
-        li.appendChild(title);
-        li.appendChild(content);
+      //   li.appendChild(title);
+      //   li.appendChild(content);
 
-        li.addEventListener("mouseenter", () => {
-          const itemContent = li.querySelector(".item-content");
-          if (itemContent.scrollHeight > itemContent.clientHeight) {
-            this.timer = setTimeout(() => {
-              itemContent.classList.add("expanded");
-            }, 500);
-          }
-        });
+      //   li.addEventListener("mouseenter", () => {
+      //     const itemContent = li.querySelector(".item-content");
+      //     if (itemContent.scrollHeight > itemContent.clientHeight) {
+      //       this.timer = setTimeout(() => {
+      //         itemContent.classList.add("expanded");
+      //       }, 500);
+      //     }
+      //   });
 
-        li.addEventListener("mouseleave", () => {
-          clearTimeout(this.timer);
-          li.querySelector(".item-content").classList.remove("expanded");
-        });
+      //   li.addEventListener("mouseleave", () => {
+      //     clearTimeout(this.timer);
+      //     li.querySelector(".item-content").classList.remove("expanded");
+      //   });
 
-        flag.appendChild(li);
-      }
+      //   flag.appendChild(li);
+      // }
 
-      caseContent.innerHTML = "";
-      caseContent.appendChild(flag);
+      // caseContent.innerHTML = "";
+      // caseContent.appendChild(flag);
     });
     
     caseIds.selectedIndex = 0;
+    this.select(this.get()[0]);
   }
 
-  static insert(v){
-    this.data.push(v);
+  static select(data){
+    const keys = Object.keys(data);
+
+    const flag = document.createDocumentFragment();
+    for(let i = 0; i < keys.length; i++){
+      const li = Elem.create("li");
+
+      const title = Elem.create("div", {cl: "item-title"});
+      title.textContent = this.keyToJpn(keys[i]);
+      const content = Elem.create("div", {cl: "item-content"});
+      content.textContent = data[keys[i]];
+
+      li.appendChild(title);
+      li.appendChild(content);
+
+      li.addEventListener("mouseenter", () => {
+        const itemContent = li.querySelector(".item-content");
+        if (itemContent.scrollHeight > itemContent.clientHeight) {
+          this.timer = setTimeout(() => {
+            itemContent.classList.add("expanded");
+          }, 500);
+        }
+      });
+
+      li.addEventListener("mouseleave", () => {
+        clearTimeout(this.timer);
+        li.querySelector(".item-content").classList.remove("expanded");
+      });
+
+      flag.appendChild(li);
+    }
+
+    caseContent.innerHTML = "";
+    caseContent.appendChild(flag);
+  }
+
+  static get(){
+    return this.data;
+  }
+
+  static set(list){
+    this.clear();
+    this.data.push(...list);
   }
 
   static clear(){

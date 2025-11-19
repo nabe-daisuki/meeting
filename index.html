@@ -76,6 +76,7 @@
   <link rel="stylesheet" href="css/badge.css">
   <link rel="stylesheet" href="css/file-drop-overlay.css">
   <link rel="stylesheet" href="css/replace.css">
+  <link rel="stylesheet" href="css/user-select.css">
   <link rel="stylesheet" href="css/config.css">
   <link rel="stylesheet" href="css/input-button.css">
   <link rel="stylesheet" href="css/shortcut-helper.css">
@@ -322,7 +323,6 @@
 
       <div id="reference-tools" class="tab-content">
         <div class="sub-tool-section dark_theme_yellow">
-          <div class="sub-tool-header">件名</div>
           <div id="case-ids-wrapper" draggable="true">
             <div id="case-ids-handle"></div>
             <select id="case-ids" class="sub-tool-select"></select>
@@ -353,6 +353,13 @@
 </div>
 
 <div id="menu" class="context-menu">
+</div>
+
+<div id="user-select-overlay" class="hide">
+  <div id="user-select-title">利用者を選択してください</div>
+
+  <div id="user-buttons">
+  </div>
 </div>
 
 <label for="giji-file-input" id="file-drop-overlay">
@@ -438,6 +445,7 @@
 </style>
 <script src="js/elem.js"></script>
 <script src="js/header.js"></script>
+<script src="js/panel.js"></script>
 <script src="js/resizebar.js"></script>
 <script src="js/subtools.js"></script>
 <script src="js/line.js"></script>
@@ -459,6 +467,7 @@
 <script src="js/chunk.js"></script>
 <script src="js/render.js"></script>
 <script src="js/textinput.js"></script>
+<script src="js/userselect.js"></script>
 <script src="js/gijiinput.js"></script>
 <script src="js/gijipart.js"></script>
 <script src="js/gijiencoder.js"></script>

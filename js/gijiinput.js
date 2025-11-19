@@ -138,9 +138,21 @@ class GijiInput {
           otherInfo = Convert.bytesToArray(sections[k]["bytes"]);
           break;
         case "config":
-          const config = Convert.bytesToArray(sections[k]["bytes"]);
-          Config.set(config.general);
-          Config.setShortCuts(config.shortCut);
+          const configs = Convert.bytesToArray(sections[k]["bytes"]);
+          if(Array.isArray(configs)){
+            UserSelec.add(structuredClone(configs));
+          }else{
+            configs.user_name = "ユーザー1";
+            UserSelec.add(structuredClone([configs]));
+
+          // Config.set(config.general);
+          // Config.setShortCuts(config.shortCut);
+          }
+          break;
+        case "crlist":
+          const crlist = Convert.bytesToArray(sections[k]["bytes"]);
+          crlist.reverse();
+          CRList.set(structuredClone(crlist));
           break;
         default:
           alert(`.gijiファイルに有効でないタグ(${k})が登録されています。`);
@@ -150,6 +162,7 @@ class GijiInput {
 
     Theme.set("dark");
     Theme.setSub("yellow");
+
     if(Object.keys(sections).includes("speaker")){
       Render.speaker();
     }
@@ -176,12 +189,18 @@ class GijiInput {
         TextBody.select(otherInfo.highlight.idx, otherInfo.selection.start, otherInfo.selection.end);
       }
     }
-    if(Object.keys(sections).includes("config")){
-      Render.mainTool();
-      const theme = Theme.jpnToCode(Config.get().find(s => s.key === "theme").value[0]);
-      Theme.set(theme);
-    }
-    Theme.apply();
+    
+    CRList.init();
+
+    Render.userSelect();
+    userSelectOverlay.classList.remove("hide");
+
+    // if(Object.keys(sections).includes("config")){
+    //   Render.mainTool();
+    //   const theme = Theme.jpnToCode(Config.get().find(s => s.key === "theme").value[0]);
+    //   Theme.set(theme);
+    // }
+    // Theme.apply();
 
     fileDropOverlay.classList.add("hide");
   }

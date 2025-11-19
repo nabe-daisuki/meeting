@@ -32,6 +32,13 @@ class Render {
     });
   }
 
+  static userSelect(){
+    const btns = UserSelect.createBtns();
+    for(let j = 0; j < btns.length; j++){
+      userButtons.appendChild(btns[j]);
+    }
+  }
+
   static config(){
     configList.innerHTML = "";
     Config.create().forEach( i => {

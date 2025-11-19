@@ -227,6 +227,8 @@ class Theme {
     for(const el of document.querySelectorAll(".sub-tool-section")){
       el.classList.remove(preClass);
     }
+    caseContent.classList.remove(preClass);
+    repInfosUl.classList.remove(preClass);
 
     shortCutList.classList.remove(preClass);
 
@@ -257,6 +259,8 @@ class Theme {
     for(const el of document.querySelectorAll(".sub-tool-section")){
       el.classList.add(newClass);
     }
+    caseContent.classList.add(newClass);
+    repInfosUl.classList.add(newClass);
 
     shortCutList.classList.add(newClass);
     
