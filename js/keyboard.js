@@ -8,9 +8,12 @@ class KeyBoard {
   static DOUBLE_TAP_THRESHOLD = 300;
 
   static shortCut = [
-    "F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12", //"F1"
+    "Q","V","L",";",":","\\","^",
+    "Shift+_","Shift+|","Shift++","Shift+*",
+    "F1","F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12",
+    "Shift+F1","Shift+F2","Shift+F3","Shift+F4","Shift+F5","Shift+F6","Shift+F7","Shift+F8","Shift+F9","Shift+F10","Shift+F11","Shift+F12",
     "Ctrl+1","Ctrl+2","Ctrl+3","Ctrl+4","Ctrl+5","Ctrl+6","Ctrl+7","Ctrl+8","Ctrl+9","Ctrl+0",
-    "Ctrl+E","Ctrl+S", //"Ctrl+Q", "Ctrl+R", "Ctrl+F", "Ctrl+D"
+    "Ctrl+E","Ctrl+S","Ctrl+Q","Ctrl+R","Ctrl+D", //"Ctrl+F"
     "Ctrl+F1","Ctrl+F2","Ctrl+F3","Ctrl+F4","Ctrl+F5","Ctrl+F6","Ctrl+F7","Ctrl+F8","Ctrl+F9","Ctrl+F10","Ctrl+F11","Ctrl+F12",
     "Ctrl+Shift+1","Ctrl+Shift+2","Ctrl+Shift+3","Ctrl+Shift+4","Ctrl+Shift+5","Ctrl+Shift+6","Ctrl+Shift+7","Ctrl+Shift+8","Ctrl+Shift+9",
     "Ctrl+Shift+A","Ctrl+Shift+C","Ctrl+Shift+D","Ctrl+Shift+E","Ctrl+Shift+F","Ctrl+Shift+Q","Ctrl+Shift+R","Ctrl+Shift+V","Ctrl+Shift+X","Ctrl+Shift+Z",
@@ -31,7 +34,7 @@ class KeyBoard {
       const idx = this.shiftMap.shift.findIndex(s => s === e.key);
       keys.push(this.shiftMap.key[idx]);
     }else{
-      keys.push(e.key);
+      keys.push(e.key.length === 1 ? e.key.toUpperCase() : e.key);
     }
 
     return keys.join("+");
@@ -43,7 +46,6 @@ let ctrlTimer = null;
 let lastShiftTime = 0;
 
 document.addEventListener("keydown", e => {
-  console.log(e.key);
   if(e.shiftKey){
     KeyBoard.hasShift = true;
     const now = Date.now();
@@ -90,6 +92,8 @@ document.addEventListener("keydown", e => {
 
   const keyString = KeyBoard.getKeyString(e);
   const shortCuts = Config.getShortCuts().find(s => keyString === s.value.at(-1));
+
+  console.log(keyString);
   
   if(!shortCuts) return;
 

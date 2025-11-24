@@ -24,11 +24,18 @@
   display: flex;
   gap: 10px;
 }
+#audio-controller.hide {
+  display: none;
+}
 
 #user-tool {
   display: flex;
   flex-direction: column;
 }
+#user-tool.hide {
+  display: none;
+}
+
 #user-tool img {
   margin: 10px 10px 10px 30px;
   width: 30px;

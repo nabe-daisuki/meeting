@@ -144,6 +144,16 @@
   --has-replace-bg: #00323d;
 }
 
+
+/* resize-bar */
+#resize-bar.RB_default {
+  --resize-bar-border: #ccc;
+}
+#resize-bar.RB_dark {
+  --resize-bar-border: #3f3f3f;
+}
+
+
 /* sub-tool */
 .sub-tool-section.STS_default {
   --sub-tool-section-bg: white;

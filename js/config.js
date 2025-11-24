@@ -1,4 +1,5 @@
 class Config {
+  static userName = null;
   static schema = [
     {key:"theme", type:"select", name:"テーマ", hint:"UIテーマを選択します。", options:["デフォルト", "ダーク"], value:["ダーク"]},
     {key:"subTheme", type:"select", name:"サブテーマ", hint:"UIサブテーマを選択します。", options:["レッド", "オレンジ", "イエロー", "グリーン", "シアン", "パープル", "ピンク"], value:["イエロー"]},
@@ -32,13 +33,19 @@ class Config {
   ];
 
   static TBSCDefault = [
-
+    {type:"add-comment", name:"行をコメント行にする/解除する", hint:"行をコメント行にしたり、解除したりできます。"},
+    {type:"add-response", name:"行を返答行にする/解除する", hint:"行を返答行にしたり、解除したりできます。"},
+    {type:"add-speaker", name:"行末尾に発言者を登録順に追記する", hint:"行末尾に発言者を追記できます。"},
+    {type:"add-speaker-reverse", name:"行末尾に発言者を登録の逆順に追記する", hint:"行末尾に発言者を追記できます。"},
+    {type:"insert-time", name:"カーソル位置に時間を挿入する", hint:"書式は(mm:ss)で、範囲選択の場合は末尾に挿入します。"}
   ];
 
   static textBodyShortCuts = [
     {key:"TBSC01", type:"add-comment", value:["Ctrl+Q"]},
     {key:"TBSC02", type:"add-response", value:["Ctrl+R"]},
-    {key:"TBSC03", type:"add-speaker", value:["F1"]}
+    {key:"TBSC03", type:"add-speaker", value:["F1"]},
+    {key:"TBSC04", type:"add-speaker-reverse", value:["Shift+F1"]},
+    {key:"TBSC05", type:"insert-time", value:["Ctrl+D"]}
   ];
 
   static isKeyConfig = false;
@@ -109,7 +116,7 @@ class Config {
     if(!this.hasApplyKeyConfig) return;
     
     this.clearShortCuts();
-    configList.querySelectorAll("#config-shortcut .config-item").forEach( (item, j) => {
+    configList.querySelectorAll("#config-global-shortcut .config-item").forEach( (item, j) => {
       const type = item.dataset.type;
       const value = Array.from(item.querySelectorAll("input, select")).reduce( (acc, cur) => {
         acc.push(cur.value);
@@ -121,11 +128,32 @@ class Config {
       this.addShortCut(j, type, value);
     });
 
+    
+    this.clearTBShortCuts();
+    configList.querySelectorAll("#config-textbody-shortcut .config-item").forEach( (item, j) => {
+      const type = item.dataset.type;
+      const value = Array.from(item.querySelectorAll("input, select")).reduce( (acc, cur) => {
+        acc.push(cur.value);
+        return acc;
+      }, []);
+
+      if(!value.at(-1)) return;
+
+      this.addTBShortCut(j, type, value);
+    });
+
     this.hasApplyKeyConfig = false;
   }
 
   static addShortCut(j, type, value){
     this.getShortCuts().push({
+      key: j.toString().padStart(2, "0"),
+      type,
+      value: [...value]
+    });
+  }
+  static addTBShortCut(j, type, value){
+    this.getTBShortCuts().push({
       key: j.toString().padStart(2, "0"),
       type,
       value: [...value]
@@ -154,7 +182,6 @@ class Config {
 
     const general = Elem.create("div", {id: "config-general"});
     for(const s of this.get()){
-      console.log(s);
       const item = Elem.create("div", {cl: "config-item"});
       const control = Elem.create("label", {cl: `config-${s.type}`});
       if(["checkbox", "text"].includes(s.type)){
@@ -227,13 +254,14 @@ class Config {
   static createKeyConfig(){
     const keyConfig = Elem.create("div", {id: "config-shortcut", cl: "hide"});
 
+    const globalKeyConfig = Elem.create("div", {id: "config-global-shortcut"});
     for(const sc of this.getShortCuts()){
-      keyConfig.appendChild(this.createKeyConfigItem(sc.key, sc.type, sc.value));
+      globalKeyConfig.appendChild(this.createKeyConfigItem(sc.key, sc.type, sc.value));
     }
 
     const addController = Elem.create("div", {id: "config-add-controller"});
     const addSelection = Elem.create("select", {id: "config-add-selection"});
-    this.SCDefaults.forEach( (scDefault, j) => {
+    this.getSCDefaults().forEach( (scDefault, j) => {
       const option = Elem.create("option");
       option.value = scDefault.name;
       option.textContent = scDefault.name;
@@ -258,14 +286,58 @@ class Config {
         return scd.name === selection;
       }).type;
 
-      const parent = document.getElementById("config-shortcut");
+      const parent = document.getElementById("config-global-shortcut");
       const target = parent.children[parent.children.length - 1];
       parent.insertBefore(this.createKeyConfigItem(newKey, newType, null), target);
     });
     addController.appendChild(add);
 
-    keyConfig.appendChild(addController);
+    globalKeyConfig.appendChild(addController);
 
+
+    const textBodyKeyConfig = Elem.create("div", {id: "config-textbody-shortcut"});
+    for(const sc of this.getTBShortCuts()){
+      textBodyKeyConfig.appendChild(this.createTBKeyConfigItem(sc.key, sc.type, sc.value));
+    }
+
+    const TBSCAddController = Elem.create("div", {id: "config-tbsc-add-controller"});
+    const TBSCAddSelection = Elem.create("select", {id: "config-tbsc-add-selection"});
+    this.getTBSCDefaults().forEach( (tbscDefault, j) => {
+      const option = Elem.create("option");
+      option.value = tbscDefault.name;
+      option.textContent = tbscDefault.name;
+
+      if(j === 0) option.selected = true;
+
+      TBSCAddSelection.appendChild(option);
+    });
+    TBSCAddController.appendChild(TBSCAddSelection);
+
+    const TBSCAdd = Elem.create("button", {id: "config-tbsc-add", cl: "config-btn secondary config-focus-ring"})
+    TBSCAdd.textContent = "＋";
+    TBSCAdd.addEventListener("click", () => {
+      const selection = TBSCAddSelection.value;
+      if(selection === ""){
+        alert("ボタン左の項目を設定ください");
+        return;
+      }
+      const nextShortCutKeyNum = Number(this.getTBShortCuts().at(-1).key.slice(-2)) + 1;
+      const newKey = `TBSC${nextShortCutKeyNum.toString().padStart(2, "0")}`;
+      const newType = this.getTBSCDefaults().find(scd => {
+        return scd.name === selection;
+      }).type;
+
+      const parent = document.getElementById("config-textbody-shortcut");
+      const target = parent.children[parent.children.length - 1];
+      parent.insertBefore(this.createTBKeyConfigItem(newKey, newType, null), target);
+    });
+    TBSCAddController.appendChild(TBSCAdd);
+
+    textBodyKeyConfig.appendChild(TBSCAddController);
+
+
+    keyConfig.appendChild(globalKeyConfig);
+    keyConfig.appendChild(textBodyKeyConfig);
     return keyConfig;
   }
 
@@ -311,6 +383,7 @@ class Config {
 
         select.appendChild(option);
       }
+      if(!value) select.selectedIndex = -1;
 
       control.appendChild(prefix);
       control.appendChild(text);
@@ -337,6 +410,7 @@ class Config {
 
         select.appendChild(option);
       }
+      if(!value) select.selectedIndex = -1;
 
       control.appendChild(select);
     }
@@ -366,6 +440,107 @@ class Config {
     return item;
   }
 
+
+  static createTBKeyConfigItem(key, type, value){
+    const tbscDefault = this.getTBSCDefaults().find(d => d.type === type);
+
+    const item = Elem.create("div", {cl: "config-item"});
+
+    let classNames = [`config-${type}`, "config-shortcut-item"];
+    if("init" in tbscDefault) classNames.push("config-with-value");
+    else classNames.push("config-notwith-value");
+    const control = Elem.create("div", {cl: classNames.join(" ")});
+    item.dataset.key = key;
+    item.dataset.type = type; 
+
+    if("init" in tbscDefault){
+      const prefix = Elem.createT(tbscDefault.prefix);
+      
+      const text = Elem.create("input");
+      text.type = "number";
+      [text.min, text.max] = tbscDefault.range.split(",");
+      text.value = value ? value[0] : tbscDefault.init;
+      text.step = tbscDefault.step;
+
+      const suffix = Elem.createT(tbscDefault.suffix);
+
+      const select = Elem.create("select");
+      select.addEventListener("change", e => {
+        for(const sl of document.querySelectorAll(".config-shortcut-item select")){
+          if(sl === e.target) continue;
+          if(sl.value !== e.target.value) continue;
+          sl.selectedIndex = -1;
+          break;
+        }
+        console.log("選択された値:", e.target.value);
+      });
+      for(const o of KeyBoard.shortCut){
+        const option = Elem.create("option");
+        option.value = o;
+        option.textContent = o;
+
+        if(value) if(value[1].includes(o)) option.selected = true;
+
+        select.appendChild(option);
+      }
+      if(!value) select.selectedIndex = -1;
+
+      control.appendChild(prefix);
+      control.appendChild(text);
+      control.appendChild(suffix);
+      control.appendChild(select);
+    }else{
+      const select = Elem.create("select");
+      select.addEventListener("change", e => {
+        for(const sl of document.querySelectorAll(".config-shortcut-item select")){
+          if(sl === e.target) continue;
+          if(sl.value !== e.target.value) continue;
+          sl.selectedIndex = -1;
+          break;
+        }
+        console.log("選択された値:", e.target.value);
+      });
+
+      for(const o of KeyBoard.shortCut){
+        const option = Elem.create("option");
+        option.value = o;
+        option.textContent = o;
+
+        if(value) if(value[0].includes(o)) option.selected = true;
+
+        select.appendChild(option);
+      }
+      if(!value) select.selectedIndex = -1;
+
+      control.appendChild(select);
+    }
+
+    const shortCutDelete = Elem.create("button", {cl: "config-shortcut-delete"});
+    shortCutDelete.textContent = "✕";
+    shortCutDelete.addEventListener("click", () => {
+      const item = Array.from(document.querySelectorAll("#config-shortcut .config-item")).find( item => {
+        return key === item.dataset.key
+      });
+      item.remove();
+    });
+    control.appendChild(shortCutDelete);
+
+    const name = Elem.create("div", {cl: "name"});
+    const nameLabel = Elem.create("div", {cl: "label"});
+    nameLabel.textContent = tbscDefault.name;
+    const hint = Elem.create("div", {cl: "hint"});
+    hint.textContent = tbscDefault.hint;
+
+    name.appendChild(nameLabel);
+    name.appendChild(hint);
+
+    item.appendChild(name);
+    item.appendChild(control);
+
+    return item;
+  }
+
+
   static clear(){
     console.log(this.get());
     this.get().length = 0;
@@ -391,11 +566,72 @@ class Config {
     return this.SCDefaults;
   }
 
+  static clearTBShortCuts(){
+    this.getTBShortCuts().length = 0;
+  }
+  static getTBShortCuts(){
+    return this.textBodyShortCuts;
+  }
+  static setTBShortCuts(v){
+    this.clearTBShortCuts();
+    this.textBodyShortCuts.push(...structuredClone(v));
+  }
+  static getTBSCDefaults(){
+    return this.TBSCDefault;
+  }
+
   static open(){
     Render.config();
   }
 
   static close(){
     configOverlay.classList.remove("show");
+  }
+
+  static getConfigs(){
+    function deepEqual(a, b) {
+      if (a === b) return true;
+      if (typeof a !== typeof b) return false;
+      if (Array.isArray(a) && Array.isArray(b)) {
+        if (a.length !== b.length) return false;
+        return a.every((v, i) => deepEqual(v, b[i]));
+      }
+      if (typeof a === 'object' && a && b) {
+        const keysA = Object.keys(a);
+        const keysB = Object.keys(b);
+        if (keysA.length !== keysB.length) return false;
+        return keysA.every(key => deepEqual(a[key], b[key]));
+      }
+      return false;
+    }
+
+    const userData = UserSelect.data;
+    if(this.userName !== "ゲスト"){
+      for(let j = 0; j < userData.length; j++){
+        if(this.userName !== userData[j].user_name)continue;
+        if(deepEqual(userData[j].general, this.get())
+          && deepEqual(userData[j].shortCut, this.getShortCuts())
+          && deepEqual(userData[j].tbShortCut, this.getTBShortCuts()))break;
+        const addNum = Number(this.userName.slice(-1));
+        const addUserName = Number.isNaN(addNum)
+          ? `${this.userName}1`
+          : `${this.userName.slice(0, -1)}${addNum + 1}`;
+        UserSelect.add([{
+          user_name: addUserName,
+          general: structuredClone(this.get()),
+          shortCut: structuredClone(this.getShortCuts()),
+          tbShortCut: structuredClone(this.getTBShortCuts())
+        }]);
+      }
+    }else{
+      UserSelect.add([{
+        user_name: "ユーザー1",
+        general: structuredClone(this.get()),
+        shortCut: structuredClone(this.getShortCuts()),
+        tbShortCut: structuredClone(this.getTBShortCuts())
+      }]);
+    }
+
+    return UserSelect.data;
   }
 }

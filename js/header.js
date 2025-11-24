@@ -26,6 +26,9 @@ class Header {
         this.isClosedMainTools = false;
       }
       Panel.setEditorPanelH();
+      
+      SubTools.setPreReplaceH();
+      SubTools.setCaseContentH();
     });
   }
 }

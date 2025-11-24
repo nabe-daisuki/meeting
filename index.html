@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>議事録作成支援ページ</title>
+  <script src="js/pdfjs/pdf.min.js"></script>
 <style>
   body { margin:0; font-family: sans-serif; }
   body.active {
@@ -76,7 +77,9 @@
   <link rel="stylesheet" href="css/badge.css">
   <link rel="stylesheet" href="css/file-drop-overlay.css">
   <link rel="stylesheet" href="css/replace.css">
+  <link rel="stylesheet" href="css/case-categorizing.css">
   <link rel="stylesheet" href="css/user-select.css">
+  <link rel="stylesheet" href="css/pdf-viewer.css">
   <link rel="stylesheet" href="css/config.css">
   <link rel="stylesheet" href="css/input-button.css">
   <link rel="stylesheet" href="css/shortcut-helper.css">
@@ -275,8 +278,49 @@
 
     <div id="main-tool-open-close"><img src="img/theme/dark/close.png"></div>
   </div>
-</div>
 
+  <div id="pdf-viewer" class="hide">
+    <div id="pdf-controls">
+      <div id="zoom-in">
+        <img src="img/theme/dark/zoom-in.png">
+      </div>
+      <div id="zoom-out">
+        <img src="img/theme/dark/zoom-out.png">
+      </div>
+      
+      <hr style="border-color: #3f3f3f;width: 100%;">
+      
+      <div id="prev-page">
+        <img id="move-top-page" src="img/theme/dark/top.png">
+        <img id="move-prev-page" src="img/theme/dark/up.png">
+      </div>
+      <div id="page-counter">
+        <input id="current-page-num" type="text">
+        <div id="total-page-num"></div>
+      </div>
+      <div id="next-page">
+        <img id="move-next-page" src="img/theme/dark/down.png">
+        <img id="move-bottom-page" src="img/theme/dark/bottom.png">
+      </div>
+
+      <hr style="border-color: #3f3f3f;width: 100%;">
+
+      <div id="page-post">
+        <img src="img/theme/dark/post.png">
+      </div>
+    </div>
+
+    <div id="pdf-container">
+      <div id="pdf-view"></div>
+      <div id="pdf-texts"></div>
+    </div>
+
+    <div id="pdf-close-box">
+      <img src="img/theme/dark/cross.png">
+    </div>
+
+  </div>
+</div>
 
 <div id="editor-panel">
   <div class="panel dark_theme_yellow" id="left-panel"></div>
@@ -323,9 +367,16 @@
 
       <div id="reference-tools" class="tab-content">
         <div class="sub-tool-section dark_theme_yellow">
-          <div id="case-ids-wrapper" draggable="true">
-            <div id="case-ids-handle"></div>
-            <select id="case-ids" class="sub-tool-select"></select>
+          <div id="case-ids-selector">
+            <div id="case-ids-wrapper" draggable="true">
+              <div id="case-ids-handle"></div>
+              <select id="case-ids" class="sub-tool-select"></select>
+            </div>
+            <div id="case-ids-switcher">
+              <img id="prev-case-btn" src="img/theme/dark/left.png">
+              <img id="next-case-btn" src="img/theme/dark/right.png">
+              <img id="categorize-update-btn" src="img/theme/dark/update.png">
+            </div>
           </div>
           <ul id="case-content"></ul>
         </div>
@@ -353,6 +404,27 @@
 </div>
 
 <div id="menu" class="context-menu">
+</div>
+
+<div id="case-categorizing-overlay" class="hide">
+  <div id="categorize-tools">
+    <div id="category-color">
+      <div class="category-color-btn active" style="background-color:#f44336;"></div>
+      <div class="category-color-btn" style="background-color:#2196f3;"></div>
+      <div class="category-color-btn" style="background-color:#4caf50;"></div>
+      <div class="category-color-btn" style="background-color:#ffeb3b;"></div>
+      <div class="category-color-btn" style="background-color:#9c27b0;"></div>
+    </div>
+    <div id="category-ok-btn-box">
+      <button id="category-ok-btn">O　K</button>
+    </div>
+  </div>
+  <div id="categorizing-area">
+    <canvas></canvas>
+    <div id="be-categorized-items"></div>
+    <div id="draw-pointer"></div>
+  </div>
+  <div id="category-result"></div>
 </div>
 
 <div id="user-select-overlay" class="hide">
@@ -444,6 +516,7 @@
 .hide { display: none; }
 </style>
 <script src="js/elem.js"></script>
+<script src="js/calc.js"></script>
 <script src="js/header.js"></script>
 <script src="js/panel.js"></script>
 <script src="js/resizebar.js"></script>
@@ -467,6 +540,7 @@
 <script src="js/chunk.js"></script>
 <script src="js/render.js"></script>
 <script src="js/textinput.js"></script>
+<script src="js/casecategorizing.js"></script>
 <script src="js/userselect.js"></script>
 <script src="js/gijiinput.js"></script>
 <script src="js/gijipart.js"></script>
@@ -490,6 +564,7 @@
 <script src="js/replacehelper.js"></script>
 <script src="js/clipboard.js"></script>
 <script src="js/replace.js"></script>
+<script src="js/pdfviewer.js"></script>
 <script src="js/config.js"></script>
 <script src="js/theme.js"></script>
 <script src="js/meta.js"></script>

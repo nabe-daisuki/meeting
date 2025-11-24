@@ -4,6 +4,9 @@
 #main-tools {
   display: flex;
 }
+#main-tools.hide {
+  display: none;
+}
 
 #main-tools > .main-tool {
   position: relative;

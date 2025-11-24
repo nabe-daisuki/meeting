@@ -1,9 +1,9 @@
 class Save {
   static init(){
-    saveBtn.addEventListener("click", () => this.defaultSave());
+    saveBtn.addEventListener("click", async () => this.defaultSave());
     saveBtn.addEventListener("focus", () => saveBtn.blur());
 
-    namedSaveBtn.addEventListener("click", () => this.namedSave());
+    namedSaveBtn.addEventListener("click", async() => this.namedSave());
     namedSaveBtn.addEventListener("focus", () => namedSaveBtn.blur());
   }
 
@@ -136,15 +136,39 @@ class Save {
       },
       {
         tag: "config",
-        data: {
-          general: structuredClone(Config.get()),
-          shortCut: structuredClone(Config.getShortCuts())
-        },
+        data: structuredClone(Config.getConfigs()),
         type: "json"
       },
       {
         tag: "crlist",
-        data: structuredClone(CRList.get()),
+        data: {
+          list: structuredClone(CRList.get()),
+          select: caseIds.selectedIndex,
+          paths: structuredClone(CaseCategorizing.paths.map(p => ({
+            color: p.color,
+            points: p.points,
+            hovered: p.hovered
+          }))),
+          group: structuredClone(CRList.getGroup()),
+          compressCaseTitles: structuredClone(CRList.getCompressCaseTitles())
+        },
+        type: "json"
+      },
+      {
+        tag: "pdfviewer",
+        data: {
+          prevPdf: {
+            caseid: PDFViewer.prevPdf.caseid,
+            name: PDFViewer.prevPdf.name,
+            size: PDFViewer.prevPdf.size,
+          },
+          scroll: {
+            top: PDFViewer.scroll.top,
+            left: PDFViewer.scroll.left
+          },
+          scale: PDFViewer.scale,
+          show: PDFViewer.isEnabled
+        },
         type: "json"
       },
       {
@@ -166,7 +190,8 @@ class Save {
             start: TextBody.selection.start,
             end: TextBody.selection.end,
             paras: [...TextBody.selection.paras]
-          }
+          },
+          activeTag: SubTools.activeTag
         },
         type: "json"
       }

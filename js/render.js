@@ -32,6 +32,13 @@ class Render {
     });
   }
 
+  static beCategorizedItems(){
+    const items = CaseCategorizing.createItems();
+    for(let j = 0; j < items.length; j++){
+      beCategorizedItems.appendChild(items[j]);
+    }
+  }
+
   static userSelect(){
     const btns = UserSelect.createBtns();
     for(let j = 0; j < btns.length; j++){

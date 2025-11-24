@@ -89,6 +89,9 @@ class Theme {
       }
     }
 
+    // resize-bar
+    resizeBar.classList.remove(`RB_${preType}`);
+
     // sub-tool
     for(const el of Array.from(document.getElementsByClassName("sub-tool-section"))){
       el.classList.remove(`STS_${preType}`);
@@ -183,6 +186,11 @@ class Theme {
       }
     }
 
+    
+    // resize-bar
+    resizeBar.classList.add(`RB_${type}`);
+
+
     // sub-tool
     for(const el of Array.from(document.getElementsByClassName("sub-tool-section"))){
       el.classList.add(`STS_${type}`);
@@ -215,6 +223,10 @@ class Theme {
     playbackSlider.classList.remove(preClass);
     volumeSlider.classList.remove(preClass);
     speedSlider.classList.remove(preClass);
+    
+    pdfView.classList.remove(preClass);
+    pdfTexts.classList.remove(preClass);
+
     lPanel.classList.remove(preClass);
 
     const allSelector = document.getElementById("all-selector");
@@ -230,6 +242,10 @@ class Theme {
     caseContent.classList.remove(preClass);
     repInfosUl.classList.remove(preClass);
 
+    categorizingArea.classList.remove(preClass);
+    for(const el of document.querySelectorAll(".category-result-case-ids")){
+      el.classList.remove(preClass);
+    }
     shortCutList.classList.remove(preClass);
 
     canMoveAudioBtn.classList.remove(preClass);
@@ -248,6 +264,10 @@ class Theme {
     playbackSlider.classList.add(newClass);
     volumeSlider.classList.add(newClass);
     speedSlider.classList.add(newClass);
+
+    pdfView.classList.add(newClass);
+    pdfTexts.classList.add(newClass);
+
     lPanel.classList.add(newClass);
 
     if(allSelector) allSelector.classList.add(newClass);
@@ -262,6 +282,10 @@ class Theme {
     caseContent.classList.add(newClass);
     repInfosUl.classList.add(newClass);
 
+    categorizingArea.classList.add(newClass);
+    for(const el of document.querySelectorAll(".category-result-case-ids")){
+      el.classList.add(newClass);
+    }
     shortCutList.classList.add(newClass);
     
     canMoveAudioBtn.classList.add(newClass);

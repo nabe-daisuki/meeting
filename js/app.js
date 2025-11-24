@@ -1,4 +1,4 @@
-const isTest = true;
+const isTest = false;
 const isGijiTest = false;
 
 const header = document.getElementById("header");
@@ -14,6 +14,8 @@ const rPanel = document.getElementById("right-panel");
 const audio = document.getElementById("audio");
 
 const playbackBox = document.getElementById("playback-box");
+
+const audioController = document.getElementById("audio-controller");
 const volumeBox = document.getElementById("volume-box");
 const speedBox = document.getElementById("speed-box");
 
@@ -35,10 +37,11 @@ const unmuteBtn = document.getElementById("unmute-btn");
 const muteBtn = document.getElementById("mute-btn");
 const normalSpeedBtn = document.getElementById("normal-speed-btn");
 
+const userTool = document.getElementById("user-tool");
 const config = document.getElementById("config");
 const help = document.getElementById("help");
 
-const mainToolsArea = document.getElementById("main-tools")
+const mainToolsArea = document.getElementById("main-tools");
 
 const inputerArea = document.getElementById("inputer");
 const textFileInput = document.getElementById("text-file-input");
@@ -65,7 +68,24 @@ const editedToExport = document.getElementById("edited-to-export");
 
 const mainToolOpenCloseBtn = document.getElementById("main-tool-open-close");
 
+const pdfViewer = document.getElementById("pdf-viewer");
+const zoomInBtn = document.getElementById("zoom-in");
+const zoomOutBtn = document.getElementById("zoom-out");
+const moveTopPage = document.getElementById("move-top-page");
+const movePrevPage = document.getElementById("move-prev-page");
+const currentPageNum = document.getElementById("current-page-num");
+const totalPageNum = document.getElementById("total-page-num");
+const moveNextPage = document.getElementById("move-next-page");
+const moveBottomPage = document.getElementById("move-bottom-page");
+const pagePostBtn = document.getElementById("page-post");
+const pdfView = document.getElementById("pdf-view");
+const pdfTexts = document.getElementById("pdf-texts");
+const pdfCloseBox = document.getElementById("pdf-close-box");
+
 const menuContainer = document.getElementById("menu");
+
+const tabs = document.getElementById("tabs");
+const subTools = document.getElementById("sub-tools");
 
 const subToolTabButtons = document.querySelectorAll("#tabs .tab-btn");
 const subToolTabContents = document.querySelectorAll("#sub-tools .tab-content");
@@ -77,11 +97,25 @@ const attachmentBadge = document.getElementById("attachment-badge");
 const commentBadge = document.getElementById("comment-badge");
 const startBadge = document.getElementById("start-badge");
 
+const caseIdsSelector = document.getElementById("case-ids-selector");
 const caseIdsWrapper = document.getElementById("case-ids-wrapper");
+const caseIdsHandle = document.getElementById("case-ids-handle");
 const caseIds = document.getElementById("case-ids");
+const caseIdsSwitcher = document.getElementById("case-ids-switcher");
+const prevCaseBtn = document.getElementById("prev-case-btn");
+const nextCaseBtn = document.getElementById("next-case-btn");
+const categorizeUpdateBtn = document.getElementById("categorize-update-btn");
 const caseContent = document.getElementById("case-content");
 
 const repInfosUl = document.getElementById("repinfos");
+
+const caseCategorizingOverlay = document.getElementById("case-categorizing-overlay");
+const categorizingArea = document.getElementById("categorizing-area");
+const categorizingCanvas = document.querySelector("#categorizing-area canvas");
+const beCategorizedItems = document.getElementById("be-categorized-items");
+const drawPointer = document.getElementById("draw-pointer");
+const categoryResult = document.getElementById("category-result");
+const categoryOKBtn = document.getElementById("category-ok-btn");
 
 const userSelectOverlay = document.getElementById("user-select-overlay");
 const userButtons = document.getElementById("user-buttons");
@@ -138,6 +172,8 @@ window.onload= () =>{
   SearchHelper.init();
   ReplaceHelper.init();
   Meta.init();
+  CaseCategorizing.init();
+  PDFViewer.init();
 }
 
 window.addEventListener("resize", () => {
@@ -150,6 +186,11 @@ window.addEventListener("resize", () => {
     TextBody.resetCharsPerPara(i);
     TextBody.resetParaHeights(i);
     TextBody.resetMiniBadges(i);
+  }
+
+  if(!caseCategorizingOverlay.classList.contains("hide")){
+    CaseCategorizing.resize();
+    CaseCategorizing.setCategoryResultCaseIdsMaxW();
   }
   isWindowResize = false;
 });

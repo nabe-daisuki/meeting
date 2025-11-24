@@ -43,6 +43,10 @@
 }
 .tab-content>.sub-tool-section:last-child::-webkit-scrollbar-thumb:hover {
   background-color: var(--sub-theme-hover);
+  cursor: grab;
+}
+.tab-content>.sub-tool-section:last-child::-webkit-scrollbar-thumb:active {
+  cursor: grabbing;
 }
 
 .sub-tool-header {
@@ -78,6 +82,11 @@
 }
 
 
+#case-ids-selector {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
 #case-ids-wrapper {
   cursor: pointer;
   width: fit-content;
@@ -103,39 +112,68 @@
 #case-ids-wrapper #case-ids-handle:active {
   cursor: grabbing;
 }
+#case-ids-switcher {
+  display: flex;
+}
+#case-ids-switcher>img {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+}
 
 .sub-tool-section .sub-tool-select {
   padding: 6px;
   background: #222;
   color: #ccc;
   border: 1px solid #555;
-  max-width: 220px;
   cursor: pointer;
 }
 .sub-tool-section .sub-tool-section>option {
   pointer-events: auto;
   cursor: pointer;
 }
+#prev-case-btn {
+  cursor: pointer;
+  transition: 0.2s;
+}
+#prev-case-btn:hover {
+  transform: scale(1.3);
+  filter: brightness(2);
+}
+#next-case-btn {
+  cursor: pointer;
+  transition: 0.2s;
+}
+#next-case-btn:hover {
+  transform: scale(1.3);
+  filter: brightness(2);
+}
 
 #case-content {
+  --scroll-width: 6px;
   list-style: none;
   padding: 0;
   margin: 0;
   overflow-y: scroll;
 }
 #case-content::-webkit-scrollbar {
-  width: 6px;
+  width: var(--scroll-width);
+  height: var(--scroll-width);
 }
 #case-content::-webkit-scrollbar-track {
   background: #505050;
-  border-radius: 3px;
+  border-radius: calc(var(--scroll-width) / 2);
 }
 #case-content::-webkit-scrollbar-thumb {
   background-color: var(--sub-theme);
-  border-radius: 3px;
+  border-radius: calc(var(--scroll-width) / 2);
 }
 #case-content::-webkit-scrollbar-thumb:hover {
   background-color: var(--sub-theme-hover);
+  cursor: grab;
+}
+#case-content::-webkit-scrollbar-thumb:active {
+  cursor: grabbing;
 }
 
 #case-content li {
@@ -143,6 +181,13 @@
   color: #ccc;
   border-bottom: 1px solid #444;
   padding: 12px;
+}
+#case-content li.loadable {
+  position: sticky;
+  bottom: 0;
+}
+#case-content li.loadable.nosticky {
+  position: static;
 }
 #case-content li:last-child {
   border-bottom: none;
@@ -152,7 +197,26 @@
   font-weight: bold;
   margin-bottom: 4px;
 }
+#case-content .item-title.multi{
+  position: sticky;
+  width: 250px;
+}
 
+/*
+*
+* グループ件名用ボックス
+*
+*/
+#case-content .item-contents {
+  display: flex;
+  gap: 10px;
+}
+
+/*
+*
+* 各項目用ボックス
+*
+*/
 #case-content .item-content {
   font-size: 0.9em;
   opacity: 0.9;
@@ -160,10 +224,199 @@
   max-height: 50px;
   transition: max-height 0.3s ease;
 }
-
+#case-content .item-content.loadable {
+  max-height: none;
+}
+#case-content .item-content.multi {
+  --min-width: 250;
+  flex: 1 1 250px;
+  min-width: calc(var(--min-width) * 1px);
+}
+#case-content .item-content.multi:not(:last-child) {
+  border-right: 1px solid #ccc;
+  max-width: 350px;
+}
+#case-content .item-content.multi:last-child {
+  width: 100%;
+}
+#case-content .item-content.grabbable {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  overflow: visible;
+}
+#case-content .item-content.grabbables {
+  max-height: none;
+  overflow: visible;
+}
 #case-content .item-content.expanded {
   max-height: 1000px; /* 十分大きい値で全文表示 */
 }
+
+
+/*
+*
+* PDF読み込みエリア
+*
+*/
+#case-content .item-content-loadable-area {
+  margin: 10px;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  background-color: #00000033;
+  user-select: none;
+  border: 2px dashed #fffb0a;
+  padding: 10px 0;
+  cursor: pointer;
+}
+#case-content .item-content-loadable-area * {
+  pointer-events: none;
+}
+
+
+/*
+*
+* 管理番号用ハンドル
+*
+*/
+#case-content .case-id-handle {
+  margin-left: 10px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #d1cd00;
+  cursor: grab;
+}
+#case-content .case-id-handle:hover {
+  box-shadow: 0 0 20px 5px #fffa00;
+}
+#case-content .case-id-handle:active {
+  cursor: grabbing;
+}
+
+
+/*
+*
+* 添付資料用ハンドル
+*
+*/
+#case-content .attachment-box {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  padding-top: 10px;
+  overflow: visible;
+}
+
+#case-content .attachment-handle {
+  margin-left: 10px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #d1cd00;
+  cursor: grab;
+}
+#case-content .attachment-handle:hover {
+  box-shadow: 0 0 20px 5px #fffa00;
+}
+#case-content .attachment-handle:active {
+  cursor: grabbing;
+}
+
+#case-content .attachment-name {
+  cursor: pointer;
+  transition: 0.2s;
+}
+#case-content .attachment-name:hover {
+  transform: scale(1.1);
+  font-weight: 900;
+}
+
+
+/*
+*
+* PDF読み込み
+*
+*/
+#case-content .item-content-load-img-box {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  margin-left: 7px;
+}
+#case-content .item-content-load-img-box img {
+  width: 30px;
+  height: 30px;
+  position: absolute;
+  transition: transform 0.2s, opacity 0.2s;
+}
+#case-content .item-content-load-by-selection-img,
+#case-content .item-content-load-by-drop-img {
+  opacity: 0;
+}
+#case-content .item-content-load-by-selection,
+#case-content .item-content-load-or,
+#case-content .item-content-load-by-drop {
+  transition: transform 0.2s, color 0.2s;
+}
+
+#case-content .item-content-loadable-area:hover {
+  border-color: #41fff8;
+  background-color: #00292899;
+}
+#case-content .item-content-loadable-area:hover .item-content-load-neutral-img {
+  transform: scale(1.1);
+  opacity: 0.5;
+}
+#case-content .item-content-loadable-area:hover .item-content-load-by-selection-img {
+  transform: scale(1.1);
+  opacity: 1;
+}
+#case-content .item-content-loadable-area:hover .item-content-load-by-selection {
+  transform: scale(1.1);
+  color: #41fff8;
+}
+#case-content .item-content-loadable-area:hover .item-content-load-or,
+#case-content .item-content-loadable-area:hover .item-content-load-by-drop {
+  transform: scale(0.9);
+  color: #676767;
+}
+
+#case-content .item-content-loadable-area.active {
+  border-color: #ff4010;
+  background-color: #270e0099;
+}
+#case-content .item-content-loadable-area.active .item-content-load-neutral-img {
+  transform: scale(1.1);
+  opacity: 0.5;
+}
+#case-content .item-content-loadable-area.active .item-content-load-by-drop-img {
+  transform: scale(1.1);
+  opacity: 1;
+}
+#case-content .item-content-loadable-area.active .item-content-load-by-drop {
+  transform: scale(1.1);
+  color: #ff4010;
+}
+#case-content .item-content-loadable-area.active .item-content-load-by-selection,
+#case-content .item-content-loadable-area.active .item-content-load-or {
+  transform: scale(0.9);
+  color: #676767;
+}
+
+#case-content .item-content-load-contexts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+/*
+*
+* 出力タブ
+*
+*/
 
 #output {
   background-color: #2b2b2b;

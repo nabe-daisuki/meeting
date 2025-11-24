@@ -121,9 +121,21 @@ class TextBody {
 
     textBody.addEventListener("keydown", e => {
       // console.log("keydown");
-      
       this.edit.isKeydown = true;
 
+      if(e.key === "Tab"){
+        e.preventDefault();
+        const nextIndex = i + Math.sign(Number(KeyBoard.hasShift) - 0.5) * -1;
+        if(nextIndex < 0 || nextIndex >= Doc.getLines().length) return;
+        Doc.getTextBody(nextIndex).focus();
+        return;
+      }
+
+      const keyString = KeyBoard.getKeyString(e);
+      const shortCuts = Config.getTBShortCuts().find(s => keyString === s.value.at(-1));
+      
+      if(!shortCuts) return;
+      
       const isMultiLine = e.target.value.slice(this.selection.start, this.selection.end).includes("\n");
       const paraNum = this.getSelectionParaNum(i);
 
@@ -132,113 +144,202 @@ class TextBody {
       
       let replacedText = "";
       
-      switch(e.key){
-        case "Tab":
-          e.preventDefault();
-          const nextIndex = i + Math.sign(Number(KeyBoard.hasShift) - 0.5) * -1;
-          if(nextIndex < 0 || nextIndex >= Doc.getLines().length) return;
-          Doc.getTextBody(nextIndex).focus();
-          break;
-        case "F1":
-          e.preventDefault();
+      const type = shortCuts.type;
 
-          if(isMultiLine) return;
-
-          let newSpeakerIdx = 0;
-          if(/\（.*?\）$/.test(Doc.getCharsPerPara(i)[paraNum])){
-            const speaker = Doc.getCharsPerPara(i)[paraNum].match(/\（.*?\）$/)[0].replace(/[（）]/g, "");
-            
-            const speakerIdx = Array.from(Speaker.getBtns()).findIndex(s => speaker === s.textContent.replace(/[（）]/g, ""));
-            if(KeyBoard.hasShift){
-              if(speakerIdx === 0) newSpeakerIdx = Speaker.count() - 1;
-              else newSpeakerIdx = speakerIdx - 1;
-            }else{
-              if(speakerIdx !== Speaker.count() - 1) newSpeakerIdx = speakerIdx + 1;
-            }
-          }
-          const newSpeaker = Speaker.getBtns()[newSpeakerIdx].textContent.replace(/[（）]/g, "");
-
-          replacedText = textBody.value.split("\n").map((l, j) => {
-            if(j === paraNum) return this.resetSpeaker(l, newSpeaker);
-            else return l;
-          }).join("\n");
-
-          textBody.value = replacedText;
-          textBodyBG.innerHTML = replacedText + '\u200b';
-
-          textBody.setSelectionRange(this.selection.start, this.selection.end);
-          this.enableEdited(i);
-          Doc.setEditedText(i, replacedText);
-          
-          this.resetCharsPerPara(i);
-          this.resetParaHeights(i);
-          this.resetMiniBadges(i);
-          break;
-
-        case "d":
-          if(!KeyBoard.hasCtrl) return;
-          e.preventDefault();
-
-          const curTime = AudioState.getTime();
-
-          const hms = Convert.secToStr(curTime);
-          const format = Convert.secToStr(AudioFile.getDuration()).slice(0,2) === "00" ? `(${hms.slice(-5)})` : `(${hms})`;
-
-
-          const prefix = textBody.value.slice(0, this.selection.end);
-          const suffix = textBody.value.slice(this.selection.end);
-          replacedText = prefix + format + suffix;
-
-          textBody.value = replacedText;
-          textBodyBG.innerHTML = replacedText + '\u200b';
-
-          const pos = prefix.length + format.length;
-          textBody.setSelectionRange(pos, pos);
-
-          this.enableEdited(i);
-          Doc.setEditedText(i, replacedText);
-          
-          this.resetCharsPerPara(i);
-          this.resetParaHeights(i);
-          this.resetMiniBadges(i);
-
-          if(!SeekLabel.exists(curTime)){
-            const seekLabel = SeekLabel.create(curTime);
-            playbackSliderBox.appendChild(seekLabel);
-          }
-
-          if(!Badged.can("d")) return;
-          Doc.addBadge(i, "d");
-          Badged.set(i, Badged.createBadges(i));
-
-          break;
-        case "q":
-          if(!KeyBoard.hasCtrl) return;
-          e.preventDefault();
-
-          if(isMultiLine) return;
-          if(Doc.hasMiniBadge(i, paraNum, "c")){
-            Doc.removeMiniBadge(i, paraNum);
-            return;
-          }
+      if(type === "add-comment"){
+        if(isMultiLine) return;
+        if(Doc.hasMiniBadge(i, paraNum, "c")){
+          Doc.removeMiniBadge(i, paraNum);
+        }else{
           Doc.setMiniBadge(i, paraNum, "c");
-
           TextBody.resetMiniBadges(i);
-          break;
-          
-        case "r":
-          if(!KeyBoard.hasCtrl) return;
-          e.preventDefault();
-
-          if(isMultiLine) return;
-          if(Doc.hasMiniBadge(i, paraNum, "r")){
-            Doc.removeMiniBadge(i, paraNum);
-            return;
-          }
+        }
+      }else if(type === "add-response"){
+        if(isMultiLine) return;
+        if(Doc.hasMiniBadge(i, paraNum, "r")){
+          Doc.removeMiniBadge(i, paraNum);
+        }else{
           Doc.setMiniBadge(i, paraNum, "r");
-
           TextBody.resetMiniBadges(i);
-          break;
+        }
+      }else if(["add-speaker", "add-speaker-reverse"].includes(type)){
+        if(isMultiLine) return;
+
+        let newSpeakerIdx = 0;
+        if(/\（.*?\）$/.test(Doc.getCharsPerPara(i)[paraNum])){
+          const speaker = Doc.getCharsPerPara(i)[paraNum].match(/\（.*?\）$/)[0].replace(/[（）]/g, "");
+          
+          const speakerIdx = Array.from(Speaker.getBtns()).findIndex(s => speaker === s.textContent.replace(/[（）]/g, ""));
+          if(KeyBoard.hasShift){
+            if(speakerIdx === 0) newSpeakerIdx = Speaker.count() - 1;
+            else newSpeakerIdx = speakerIdx - 1;
+          }else{
+            if(speakerIdx !== Speaker.count() - 1) newSpeakerIdx = speakerIdx + 1;
+          }
+        }
+        const newSpeaker = Speaker.getBtns()[newSpeakerIdx].textContent.replace(/[（）]/g, "");
+
+        replacedText = textBody.value.split("\n").map((l, j) => {
+          if(j === paraNum) return this.resetSpeaker(l, newSpeaker);
+          else return l;
+        }).join("\n");
+
+        textBody.value = replacedText;
+        textBodyBG.innerHTML = replacedText + '\u200b';
+
+        textBody.setSelectionRange(this.selection.start, this.selection.end);
+        this.enableEdited(i);
+        Doc.setEditedText(i, replacedText);
+        
+        this.resetCharsPerPara(i);
+        this.resetParaHeights(i);
+        this.resetMiniBadges(i);
+      }else if(type === "insert-time"){
+        const curTime = AudioState.getTime();
+
+        const hms = Convert.secToStr(curTime);
+        const format = Convert.secToStr(AudioFile.getDuration()).slice(0,2) === "00" ? `(${hms.slice(-5)})` : `(${hms})`;
+
+
+        const prefix = textBody.value.slice(0, this.selection.end);
+        const suffix = textBody.value.slice(this.selection.end);
+        replacedText = prefix + format + suffix;
+
+        textBody.value = replacedText;
+        textBodyBG.innerHTML = replacedText + '\u200b';
+
+        const pos = prefix.length + format.length;
+        textBody.setSelectionRange(pos, pos);
+
+        this.enableEdited(i);
+        Doc.setEditedText(i, replacedText);
+        
+        this.resetCharsPerPara(i);
+        this.resetParaHeights(i);
+        this.resetMiniBadges(i);
+
+        if(!SeekLabel.exists(curTime)){
+          const seekLabel = SeekLabel.create(curTime);
+          playbackSliderBox.appendChild(seekLabel);
+        }
+
+        if(!Badged.can("d")) return;
+        Doc.addBadge(i, "d");
+        Badged.set(i, Badged.createBadges(i));
+
+      }else{
+        alert("キー操作に対する処理がプログラムされていません。");
+        return;
+      }
+      e.preventDefault();
+      
+      switch(e.key){
+        // case "Tab":
+        //   e.preventDefault();
+        //   const nextIndex = i + Math.sign(Number(KeyBoard.hasShift) - 0.5) * -1;
+        //   if(nextIndex < 0 || nextIndex >= Doc.getLines().length) return;
+        //   Doc.getTextBody(nextIndex).focus();
+        //   break;
+        // case "F1":
+        //   e.preventDefault();
+
+        //   if(isMultiLine) return;
+
+        //   let newSpeakerIdx = 0;
+        //   if(/\（.*?\）$/.test(Doc.getCharsPerPara(i)[paraNum])){
+        //     const speaker = Doc.getCharsPerPara(i)[paraNum].match(/\（.*?\）$/)[0].replace(/[（）]/g, "");
+            
+        //     const speakerIdx = Array.from(Speaker.getBtns()).findIndex(s => speaker === s.textContent.replace(/[（）]/g, ""));
+        //     if(KeyBoard.hasShift){
+        //       if(speakerIdx === 0) newSpeakerIdx = Speaker.count() - 1;
+        //       else newSpeakerIdx = speakerIdx - 1;
+        //     }else{
+        //       if(speakerIdx !== Speaker.count() - 1) newSpeakerIdx = speakerIdx + 1;
+        //     }
+        //   }
+        //   const newSpeaker = Speaker.getBtns()[newSpeakerIdx].textContent.replace(/[（）]/g, "");
+
+        //   replacedText = textBody.value.split("\n").map((l, j) => {
+        //     if(j === paraNum) return this.resetSpeaker(l, newSpeaker);
+        //     else return l;
+        //   }).join("\n");
+
+        //   textBody.value = replacedText;
+        //   textBodyBG.innerHTML = replacedText + '\u200b';
+
+        //   textBody.setSelectionRange(this.selection.start, this.selection.end);
+        //   this.enableEdited(i);
+        //   Doc.setEditedText(i, replacedText);
+          
+        //   this.resetCharsPerPara(i);
+        //   this.resetParaHeights(i);
+        //   this.resetMiniBadges(i);
+        //   break;
+
+        // case "d":
+        //   if(!KeyBoard.hasCtrl) return;
+        //   e.preventDefault();
+
+        //   const curTime = AudioState.getTime();
+
+        //   const hms = Convert.secToStr(curTime);
+        //   const format = Convert.secToStr(AudioFile.getDuration()).slice(0,2) === "00" ? `(${hms.slice(-5)})` : `(${hms})`;
+
+
+        //   const prefix = textBody.value.slice(0, this.selection.end);
+        //   const suffix = textBody.value.slice(this.selection.end);
+        //   replacedText = prefix + format + suffix;
+
+        //   textBody.value = replacedText;
+        //   textBodyBG.innerHTML = replacedText + '\u200b';
+
+        //   const pos = prefix.length + format.length;
+        //   textBody.setSelectionRange(pos, pos);
+
+        //   this.enableEdited(i);
+        //   Doc.setEditedText(i, replacedText);
+          
+        //   this.resetCharsPerPara(i);
+        //   this.resetParaHeights(i);
+        //   this.resetMiniBadges(i);
+
+        //   if(!SeekLabel.exists(curTime)){
+        //     const seekLabel = SeekLabel.create(curTime);
+        //     playbackSliderBox.appendChild(seekLabel);
+        //   }
+
+        //   if(!Badged.can("d")) return;
+        //   Doc.addBadge(i, "d");
+        //   Badged.set(i, Badged.createBadges(i));
+
+        //   break;
+        // case "q":
+        //   if(!KeyBoard.hasCtrl) return;
+        //   e.preventDefault();
+
+        //   if(isMultiLine) return;
+        //   if(Doc.hasMiniBadge(i, paraNum, "c")){
+        //     Doc.removeMiniBadge(i, paraNum);
+        //     return;
+        //   }
+        //   Doc.setMiniBadge(i, paraNum, "c");
+
+        //   TextBody.resetMiniBadges(i);
+        //   break;
+          
+        // case "r":
+        //   if(!KeyBoard.hasCtrl) return;
+        //   e.preventDefault();
+
+        //   if(isMultiLine) return;
+        //   if(Doc.hasMiniBadge(i, paraNum, "r")){
+        //     Doc.removeMiniBadge(i, paraNum);
+        //     return;
+        //   }
+        //   Doc.setMiniBadge(i, paraNum, "r");
+
+        //   TextBody.resetMiniBadges(i);
+        //   break;
       }
     });
     
@@ -556,7 +657,7 @@ class TextBody {
       }else if(content.includes("CASE_")){
         e.preventDefault();
 
-        const caseId = `【${content.replace("CASE_", "")}】`;
+        const caseId = content.replace("CASE_", "");
         const paraNum = this.getDroppedParaNum(i, e.clientY);
 
         const textBody = e.target;
@@ -636,7 +737,7 @@ class TextBody {
       startPos += charsPerPara[j].length + 1;
     }
     // console.log(this.preSelection);
-    console.log(this.selection);
+    // console.log(this.selection);
   }
 
   static emphasizeSelection(i){
@@ -769,7 +870,6 @@ class TextBody {
     const text = line.editedText || (line.editedText === "" ? "(空)" : line.text);
     // const text = line.editedText || line.text;
     line.charsPerPara = text.split("\n");
-    console.log(i, line.charsPerPara);
   }
 
   static resetParaHeights(i){
@@ -817,12 +917,9 @@ class TextBody {
       return `${top}:${bottom}`;
     });
 
-    console.log(i, reCalcPparaHeights);
-
     Doc.setParaHeights(i, [...reCalcPparaHeights]);
     
     if(SearchHelper.isActive){
-      console.log(ReplaceHelper.replaceInfo.isApply.some(Boolean))
       if(ReplaceHelper.replaceInfo.isApply.some(Boolean)){
         this.setReplaceResultHighlights(i);
       }else{
@@ -1118,21 +1215,20 @@ class TextBody {
     const textBody = Doc.getTextBody(i);
     const textBodyBG = Doc.getTextBodyBG(i);    
 
-    const prefix = textBody.value.slice(0, this.selection.start);
+    const prefix = textBody.value.slice(0, this.selection.end);
     const suffix = textBody.value.slice(this.selection.end);
     const replacedText = prefix + text + suffix;
 
     textBody.value = replacedText;
-    textBodyBG.innerHTML = textBody.value + '\u200b';
+    textBodyBG.innerHTML = replacedText + '\u200b';
 
-    // ↓ 要修正
-    this.setLineText(replacedText, i);
-    // ↑ 要修正
-
-    const caretPos = prefix.length + text.length;
-    textBody.setSelectionRange(caretPos, caretPos);
+    const pos = prefix.length + text.length;
+    textBody.setSelectionRange(pos, pos);
     textBody.focus();
 
+    this.enableEdited(i);
+    Doc.setEditedText(i, replacedText);
+    
     this.resetCharsPerPara(i);
     this.resetParaHeights(i);
     this.resetMiniBadges(i);

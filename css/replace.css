@@ -43,17 +43,18 @@
 #repinfos::-webkit-scrollbar {
   width: 6px;
 }
-
 #repinfos::-webkit-scrollbar-track {
   background: #505050;
   border-radius: 3px;
 }
-
 #repinfos::-webkit-scrollbar-thumb {
   background-color: var(--sub-theme);
   border-radius: 3px;
 }
-
 #repinfos::-webkit-scrollbar-thumb:hover {
   background-color: var(--sub-theme-hover);
+  cursor: grab;
+}
+#repinfos::-webkit-scrollbar-thumb:hover {
+  cursor: grabbing;
 }

@@ -22,6 +22,9 @@ class ResizeBar {
         TextBody.resetMiniBadges(i);
       }
 
+      CRList.setCaseContentLiW();
+      CRList.setCaseIdsW();
+
       e.preventDefault();
       e.stopPropagation();
     });
@@ -40,6 +43,9 @@ class ResizeBar {
 
       lPanel.style.width = leftWidth + "px";
       rPanel.style.width = rightWidth + "px";
+      
+      CRList.setCaseContentLiW();
+      CRList.setCaseIdsW();
 
       e.preventDefault();
       e.stopPropagation();

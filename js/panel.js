@@ -8,8 +8,10 @@ class Panel {
   }
 
   static getRightPanelH(){
-    const padding = parseFloat(getComputedStyle(rPanel).padding);
-    const borderW = parseFloat(getComputedStyle(rPanel).borderWidth);
-    return rPanel.clientHeight - padding * 2 - borderW * 2;
+    const totalH = rPanel.clientHeight;
+    const paddingT = Elem.getStyleNum(rPanel, "padding-top");
+    const paddingB = Elem.getStyleNum(rPanel, "padding-top");
+    const h = Calc.sub(totalH, [paddingT, paddingB]);
+    return h;
   }
 }

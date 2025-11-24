@@ -9,4 +9,8 @@ class Elem{
   static createT(text){
     return document.createTextNode(text);
   }
+
+  static getStyleNum(el, style){
+    return parseFloat(getComputedStyle(el).getPropertyValue(style));
+  }
 }

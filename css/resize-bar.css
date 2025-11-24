@@ -5,9 +5,11 @@
   background-color: #d1cd00;
   margin: 20px 10px;
   border-radius: 6px;
+  border-top: 1px solid var(--resize-bar-border);
+  border-bottom: 1px solid var(--resize-bar-border);
 }
 #resize-bar:hover {
-  cursor: pointer;
+  cursor: grab;
   background-color: #fffa00;
 }
 #resize-bar.active {

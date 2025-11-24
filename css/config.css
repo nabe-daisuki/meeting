@@ -85,6 +85,11 @@
   padding-right: 6px;
 }
 
+#config-textbody-shortcut {
+  border-top: 1px solid rgba(255, 255, 255, 0.02);
+  padding-top: 14px;
+}
+
 .config-item {
   display: flex;
   align-items: center;
@@ -253,7 +258,8 @@
 }
 
 
-#config-add-controller {
+#config-add-controller,
+#config-tbsc-add-controller {
   margin-top: 10px;
   padding: 10px 0;
   display: flex;
@@ -262,7 +268,8 @@
   border-top: 1px solid rgba(255, 255, 255, 0.02);
 }
 
-#config-add-selection {
+#config-add-selection,
+#config-tbsc-add-selection {
   background:rgba(255,255,255,0.08);
   border:none;
   color:#fff;
@@ -272,10 +279,12 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-#config-add-selection:hover {
+#config-add-selection:hover,
+#config-tbsc-add-selection:hover {
   background: #3a4455;
 }
-#config-add-selection option {
+#config-add-selection option,
+#config-tbsc-add-selection option {
   color:#fff;
   padding:6px;
   cursor: pointer;
@@ -283,17 +292,17 @@
 }
 
 
-#config-x, #config-add, #config-cancel {
+#config-x, #config-add, #config-tbsc-add, #config-cancel {
   outline: none;
   margin-left: 20px;
   transition: filter 0.2s, transform 0.2s;
 }
-#config-x:hover, #config-add:hover, #config-cancel:hover {
+#config-x:hover, #config-add:hover, #config-tbsc-add:hover, #config-cancel:hover {
   background-color: #111827;
   filter: brightness(1.3);
   transform: scale(1.05);
 }
-#config-x:active, #config-add:active, #config-cancel:active {
+#config-x:active, #config-add:active, #config-tbsc-add:active, #config-cancel:active {
   background-color: var(--accent);
 }
 

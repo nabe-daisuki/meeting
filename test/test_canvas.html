@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Canvas Group Select - Dark Mode + Drag Corrected</title>
+<style>
+  body {
+    background: #1e1e1e;
+    color: #eee;
+    margin: 0;
+    font-family: sans-serif;
+  }
+
+  #toolbar {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    background: #242424;
+    border-bottom: 1px solid #333;
+  }
+
+  .color-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 2px solid #555;
+  }
+
+  #results {
+    padding: 10px;
+    background: #2a2a2a;
+    min-height: 100px;
+  }
+
+  #canvas {
+    border: 1px solid #333;
+    display: block;
+    margin: 10px;
+    position: relative;
+  }
+
+  .item {
+    position: absolute;
+    padding: 5px 8px;
+    border-radius: 4px;
+    background: #444;
+    color: #fff;
+    cursor: grab;
+    user-select: none;
+  }
+
+  .item.dragging {
+    cursor: grabbing;
+    opacity: 0.8;
+  }
+
+  .highlight {
+    background: #777 !important;
+  }
+</style>
+</head>
+
+<body>
+
+<div id="toolbar">
+  <div class="color-btn" style="background:#f44336;" data-color="#f44336"></div>
+  <div class="color-btn" style="background:#2196f3;" data-color="#2196f3"></div>
+  <div class="color-btn" style="background:#4caf50;" data-color="#4caf50"></div>
+  <div class="color-btn" style="background:#ffeb3b;" data-color="#ffeb3b"></div>
+  <div class="color-btn" style="background:#9c27b0;" data-color="#9c27b0"></div>
+</div>
+
+<canvas id="canvas" width="900" height="600"></canvas>
+
+<div id="results">囲んだ結果がここに表示される</div>
+
+<div class="item" style="top:100px; left:200px;">A</div>
+<div class="item" style="top:200px; left:350px;">B</div>
+<div class="item" style="top:300px; left:260px;">C</div>
+<div class="item" style="top:150px; left:500px;">D</div>
+<div class="item" style="top:400px; left:350px;">E</div>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const results = document.getElementById("results");
+
+let currentColor = "#f44336";
+let drawing = false;
+let currentPoints = [];
+let paths = [];
+
+document.querySelectorAll(".color-btn").forEach(btn => {
+  btn.onclick = () => currentColor = btn.dataset.color;
+});
+
+// =========================
+// Canvas マウス操作
+// =========================
+canvas.addEventListener("mousedown", (e) => {
+  if (e.button === 2) return;
+  drawing = true;
+  currentPoints = [];
+  currentPoints.push(getPos(e));
+});
+
+canvas.addEventListener("mousemove", (e) => {
+  const pos = getPos(e);
+  updateHover(pos);
+
+  if (drawing) {
+    currentPoints.push(pos);
+    drawAll();
+    drawTemp();
+  }
+});
+
+canvas.addEventListener("mouseup", () => {
+  if (!drawing) return;
+  drawing = false;
+
+  if (currentPoints.length < 3) return;
+
+  const p2d = buildPath2D(currentPoints);
+  paths.push({ color: currentColor, points: currentPoints, path2d: p2d, hovered: false });
+
+  drawAll();
+  showResults();
+});
+
+// 右クリックで削除
+canvas.oncontextmenu = (e) => {
+  e.preventDefault();
+  const pos = getPos(e);
+  for (let i = paths.length - 1; i >= 0; i--) {
+    if (ctx.isPointInStroke(paths[i].path2d, pos.x, pos.y)) {
+      paths.splice(i, 1);
+      break;
+    }
+  }
+  drawAll();
+  showResults();
+};
+
+// =========================
+// ホバー処理
+// =========================
+function updateHover(pos) {
+  let hoveredColor = null;
+  for (let i = paths.length - 1; i >= 0; i--) {
+    const p = paths[i];
+    if (ctx.isPointInStroke(p.path2d, pos.x, pos.y)) {
+      hoveredColor = p.color;
+      break;
+    }
+  }
+  for (let p of paths) p.hovered = (p.color === hoveredColor);
+  drawAll();
+  if (hoveredColor) fillGroup(hoveredColor);
+}
+
+canvas.addEventListener("mouseleave", () => {
+  for (let p of paths) p.hovered = false;
+  drawAll();
+});
+
+// =========================
+// 描画関連
+// =========================
+function drawAll() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (let p of paths) {
+    if (p.hovered) {
+      ctx.fillStyle = hexToRgba(p.color, 0.18);
+      ctx.fill(p.path2d);
+    }
+  }
+  for (let p of paths) {
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = p.color;
+    ctx.stroke(p.path2d);
+  }
+}
+
+function drawTemp() {
+  if (currentPoints.length < 2) return;
+  ctx.beginPath();
+  ctx.moveTo(currentPoints[0].x, currentPoints[0].y);
+  for (let p of currentPoints) ctx.lineTo(p.x, p.y);
+  ctx.strokeStyle = hexToRgba(currentColor, 0.95);
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+}
+
+function buildPath2D(points) {
+  const p2d = new Path2D();
+  p2d.moveTo(points[0].x, points[0].y);
+  for (let p of points) p2d.lineTo(p.x, p.y);
+  p2d.closePath();
+  return p2d;
+}
+
+// =========================
+// fillGroup
+// =========================
+function fillGroup(color) {
+  ctx.save();
+  ctx.globalCompositeOperation = "source-over";
+  for (let p of paths) {
+    if (p.color === color) {
+      ctx.fillStyle = hexToRgba(color, 0.18);
+      ctx.fill(p.path2d);
+    }
+  }
+  ctx.restore();
+}
+
+// =========================
+// 囲まれた要素表示
+// =========================
+function showResults() {
+  const items = document.querySelectorAll(".item");
+  items.forEach(i => i.classList.remove("highlight"));
+  const canvasRect = canvas.getBoundingClientRect();
+  let output = "";
+  for (let groupColor of [...new Set(paths.map(p => p.color))]) {
+    output += `<div style="margin-top:10px; color:${groupColor};">■ ${groupColor}</div>`;
+    for (let p of paths.filter(a => a.color === groupColor)) {
+      const inside = [];
+      items.forEach(el => {
+        const rect = el.getBoundingClientRect();
+        const cx = rect.left + rect.width/2 - canvasRect.left;
+        const cy = rect.top + rect.height/2 - canvasRect.top;
+        if (ctx.isPointInPath(p.path2d, cx, cy)) {
+          inside.push(el.textContent.trim());
+          el.classList.add("highlight");
+        }
+      });
+      output += `<div style="margin-left:15px;">囲んだ要素: ${inside.join(", ") || "なし"}</div>`;
+    }
+  }
+  results.innerHTML = output || "何も囲まれていません";
+}
+
+// =========================
+// アイテムドラッグ（ヘッダー補正済み）
+let draggingItem = null;
+let dragOffset = {x:0,y:0};
+
+document.querySelectorAll('.item').forEach(el => {
+  el.addEventListener('mousedown', (e) => {
+    e.stopPropagation();
+    draggingItem = el;
+    draggingItem.classList.add('dragging');
+
+    const canvasRect = canvas.getBoundingClientRect();
+    const itemRect = el.getBoundingClientRect();
+
+    dragOffset.x = e.clientX - itemRect.left;
+    dragOffset.y = e.clientY - itemRect.top;
+  });
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!draggingItem) return;
+
+  const canvasRect = canvas.getBoundingClientRect();
+  let x = e.clientX - canvasRect.left - dragOffset.x;
+  let y = e.clientY - canvasRect.top - dragOffset.y;
+
+  x = Math.max(0, Math.min(canvas.width - draggingItem.offsetWidth, x));
+  y = Math.max(0, Math.min(canvas.height - draggingItem.offsetHeight, y));
+
+  draggingItem.style.left = x + 'px';
+  draggingItem.style.top = y + 'px';
+
+  showResults();
+});
+
+document.addEventListener('mouseup', () => {
+  if (draggingItem) draggingItem.classList.remove('dragging');
+  draggingItem = null;
+});
+
+// =========================
+// ヘルパー
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
+
+function hexToRgba(hex, alpha) {
+  if (!hex) return `rgba(0,0,0,${alpha})`;
+  const h = hex.replace("#", "");
+  if (h.length === 3) {
+    const r = parseInt(h[0]+h[0],16);
+    const g = parseInt(h[1]+h[1],16);
+    const b = parseInt(h[2]+h[2],16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+  const r = parseInt(h.slice(0,2),16);
+  const g = parseInt(h.slice(2,4),16);
+  const b = parseInt(h.slice(4,6),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+</script>
+
+</body>
+</html>

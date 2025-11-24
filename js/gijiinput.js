@@ -140,19 +140,31 @@ class GijiInput {
         case "config":
           const configs = Convert.bytesToArray(sections[k]["bytes"]);
           if(Array.isArray(configs)){
-            UserSelec.add(structuredClone(configs));
+            UserSelect.add(structuredClone(configs));
           }else{
             configs.user_name = "ユーザー1";
-            UserSelec.add(structuredClone([configs]));
-
-          // Config.set(config.general);
-          // Config.setShortCuts(config.shortCut);
+            UserSelect.add(structuredClone([configs]));
           }
           break;
         case "crlist":
           const crlist = Convert.bytesToArray(sections[k]["bytes"]);
-          crlist.reverse();
-          CRList.set(structuredClone(crlist));
+          CaseCategorizing.restore(crlist.paths);
+          CRList.set(crlist.list);
+          CRList.setGroup(crlist.group);
+          CRList.setCompressCaseTitles(crlist.compressCaseTitles);
+          CRList.init();
+          caseIds.selectedIndex = crlist.select;
+          CRList.resetList(caseIds.value);
+          break;
+        case "pdfviewer":
+          const pdfviewer = Convert.bytesToArray(sections[k]["bytes"]);
+          PDFViewer.scale = pdfviewer.scale;
+          PDFViewer.prevPdf.caseid = pdfviewer.prevPdf.caseid;
+          PDFViewer.prevPdf.name = pdfviewer.prevPdf.name;
+          PDFViewer.prevPdf.size = pdfviewer.prevPdf.size;
+          PDFViewer.scroll.top = pdfviewer.scroll.top;
+          PDFViewer.scroll.left = pdfviewer.scroll.left;
+          PDFViewer.isEnabled = pdfviewer.show;
           break;
         default:
           alert(`.gijiファイルに有効でないタグ(${k})が登録されています。`);
@@ -188,21 +200,24 @@ class GijiInput {
         Selection.relocateHighlight(otherInfo.highlight.idx);
         TextBody.select(otherInfo.highlight.idx, otherInfo.selection.start, otherInfo.selection.end);
       }
+      if(document.querySelector(".tab-btn") && "activeTag" in otherInfo){
+        SubTools.activeTag = otherInfo.activeTag;
+        SubTools.activate();
+      }
     }
     
-    CRList.init();
-
     Render.userSelect();
     userSelectOverlay.classList.remove("hide");
-
-    // if(Object.keys(sections).includes("config")){
-    //   Render.mainTool();
-    //   const theme = Theme.jpnToCode(Config.get().find(s => s.key === "theme").value[0]);
-    //   Theme.set(theme);
-    // }
-    // Theme.apply();
-
     fileDropOverlay.classList.add("hide");
+
+    if(Object.keys(sections).includes("pdfviewer")){
+      if(!PDFViewer.isEnabled) return;
+      await PDFViewer.loadPDF(CRList.getAttachmentBin(
+        PDFViewer.prevPdf.caseid,
+        PDFViewer.prevPdf.name
+      ));
+      PDFViewer.initScroll();
+    }
   }
 
 }
