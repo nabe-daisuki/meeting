@@ -56,6 +56,6 @@ class FileParser {
   }
 
   static containsManagementNum(text){
-    return /20\d{2}-\d{3}/.test(text) || /\d{3}番/.test(text);
+    return /20\d{2}-\d{3}/.test(text) || /\d{3}番/.test(text) || text.includes("コメント");
   }
 }

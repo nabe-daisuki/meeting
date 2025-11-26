@@ -14,6 +14,7 @@ class SubTools {
           CRList.setCaseIdsW();
           SubTools.setCaseContentH();
         }
+        if(id === "output-tools") Output.setOutputH();
         if(id === "analyze-tools") SubTools.setPreReplaceH();
 
         this.activeTag = id;

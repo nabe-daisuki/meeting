@@ -1,4 +1,4 @@
-const isTest = false;
+const isTest = true;
 const isGijiTest = false;
 
 const header = document.getElementById("header");
@@ -77,6 +77,7 @@ const currentPageNum = document.getElementById("current-page-num");
 const totalPageNum = document.getElementById("total-page-num");
 const moveNextPage = document.getElementById("move-next-page");
 const moveBottomPage = document.getElementById("move-bottom-page");
+const printPageBtn = document.getElementById("print-page");
 const pagePostBtn = document.getElementById("page-post");
 const pdfView = document.getElementById("pdf-view");
 const pdfTexts = document.getElementById("pdf-texts");
@@ -106,6 +107,9 @@ const prevCaseBtn = document.getElementById("prev-case-btn");
 const nextCaseBtn = document.getElementById("next-case-btn");
 const categorizeUpdateBtn = document.getElementById("categorize-update-btn");
 const caseContent = document.getElementById("case-content");
+
+const output = document.getElementById("output");
+console.log(output);
 
 const repInfosUl = document.getElementById("repinfos");
 
@@ -192,6 +196,12 @@ window.addEventListener("resize", () => {
     CaseCategorizing.resize();
     CaseCategorizing.setCategoryResultCaseIdsMaxW();
   }
+  
+  CRList.setCaseIdsW();
+  SubTools.setCaseContentH();
+  Output.setOutputH();
+  SubTools.setPreReplaceH();
+  
   isWindowResize = false;
 });
 

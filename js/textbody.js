@@ -119,6 +119,10 @@ class TextBody {
       textBody.classList.add("TB_edited");
     }
 
+    textBody.addEventListener("input", e => {
+      // Output.write();      
+    });
+
     textBody.addEventListener("keydown", e => {
       // console.log("keydown");
       this.edit.isKeydown = true;
@@ -233,114 +237,6 @@ class TextBody {
       }
       e.preventDefault();
       
-      switch(e.key){
-        // case "Tab":
-        //   e.preventDefault();
-        //   const nextIndex = i + Math.sign(Number(KeyBoard.hasShift) - 0.5) * -1;
-        //   if(nextIndex < 0 || nextIndex >= Doc.getLines().length) return;
-        //   Doc.getTextBody(nextIndex).focus();
-        //   break;
-        // case "F1":
-        //   e.preventDefault();
-
-        //   if(isMultiLine) return;
-
-        //   let newSpeakerIdx = 0;
-        //   if(/\（.*?\）$/.test(Doc.getCharsPerPara(i)[paraNum])){
-        //     const speaker = Doc.getCharsPerPara(i)[paraNum].match(/\（.*?\）$/)[0].replace(/[（）]/g, "");
-            
-        //     const speakerIdx = Array.from(Speaker.getBtns()).findIndex(s => speaker === s.textContent.replace(/[（）]/g, ""));
-        //     if(KeyBoard.hasShift){
-        //       if(speakerIdx === 0) newSpeakerIdx = Speaker.count() - 1;
-        //       else newSpeakerIdx = speakerIdx - 1;
-        //     }else{
-        //       if(speakerIdx !== Speaker.count() - 1) newSpeakerIdx = speakerIdx + 1;
-        //     }
-        //   }
-        //   const newSpeaker = Speaker.getBtns()[newSpeakerIdx].textContent.replace(/[（）]/g, "");
-
-        //   replacedText = textBody.value.split("\n").map((l, j) => {
-        //     if(j === paraNum) return this.resetSpeaker(l, newSpeaker);
-        //     else return l;
-        //   }).join("\n");
-
-        //   textBody.value = replacedText;
-        //   textBodyBG.innerHTML = replacedText + '\u200b';
-
-        //   textBody.setSelectionRange(this.selection.start, this.selection.end);
-        //   this.enableEdited(i);
-        //   Doc.setEditedText(i, replacedText);
-          
-        //   this.resetCharsPerPara(i);
-        //   this.resetParaHeights(i);
-        //   this.resetMiniBadges(i);
-        //   break;
-
-        // case "d":
-        //   if(!KeyBoard.hasCtrl) return;
-        //   e.preventDefault();
-
-        //   const curTime = AudioState.getTime();
-
-        //   const hms = Convert.secToStr(curTime);
-        //   const format = Convert.secToStr(AudioFile.getDuration()).slice(0,2) === "00" ? `(${hms.slice(-5)})` : `(${hms})`;
-
-
-        //   const prefix = textBody.value.slice(0, this.selection.end);
-        //   const suffix = textBody.value.slice(this.selection.end);
-        //   replacedText = prefix + format + suffix;
-
-        //   textBody.value = replacedText;
-        //   textBodyBG.innerHTML = replacedText + '\u200b';
-
-        //   const pos = prefix.length + format.length;
-        //   textBody.setSelectionRange(pos, pos);
-
-        //   this.enableEdited(i);
-        //   Doc.setEditedText(i, replacedText);
-          
-        //   this.resetCharsPerPara(i);
-        //   this.resetParaHeights(i);
-        //   this.resetMiniBadges(i);
-
-        //   if(!SeekLabel.exists(curTime)){
-        //     const seekLabel = SeekLabel.create(curTime);
-        //     playbackSliderBox.appendChild(seekLabel);
-        //   }
-
-        //   if(!Badged.can("d")) return;
-        //   Doc.addBadge(i, "d");
-        //   Badged.set(i, Badged.createBadges(i));
-
-        //   break;
-        // case "q":
-        //   if(!KeyBoard.hasCtrl) return;
-        //   e.preventDefault();
-
-        //   if(isMultiLine) return;
-        //   if(Doc.hasMiniBadge(i, paraNum, "c")){
-        //     Doc.removeMiniBadge(i, paraNum);
-        //     return;
-        //   }
-        //   Doc.setMiniBadge(i, paraNum, "c");
-
-        //   TextBody.resetMiniBadges(i);
-        //   break;
-          
-        // case "r":
-        //   if(!KeyBoard.hasCtrl) return;
-        //   e.preventDefault();
-
-        //   if(isMultiLine) return;
-        //   if(Doc.hasMiniBadge(i, paraNum, "r")){
-        //     Doc.removeMiniBadge(i, paraNum);
-        //     return;
-        //   }
-        //   Doc.setMiniBadge(i, paraNum, "r");
-
-        //   TextBody.resetMiniBadges(i);
-        //   break;
-      }
     });
     
     textBody.addEventListener("keyup", e => {
@@ -1171,6 +1067,8 @@ class TextBody {
       el.appendChild(icon);
       Doc.getTextBox(i).appendChild(el);
     });
+
+    Output.write();
   }
 
 

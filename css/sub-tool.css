@@ -316,6 +316,7 @@
   border-radius: 50%;
   background-color: #d1cd00;
   cursor: grab;
+  flex: 0 0 16px;
 }
 #case-content .attachment-handle:hover {
   box-shadow: 0 0 20px 5px #fffa00;
@@ -423,4 +424,17 @@
   padding: 10px;
   white-space: pre-wrap;
   color: #ccc;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+#output span.response {
+  margin-left: 25px;
+  text-indent: -10px;
+}
+#output span.editing {
+  background-color: #585800;
 }

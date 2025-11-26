@@ -69,6 +69,18 @@ class PDFViewer {
     moveBottomPage.addEventListener("click", () => {
       this.movePage(this.pdf.numPages);
     });
+    printPageBtn.addEventListener("click", () => {
+      // const base64 = CRList.getAttachment(this.prevPdf.caseid, this.prevPdf.name).binary;
+      // this.print(base64);
+      const canvases = [...document.querySelectorAll(".page-wrapper canvas")];
+      // [
+      //   document.getElementById("page-1"),
+      //   document.getElementById("page-2"),
+      //   document.getElementById("page-3")
+      // ];
+
+      this.printCanvases(canvases);
+    });
     pagePostBtn.addEventListener("click", () => {
       if(TextBody.selection.start === -1) return;
       const page = `添付資料「${this.prevPdf.name}」の${this.pageNum}ページ目`;
@@ -183,6 +195,7 @@ class PDFViewer {
     
     SubTools.setPreReplaceH();
     SubTools.setCaseContentH();
+    Output.setOutputH();
 
     CRList.pdfLoaderDisableSticky();
 
@@ -201,6 +214,7 @@ class PDFViewer {
     
     SubTools.setPreReplaceH();
     SubTools.setCaseContentH();
+    Output.setOutputH();
 
     CRList.pdfLoaderEnableSticky();
 
@@ -309,4 +323,68 @@ class PDFViewer {
     pdfView.scrollTop = this.scroll.top;
     pdfView.scrollLeft = this.scroll.left;
   }
+
+  static print(base64) {
+    // Base64 → バイナリに変換
+    const byteCharacters = atob(base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+
+    // Blob 化（PDF）
+    const blob = new Blob([byteArray], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+
+    // 隠し iframe 作って印刷
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.src = url;
+
+    iframe.onload = () => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    };
+
+    document.body.appendChild(iframe);
+  }
+
+  static printCanvases(canvases) {
+    const printWindow = window.open("", "_blank");
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>${this.prevPdf.name}</title>
+          <style>
+            body { margin:0; padding:0; }
+            img { display:block; width:100%; page-break-after:always; }
+          </style>
+        </head>
+        <body>
+    `);
+
+    // 各 canvas を img に変換して追加
+    canvases.forEach(canvas => {
+      const dataUrl = canvas.toDataURL("image/png");
+      printWindow.document.write(`<img src="${dataUrl}">`);
+    });
+
+    printWindow.document.write(`
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => printWindow.print(), 1000);
+
+    setTimeout(() => printWindow.close(), 1000); 
+  }
+
 }

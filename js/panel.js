@@ -10,7 +10,7 @@ class Panel {
   static getRightPanelH(){
     const totalH = rPanel.clientHeight;
     const paddingT = Elem.getStyleNum(rPanel, "padding-top");
-    const paddingB = Elem.getStyleNum(rPanel, "padding-top");
+    const paddingB = Elem.getStyleNum(rPanel, "padding-bottom");
     const h = Calc.sub(totalH, [paddingT, paddingB]);
     return h;
   }

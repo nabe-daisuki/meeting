@@ -32,7 +32,7 @@ class Export {
     }
 
     const arranged = this.arrange(transcriptions, times);
-    Save.save("コメント部のみ.txt", arranged.join("\n\n\n"), true);
+    Save.save("コメント部のみ.txt", arranged.join("\n".repeat(4)), true);
   }
 
   static hatch(transcriptions, times) {
@@ -49,17 +49,15 @@ class Export {
       const text = line.editedText || line.text;
       console.log(text);
       transcriptions.push(text.split("\n").map( (l, j) => {
-        console.log(l);
-        console.log(typeof l === "string");
         if(line.miniBadges[j] === "c" && !l.startsWith("・")) return `・${l}`;
         else if(line.miniBadges[j] === "r" && !l.startsWith("→")) return `→${l}`;
         else return l;
       }).join("\n"));
-      console.log(transcriptions);
     }
   }
 
   static edited(transcriptions, times){
+    const tagged = new Array(CRList.getGroup().length).fill(false);
     for(const line of Doc.getLines()){
       times.push({
         startSec: line.startSec,
@@ -74,13 +72,48 @@ class Export {
       }
       
       const text = line.editedText || line.text;
-      console.log(text);
       transcriptions.push(text.split("\n").map( (l, j) => {
         if(line.miniBadges[j] === "c" && !l.startsWith("・")) return `・${l}`;
         else if(line.miniBadges[j] === "r" && !l.startsWith("→")) return `→${l}`;
+        else if(l.startsWith("『")
+          && l.endsWith("』")
+          && /20\d{2}-\d{3}/.test(l)){
+          const addLines = [];
+          const caseId = l.replace(/[『』]/g, "");
+          const groupIndex = CRList.getCompressCaseTitles().findIndex(c => c.includes(caseId));
+
+          if(tagged[groupIndex]){
+            return `ー${caseId}ー`;
+          }
+
+          addLines.push(l);
+          const caseIds = CRList.getGroup()[groupIndex];
+          if(Array.isArray(caseIds)){
+            const caseData = CRList.get();
+            caseIds.forEach(id => {
+              for(let k = 0; k < caseData.length; k++){
+                if(caseData[k].case_id !== id) continue;
+                addLines.push(`└管理番号：${id}`);
+                addLines.push(`　件名：${caseData[k].case_name}`);
+                addLines.push("-".repeat(40));
+                break;
+              }
+            });
+          }else{
+            CRList.get().some(c => {
+              if(c.case_id !== caseIds) return;
+              addLines.push(`件名：${c.case_name}`);
+              addLines.push("-".repeat(40));
+              return true;
+            });
+          }
+
+          tagged[groupIndex] = true;
+
+          return addLines.join("\n");
+        }
         else return l;
       }).join("\n"));
-      console.log(transcriptions);
     }
   }
 
@@ -90,7 +123,7 @@ class Export {
 
   static arrange(transcriptions, times){
 
-    const result = [];
+    const composeTimes = [];
 
     let nullCount = 0;
     let startSec = -1;
@@ -105,9 +138,9 @@ class Export {
         if(nullCount < 3) return;
         nullCount = 0;
 
-        result.push(
+        composeTimes.push(
           this.formatSec(startSec, endSec) + "\n" +
-          buffer.join("\n").replaceAll(/\n(?![・→])/g, "")
+          buffer.join("\n").replaceAll(/\n(?![・→『└\sー【]|件名：|管理番号：|---)/g, "")
         );
         buffer.length = 0;
 
@@ -121,20 +154,22 @@ class Export {
     });
 
     if(startSec !== -1) {
-      result.push(
+      composeTimes.push(
         this.formatSec(startSec, endSec) + "\n" +
-        buffer.join("\n").replaceAll(/\n(?![・→])/g, "")
+        buffer.join("\n").replaceAll(/\n(?![・→『└\sー【]|件名：|管理番号：|---)/g, "")
       );
     }
 
-    return result;
+    const separateCase = composeTimes
+      .join("\n".repeat(3))
+      .replaceAll(/(?<![\]])\n(?=[『ー【])/g, "\n".repeat(3))
+      .split("\n".repeat(3));
+
+    return separateCase;
   }
 
   static exportConfig(){
-    const config = {
-      general: structuredClone(Config.get()),
-      shortCut: structuredClone(Config.getShortCuts())
-    };
+    const config = structuredClone(Config.getConfigs());
     const gijiParts = [new GijiPart("config", config, 0, "json")];
 
     const now = new Date();

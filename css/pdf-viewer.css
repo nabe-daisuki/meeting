@@ -22,6 +22,7 @@
 #zoom-out img,
 #prev-page img,
 #next-page img,
+#print-page img,
 #page-post img {
   width: 40px;
   cursor: pointer;
@@ -33,6 +34,7 @@
 #move-prev-page:hover,
 #move-next-page:hover,
 #move-bottom-page:hover,
+#print-page:hover img,
 #page-post:hover img {
   transform: scale(1.2);
   filter: brightness(1.5);
