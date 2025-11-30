@@ -1,4 +1,6 @@
 class CRList {
+  static isTest = true;
+  static isValid = false;
   static data = [
     {
       case_id: "2025-000",
@@ -7,12 +9,14 @@ class CRList {
       attachments: [{
           name: "a",
           size: 111,
-          binary: null
+          binary: null,
+          rotations: []
         },
         {
           name: "b",
           size: 112,
-          binary: null
+          binary: null,
+          rotations: []
         }]
     },
     {
@@ -30,12 +34,14 @@ class CRList {
       attachments: [{
           name: "a",
           size: 111,
-          binary: null
+          binary: null,
+          rotations: []
         },
         {
           name: "b",
           size: 112,
-          binary: null
+          binary: null,
+          rotations: []
         }]
     },
     {
@@ -46,17 +52,20 @@ class CRList {
       attachments: [{
           name: "c",
           size: 120,
-          binary: null
+          binary: null,
+          rotations: []
         },
         {
           name: "d",
           size: 200,
-          binary: null
+          binary: null,
+          rotations: []
         },
         {
           name: "e",
           size: 222000,
-          binary: null
+          binary: null,
+          rotations: []
         }]
     },
     {
@@ -333,13 +342,14 @@ class CRList {
     const caseData = this.get().find(c => c.case_id === caseId);
     return caseData.attachments;
   }
-  static addAttachment(name, size, binary){
+  static addAttachment(name, size, binary, pageCount){
     const caseData = this.get().find(c => c.case_id === this.loadingPDFCaseId);
     if(!caseData) return;
     caseData.attachments.push({
       name,
       size,
-      binary: Convert.arrBufToBase64(binary)
+      binary: Convert.arrBufToBase64(binary),
+      rotations: new Array(pageCount).fill(0)
     });
 
     const attachmentItemContent = [...document.querySelectorAll("#case-content .item-content")]
@@ -476,6 +486,7 @@ class CRList {
     });
     
     caseIds.selectedIndex = 0;
+    console.log(caseIds)
     this.resetList(caseIds.value);
 
     this.isInitialized = true;

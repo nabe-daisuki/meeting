@@ -15,7 +15,8 @@ class PDFViewer {
   static prevPdf = {
     caseid: "",
     name: null,
-    size: 0
+    size: 0,
+    rotations: []
   }
   static scroll = {
     top: 0,
@@ -27,6 +28,7 @@ class PDFViewer {
     this.prevPdf.caseid = "";
     this.prevPdf.name = null;
     this.prevPdf.size = 0;
+    this.prevPdf.rotations.length = 0;
     this.scroll.top = 0;
     this.scroll.left = 0;
     this.pageNum = 1;
@@ -70,14 +72,7 @@ class PDFViewer {
       this.movePage(this.pdf.numPages);
     });
     printPageBtn.addEventListener("click", () => {
-      // const base64 = CRList.getAttachment(this.prevPdf.caseid, this.prevPdf.name).binary;
-      // this.print(base64);
       const canvases = [...document.querySelectorAll(".page-wrapper canvas")];
-      // [
-      //   document.getElementById("page-1"),
-      //   document.getElementById("page-2"),
-      //   document.getElementById("page-3")
-      // ];
 
       this.printCanvases(canvases);
     });
@@ -148,6 +143,7 @@ class PDFViewer {
       this.prevPdf.caseid = caseId;
       this.prevPdf.name = filenameWithoutExt;
       this.prevPdf.size = attachment.size;
+      this.prevPdf.rotations = [...attachment.rotations];
       return;
     }
 
@@ -156,12 +152,17 @@ class PDFViewer {
       reader.onload = async ev => {
         try{
           const buf = ev.target.result;
-          const copyBuf = structuredClone(buf);
-          await this.loadPDF(buf);
-          CRList.addAttachment(filenameWithoutExt, filesize, copyBuf);
+          const pdfDoc = await PDFLib.PDFDocument.load(buf);
+          const editedPdfBytes = await pdfDoc.save();
+          const copyBuf = editedPdfBytes.buffer.slice(0);
+
+          await this.loadPDF(editedPdfBytes);
+          const pageCount = this.pdf.numPages;
+          CRList.addAttachment(filenameWithoutExt, filesize, copyBuf, pageCount);
           this.prevPdf.caseid = caseId;
           this.prevPdf.name = filenameWithoutExt;
           this.prevPdf.size = filesize;
+          this.prevPdf.rotations = new Array(pageCount).fill(0);
           resolve(file.name);
         } catch(err){
           console.error(err);

@@ -12,14 +12,37 @@
 }
 
 #pdf-controls {
-  width: 50px;
+  min-width: 50px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+#pdf-controls::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+#pdf-controls::-webkit-scrollbar-track {
+  width: 5px;
+  background: transparent;
+}
+#pdf-controls::-webkit-scrollbar-thumb {
+  background-color: var(--sub-theme);
+  border-radius: 2px;
+}
+#pdf-controls::-webkit-scrollbar-thumb:hover {
+  background-color: var(--sub-theme-hover);
+  cursor: grab;
+}
+#pdf-controls::-webkit-scrollbar-thumb:active {
+  cursor: grabbing;
 }
 
 #zoom-in img,
 #zoom-out img,
+#rotate-right img,
+#rotate-left img,
 #prev-page img,
 #next-page img,
 #print-page img,
@@ -30,6 +53,8 @@
 }
 #zoom-in:hover img,
 #zoom-out:hover img,
+#rotate-right:hover img,
+#rotate-left:hover img,
 #move-top-page:hover,
 #move-prev-page:hover,
 #move-next-page:hover,

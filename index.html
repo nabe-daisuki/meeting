@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>議事録作成支援ページ</title>
   <script src="js/pdfjs/pdf.min.js"></script>
+  <script src="js/pdflibjs/pdf-lib.min.js"></script>
 <style>
   body { margin:0; font-family: sans-serif; }
   body.active {
@@ -174,6 +175,17 @@
         </label>
         <input type="file" id="reload-file-input" accept=".txt" tabindex="-1">
       </div>
+
+      <div id="config-input-box" class="file-input-box theme-blue">
+        <label 
+          for="config-input" 
+          title="設定データ(.gijiconf)を読み込みます。"
+        >
+          <img src="img/theme/dark/input-config.png" alt="設定の読込" class="main-tool-icon">
+          <span class="main-tool-caption">設定の読込</span>
+        </label>
+        <input type="file" id="config-input" accept=".gijiconf" tabindex="-1">
+      </div>
     
     </div>
 
@@ -289,7 +301,16 @@
       </div>
       
       <hr style="border-color: #3f3f3f;width: 100%;">
+
+      <div id="rotate-right">
+        <img src="img/theme/dark/rotate-right.png">
+      </div>
+      <div id="rotate-left">
+        <img src="img/theme/dark/rotate-left.png">
+      </div>
       
+      <hr style="border-color: #3f3f3f;width: 100%;">
+
       <div id="prev-page">
         <img id="move-top-page" src="img/theme/dark/top.png">
         <img id="move-prev-page" src="img/theme/dark/up.png">
@@ -521,8 +542,11 @@
 <style>
 .hide { display: none; }
 </style>
+<script src="js/system.js"></script>
 <script src="js/elem.js"></script>
 <script src="js/calc.js"></script>
+<script src="js/compare.js"></script>
+<script src="js/type.js"></script>
 <script src="js/header.js"></script>
 <script src="js/panel.js"></script>
 <script src="js/resizebar.js"></script>
@@ -547,10 +571,12 @@
 <script src="js/render.js"></script>
 <script src="js/textinput.js"></script>
 <script src="js/casecategorizing.js"></script>
+<script src="js/user.js"></script>
 <script src="js/userselect.js"></script>
 <script src="js/gijiinput.js"></script>
 <script src="js/gijipart.js"></script>
 <script src="js/gijiencoder.js"></script>
+<script src="js/gijidecoder.js"></script>
 <script src="js/audiostate.js"></script>
 <script src="js/audiofile.js"></script>
 <script src="js/audioinput.js"></script>

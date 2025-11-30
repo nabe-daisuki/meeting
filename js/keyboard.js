@@ -91,9 +91,9 @@ document.addEventListener("keydown", e => {
   }
 
   const keyString = KeyBoard.getKeyString(e);
-  const shortCuts = Config.getShortCuts().find(s => keyString === s.value.at(-1));
+  const shortCuts = Config.getGlobalShortCuts().find(s => keyString === s.value.at(-1));
 
-  console.log(keyString);
+  // console.log(keyString);
   
   if(!shortCuts) return;
 

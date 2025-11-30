@@ -74,6 +74,8 @@ class Render {
         case "hideLoad":
           el = document.getElementById("reload-file-input-box");
           break;
+        case "hideInputConfig":
+          el = document.getElementById("config-input-box");
         default:
           break;
       }

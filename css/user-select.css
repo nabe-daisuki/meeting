@@ -32,6 +32,9 @@
   display: flex;
   align-items: center;
   gap: 40px;
+  flex-wrap: warp;
+  padding: 0 50px;
+  justify-content: center;
 }
 
 .user-btn {

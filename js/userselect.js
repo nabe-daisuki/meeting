@@ -1,55 +1,79 @@
+/**
+ * ユーザー選択画面
+ */
 class UserSelect {
   static data = [];
+  static currUser = null;
 
+
+  /**
+   * 有効なユーザーの名前を設定
+   * @param {string} name 有効としたユーザー名 
+   */
+  static setCurrUser(name){
+    this.currUser = name;
+  }
+  /**
+   * 現在有効なユーザーの名前の取得
+   * @returns {string}
+   */
+  static getCurrUser(){
+    return this.currUser;
+  }
+
+  /**
+   * ユーザーボタンの作成
+   * @return {HTMLDivElement[]}
+   */
   static createBtns(){
     const btns = [];
 
-    for(let j = 0; j < this.data.length; j++){
+    const userdataList = User.getList();
+    console.log(userdataList);
+    for(let i = 0; i < User.count(); i++){
+      const name = userdataList[i].name;
       const btn = Elem.create("div", {cl: "user-btn"});
-      btn.textContent = this.data[j].user_name;
+      btn.textContent = name;
       btn.addEventListener("click", () => {
-        const cData = this.data[j];
-        Config.set(cData.general);
-        Config.setShortCuts(cData.shortCut);
-        Config.setTBShortCuts(cData.tbShortCut);
+        this.setCurrUser(name)
+        Config.load(userdataList[i].config);
 
         Config.active();
-        Config.userName = this.data[j].user_name;
         
-        caseCategorizingOverlay.classList.remove("hide");
-        Render.beCategorizedItems();
-        CaseCategorizing.resize();
-        CaseCategorizing.setCategoryResultCaseIdsMaxW();
-        CaseCategorizing.drawAll();
-        CaseCategorizing.updateResult();
+        console.log(CRList.isValid);
 
-        userSelectOverlay.classList.add("hide");
+        if(CRList.isValid){
+          CaseCategorizing.show();
+          Render.beCategorizedItems();
+          CaseCategorizing.resize();
+          CaseCategorizing.setCategoryResultCaseIdsMaxW();
+          CaseCategorizing.drawAll();
+          CaseCategorizing.updateResult();
+        }
+
+        this.hide();
       });
       btns.push(btn);
     }
 
-    const btn = Elem.create("div", {cl: "user-btn"});
-    btn.textContent = "ゲスト";
-    btn.addEventListener("click", () => {
-      Config.active();
-      Config.userName = "ゲスト";
-
-      caseCategorizingOverlay.classList.remove("hide");
-      Render.beCategorizedItems();
-      CaseCategorizing.resize();
-      CaseCategorizing.setCategoryResultCaseIdsMaxW();
-      CaseCategorizing.drawAll();
-      CaseCategorizing.updateResult();
-      
-      userSelectOverlay.classList.add("hide");
-    });
-    btns.push(btn);
-
     return btns;
   }
+
 
   static add(_data){
     this.data.push(..._data);
   }
 
+  /**
+   * ユーザー選択画面の非表示
+   */
+  static hide(){
+    userSelectOverlay.classList.add("hide");
+  }
+  /**
+   * ユーザー選択画面の表示
+   */
+  static show(){
+    userSelectOverlay.classList.remove("hide");
+  }
 }

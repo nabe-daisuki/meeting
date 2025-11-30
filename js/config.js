@@ -1,17 +1,20 @@
+/**
+ * 設定画面
+ */
 class Config {
-  static userName = null;
-  static schema = [
+  static general = [
     {key:"theme", type:"select", name:"テーマ", hint:"UIテーマを選択します。", options:["デフォルト", "ダーク"], value:["ダーク"]},
     {key:"subTheme", type:"select", name:"サブテーマ", hint:"UIサブテーマを選択します。", options:["レッド", "オレンジ", "イエロー", "グリーン", "シアン", "パープル", "ピンク"], value:["イエロー"]},
     {key:"keyconfig", type:"button", name:"キーコンフィグを開く", hint:"ショートカットキーを設定できます。", value:"設定画面を開く"},
     {key:"hideInputText", type:"checkbox", name:"テキスト(.txt)を読み込むことはない", hint:"「テキストの読込」を非表示にします。", value:true},
     {key:"hideInputAudio", type:"checkbox", name:"音声(.mp3)を読み込むことはない", hint:"「音声の読込」を非表示にします。", value:true},
     {key:"hideLoad", type:"checkbox", name:"保存したデータ(.txt)を読み込むことはない", hint:"「保存の読込」を非表示にします。", value:true},
+    {key:"hideInputConfig", type:"checkbox", name:"保存した設定データ(.gijiconf)を読み込むことはない", hint:"「設定の読込」を非表示にします。", value:true},
     // {key:"username", type:"text", name:"ユーザー名", hint:"表示名を設定します", value:"ゲスト"},
     // {key:"language", type:"multiselect", name:"使用言語", hint:"複数選択可能", options:["日本語","英語","中国語"], value:["中国語"]}
   ];
 
-  static SCDefaults = [
+  static GLOBAL_SHORT_CUT_TYPE = [
     {type:"seek-forward", range:"1,10", init:"1", step:"1", prefix:"", suffix:"秒 /",  name:"音声を指定秒数進める", hint:"1～10秒の間で指定できます。"},
     {type:"seek-backward", range:"1,10", init:"1", step:"1", prefix:"", suffix:"秒 /",name:"音声を指定秒数戻す", hint:"1～10秒の間で指定できます。"},
     {type:"speed", range:"0.10,2.00", init:"1.00", step:"0.01", prefix:"x", suffix:"/", name:"音声を指定速度に変更する", hint:"0.10～2.00の間で指定できます。"},
@@ -22,17 +25,17 @@ class Config {
     {type:"named-save", name:"名前を付けて保存する", hint:"名前を付けて現状を保存できます。"},
   ];
 
-  static shortCuts = [
-    {key:"SC01", type:"seek-forward", value:["2", "Ctrl+6"]},
-    {key:"SC02", type:"seek-backward", value:["3", "Ctrl+3"]},
-    {key:"SC03", type:"speed", value:["1.30", "Ctrl+2"]},
-    {key:"SC04", type:"speed", value:["1.00", "Ctrl+1"]},
-    {key:"SC05", type:"save", value:["Ctrl+S"]},
-    {key:"SC06", type:"named-save", value:["F12"]},
-    {key:"SC07", type:"play-pause", value:["Ctrl+Shift+Z"]}
+  static globalShortCuts = [
+    {key:"GSC01", type:"seek-forward", value:["2", "Ctrl+6"]},
+    {key:"GSC02", type:"seek-backward", value:["3", "Ctrl+3"]},
+    {key:"GSC03", type:"speed", value:["1.30", "Ctrl+2"]},
+    {key:"GSC04", type:"speed", value:["1.00", "Ctrl+1"]},
+    {key:"GSC05", type:"save", value:["Ctrl+S"]},
+    {key:"GSC06", type:"named-save", value:["F12"]},
+    {key:"GSC07", type:"play-pause", value:["Ctrl+Shift+Z"]}
   ];
 
-  static TBSCDefault = [
+  static TEXTBODY_SHORT_CUT_TYPE = [
     {type:"add-comment", name:"行をコメント行にする/解除する", hint:"行をコメント行にしたり、解除したりできます。"},
     {type:"add-response", name:"行を返答行にする/解除する", hint:"行を返答行にしたり、解除したりできます。"},
     {type:"add-speaker", name:"行末尾に発言者を登録順に追記する", hint:"行末尾に発言者を追記できます。"},
@@ -52,6 +55,37 @@ class Config {
   static hasApplyKeyConfig = false;
 
   static init(){
+    configInput.addEventListener("change", async(e) => {
+      const files = e.target.files;
+      if(files.length === 0) return System.warn("ファイルが選択されていません。");
+      if(files.length != 1) return System.fail("1つのファイル(.gijiconf)を選択してください。");
+      
+      const file = files[0];
+      const ext = file.name.split(".").pop().toLowerCase();
+      if(ext !== "gijiconf") return System.fail(`ドロップされた拡張子は「.${ext}」です。ファイル(.gijiconf)をドロップ下さい。`);
+      
+      const sections = await GijiDecoder.decode(file);
+      const configBytes = sections.config;
+      if(!configBytes) return System.fail(`configタグが含まれていないため、読み込みに失敗しました。`);
+      
+      const config = Convert.bytesToArray(configBytes["bytes"]);
+      if(!Type.isObj(config) || !("name" in config) || !("config" in config)) return System.fail("設定データが破損しているため、読み込みに失敗しました。");
+
+      if(User.getList().some(d => d.name === config.name)){
+        alert(`既に"${config.name}"の設定データは登録済のため、"${config.name}_1"として設定データを読み込まれました。`);
+        config.name += "_1";
+      }else{
+        alert(`"${config.name}"の設定データが読み込まれました。`)
+      }
+      alert(`読み込まれた設定データは一時的なデータです。
+本編集データを保存し、再度読み込まれた場合はユーザー選択画面にて表示されます。
+しかし、別の議事録作成時は表示されませんので周囲の方に聞いてください。`);
+
+      User.add(config);
+      UserSelect.setCurrUser(config.name);
+      Config.load(config.config);
+      Config.active();
+    });
     config.addEventListener("click", () => {
       this.open();
     });
@@ -67,8 +101,8 @@ class Config {
       this.apply();
       Render.mainTool();
 
-      const theme = Theme.jpnToCode(this.get().find(s => s.key === "theme").value[0]);
-      const subTheme = Theme.jpnToCode(this.get().find(s => s.key === "subTheme").value[0]);
+      const theme = this.get().find(s => s.key === "theme").value[0];
+      const subTheme = this.get().find(s => s.key === "subTheme").value[0];
       Theme.set(theme);
       Theme.setSub(subTheme);
       Theme.apply();
@@ -82,19 +116,6 @@ class Config {
       }
       this.close();
     });
-    
-    Render.mainTool();
-  }
-
-  static openKeyCondig(){
-    document.getElementById("config-general").classList.add("hide");
-    document.getElementById("config-shortcut").classList.remove("hide");
-    this.isKeyConfig = true;
-  }
-  static closeKeyConfig(){
-    document.getElementById("config-general").classList.remove("hide");
-    document.getElementById("config-shortcut").classList.add("hide");
-    this.isKeyConfig = false;
   }
 
   static resetKeyConfig(){
@@ -102,8 +123,13 @@ class Config {
     configList.appendChild(this.createKeyConfig());
   }
 
+
+  /**
+   * 設定の適用
+   * @returns {void}
+   */
   static apply(){
-    configList.querySelectorAll("#config-general input,select").forEach(el => {
+    configList.querySelector("#config-general").querySelectorAll("input,select").forEach(el => {
       const k = el.dataset.key;
 
       if(el.type === "checkbox"){
@@ -115,8 +141,8 @@ class Config {
 
     if(!this.hasApplyKeyConfig) return;
     
-    this.clearShortCuts();
-    configList.querySelectorAll("#config-global-shortcut .config-item").forEach( (item, j) => {
+    this.clearGlobalShortCuts();
+    configList.querySelector("#config-global-shortcut").querySelectorAll(".config-item").forEach( (item, j) => {
       const type = item.dataset.type;
       const value = Array.from(item.querySelectorAll("input, select")).reduce( (acc, cur) => {
         acc.push(cur.value);
@@ -125,12 +151,12 @@ class Config {
 
       if(!value.at(-1)) return;
 
-      this.addShortCut(j, type, value);
+      this.addGlobalShortCut(this.getGlobalShortCuts(), type, value);
     });
 
     
-    this.clearTBShortCuts();
-    configList.querySelectorAll("#config-textbody-shortcut .config-item").forEach( (item, j) => {
+    this.clearTextBodyShortCuts();
+    configList.querySelector("#config-textbody-shortcut").querySelectorAll(".config-item").forEach( (item, j) => {
       const type = item.dataset.type;
       const value = Array.from(item.querySelectorAll("input, select")).reduce( (acc, cur) => {
         acc.push(cur.value);
@@ -139,41 +165,61 @@ class Config {
 
       if(!value.at(-1)) return;
 
-      this.addTBShortCut(j, type, value);
+      this.addTextBodyShortCut(this.getTextBodyShortCuts(), type, value);
     });
 
     this.hasApplyKeyConfig = false;
   }
 
-  static addShortCut(j, type, value){
-    this.getShortCuts().push({
-      key: j.toString().padStart(2, "0"),
-      type,
-      value: [...value]
-    });
-  }
-  static addTBShortCut(j, type, value){
-    this.getTBShortCuts().push({
-      key: j.toString().padStart(2, "0"),
-      type,
-      value: [...value]
-    });
-  }
-
+  /**
+   * 設定の反映
+   */
   static active(){
     Render.mainTool();
-    const theme = Theme.jpnToCode(this.get().find(s => s.key === "theme").value[0]);
+    const theme = this.get().find(s => s.key === "theme").value[0];
     Theme.set(theme);
+    const subTheme = this.get().find(c => c.key === "subTheme").value[0];
+    Theme.setSub(subTheme);
 
     Theme.apply();
   }
 
-  static update(k, v){
-    for(const s of this.get()){
-      if(k !== s.key) continue;
-      s.value = v;
-      break;
+
+  /**
+   * 設定データを読込
+   * @param {Object} data 設定データ
+   * @param {Array<{key: string, value: boolean|Array<string>}>} data.general 一般設定
+   * @param {Array<{type: string, value: Array<string>}>} [data.global_short_cut] グローバルショートカット
+   * @param {Array<{type: string, value: Array<string>}>} [data.textbody_short_cut] 編集ブロックショートカット
+   * @returns {boolean} true: 成功 / false: 失敗
+   */
+  static load(data){
+    if(!Type.isObj(data)) return System.fail("Object型ではない設定データのため登録できませんでした。");
+
+    const general = data.general;
+    const globalShortCut = data.global_short_cut;
+    const textbodyShortCut = data.textbody_short_cut;
+
+    const userName = UserSelect.getCurrUser();
+
+    if(general){
+      general.forEach(c => this.update(c.key, c.value));
+    }else{
+      console.warn(`${userName}さんの「一般」の設定データはありません。`);
     }
+
+    if(globalShortCut){
+      this.resetGlobalShortCuts(globalShortCut);
+    }else{
+      console.warn(`${userName}さんの「グローバルショートカット」の設定データはありません。`);
+    }
+
+    if(textbodyShortCut){
+      this.resetTextBodyShortCuts(textbodyShortCut);
+    }else{
+      console.warn(`${userName}さんの「編集ブロックショートカット」の設定データはありません。`);
+    }
+    return true;
   }
 
 
@@ -255,13 +301,13 @@ class Config {
     const keyConfig = Elem.create("div", {id: "config-shortcut", cl: "hide"});
 
     const globalKeyConfig = Elem.create("div", {id: "config-global-shortcut"});
-    for(const sc of this.getShortCuts()){
+    for(const sc of this.getGlobalShortCuts()){
       globalKeyConfig.appendChild(this.createKeyConfigItem(sc.key, sc.type, sc.value));
     }
 
     const addController = Elem.create("div", {id: "config-add-controller"});
     const addSelection = Elem.create("select", {id: "config-add-selection"});
-    this.getSCDefaults().forEach( (scDefault, j) => {
+    this.getGlobalShortCutType().forEach( (scDefault, j) => {
       const option = Elem.create("option");
       option.value = scDefault.name;
       option.textContent = scDefault.name;
@@ -280,9 +326,9 @@ class Config {
         alert("ボタン左の項目を設定ください");
         return;
       }
-      const nextShortCutKeyNum = Number(this.getShortCuts().at(-1).key.slice(-2)) + 1;
-      const newKey = `SC${nextShortCutKeyNum.toString().padStart(2, "0")}`;
-      const newType = this.getSCDefaults().find(scd => {
+      const nextShortCutKeyNum = Number(this.getGlobalShortCuts().at(-1).key.slice(-2)) + 1;
+      const newKey = `GSC${nextShortCutKeyNum.toString().padStart(2, "0")}`;
+      const newType = this.getGlobalShortCutType().find(scd => {
         return scd.name === selection;
       }).type;
 
@@ -296,13 +342,13 @@ class Config {
 
 
     const textBodyKeyConfig = Elem.create("div", {id: "config-textbody-shortcut"});
-    for(const sc of this.getTBShortCuts()){
+    for(const sc of this.getTextBodyShortCuts()){
       textBodyKeyConfig.appendChild(this.createTBKeyConfigItem(sc.key, sc.type, sc.value));
     }
 
     const TBSCAddController = Elem.create("div", {id: "config-tbsc-add-controller"});
     const TBSCAddSelection = Elem.create("select", {id: "config-tbsc-add-selection"});
-    this.getTBSCDefaults().forEach( (tbscDefault, j) => {
+    this.getTextBodyShortCutType().forEach( (tbscDefault, j) => {
       const option = Elem.create("option");
       option.value = tbscDefault.name;
       option.textContent = tbscDefault.name;
@@ -321,9 +367,9 @@ class Config {
         alert("ボタン左の項目を設定ください");
         return;
       }
-      const nextShortCutKeyNum = Number(this.getTBShortCuts().at(-1).key.slice(-2)) + 1;
+      const nextShortCutKeyNum = Number(this.getTextBodyShortCuts().at(-1).key.slice(-2)) + 1;
       const newKey = `TBSC${nextShortCutKeyNum.toString().padStart(2, "0")}`;
-      const newType = this.getTBSCDefaults().find(scd => {
+      const newType = this.getTextBodyShortCutType().find(scd => {
         return scd.name === selection;
       }).type;
 
@@ -342,7 +388,7 @@ class Config {
   }
 
   static createKeyConfigItem(key, type, value){
-    const scDefault = this.SCDefaults.find(d => d.type === type);
+    const scDefault = this.getGlobalShortCutType().find(d => d.type === type);
 
     const item = Elem.create("div", {cl: "config-item"});
 
@@ -442,7 +488,7 @@ class Config {
 
 
   static createTBKeyConfigItem(key, type, value){
-    const tbscDefault = this.getTBSCDefaults().find(d => d.type === type);
+    const tbscDefault = this.getTextBodyShortCutType().find(d => d.type === type);
 
     const item = Elem.create("div", {cl: "config-item"});
 
@@ -541,97 +587,252 @@ class Config {
   }
 
 
+  /* =====================
+   一般設定
+   ===================== */
+
+  /**
+   * 一般設定の取得
+   * @returns {Array<{key: string, type: string, hint: string, options?: Array<string>, value: string|boolean|Array<string>}>}
+   */
+  static get(){
+    return this.general;
+  }
   static clear(){
-    console.log(this.get());
     this.get().length = 0;
   }
-  static get(){
-    return this.schema;
+  /**
+   * 一般設定の更新
+   * @param {string} k キー
+   * @param {Array<string>|boolean} v 更新データ
+   * @returns {boolean} true: 成功 / false: 失敗
+   */
+  static update(k, v){
+    const config = this.get().find(c => c.key === k);
+    if(!config) return System.fail(`キー(${k})が存在しないため、一般設定を更新できませんでした。`);
+    
+    if(Type.isArr(v)) config.value = [...v];
+    else config.value = v;
+    return true;
   }
+  
   static set(v){
     this.clear();
-    this.schema.push(...structuredClone(v));
-  }
-  static clearShortCuts(){
-    this.getShortCuts().length = 0;
-  }
-  static getShortCuts(){
-    return this.shortCuts;
-  }
-  static setShortCuts(v){
-    this.clearShortCuts();
-    this.shortCuts.push(...structuredClone(v));
-  }
-  static getSCDefaults(){
-    return this.SCDefaults;
+    this.general.push(...structuredClone(v));
   }
 
-  static clearTBShortCuts(){
-    this.getTBShortCuts().length = 0;
+  /* =====================
+   グローバルショートカット
+   ===================== */
+
+  /**
+   * グローバルショートカットのキー名の作成
+   * @param {number} i キー化する数値(0-99)
+   * @returns {string}
+   */
+  static makeGSCKey(i){
+    if(i <= 0 || i > 99) System.err(`数値(${i})が1～99の間ではないため、グローバルショートカットのキーを作成できませんでした。`);
+    return "GSC" + i.toString().padStart(2, "0");
   }
-  static getTBShortCuts(){
+  /**
+   * グローバルショートカットのタイプが存在するか判定する
+   * @param {string} type 判定するタイプ名
+   * @returns {boolean} true: 存在する / false: 存在しない
+   */
+  static existsGlobalShortCutType(type){
+    return this.getGlobalShortCutType().some(t => type === t.type);
+  }
+  /**
+   * グローバルショートカットの全削除
+   */
+  static clearGlobalShortCuts(){
+    this.getGlobalShortCuts().length = 0;
+  }
+  /**
+   * 全てのグローバルショートカットの取得
+   * @returns {Array<{ key: string, type: string, value: Array<string> }>}
+   */
+  static getGlobalShortCuts(){
+    return this.globalShortCuts;
+  }
+  /**
+   * グローバルショートカットを設定する
+   * @param {Array} shortCutList グローバルショートカット一覧 
+   */
+  static setGlobalShortCuts(shortCutList){
+    this.clearGlobalShortCuts();
+    this.globalShortCuts.push(...structuredClone(shortCutList));
+  }
+  /**
+   * グローバルショートカットを再設定する
+   * @param {Array<{type: string, value: Array<string>}>} shortCutList グローバルショートカット一覧 
+   */
+  static resetGlobalShortCuts(shortCutList){
+    if(!Type.isArr(shortCutList)) System.fail("Array型ではないため「グローバルショートカット」を再設定できませんでした。");
+    
+    const tempList = [];
+    shortCutList.forEach(shortCut => {
+      this.addGlobalShortCut(tempList, shortCut.type, shortCut.value);
+    });
+    this.clearGlobalShortCuts();
+    this.globalShortCuts.push(...structuredClone(tempList));
+  }
+  /**
+   * グローバルショートカットの追加
+   * @param {Array<{key: string, type: string, value: Array<string>}>} destArr 追加先の配列 
+   * @param {string} type グローバルショートカットのタイプ
+   * @param {Array<string>} value グローバルショートカットの値
+   * @returns {boolean} true: 成功 / false: 失敗
+   */
+  static addGlobalShortCut(destArr, type, value){
+    if(!this.existsGlobalShortCutType(type)) return System.fail(`タイプ(${type})が存在しないため、グローバルショートカットを追加できませんでした。`);
+    if(!Type.isArr(value)) return System.fail("valueがArray型でないため、グローバルショートカットを追加できませんでした。");
+    const count = destArr.length;
+    const key = this.makeGSCKey(count + 1);
+    destArr.push({
+      key,
+      type,
+      value: [...value]
+    });
+    return true;
+  }
+  /**
+   * グローバルショートカットのタイプリストの取得
+   * 各要素はタイプの設定情報
+   * @returns {Array<{type: string, range?: string, init?: string, step?: string, prefix?: string, suffix?: string, name: string, hint: string}>}
+   */
+  static getGlobalShortCutType(){
+    return this.GLOBAL_SHORT_CUT_TYPE;
+  }
+
+
+  /* =====================
+   編集ブロックショートカット
+   ===================== */
+
+  /**
+   * 編集ブロックショートカットのキー名の作成
+   * @param {number} i キー化する数値(0-99)
+   * @returns {string}
+   */
+  static makeTBSCKey(i){
+    if(i <= 0 || i > 99) System.err(`数値(${i})が1～99の間ではないため、編集ブロックショートカットのキーを作成できませんでした。`);
+    return "TBSC" + i.toString().padStart(2, "0");
+  }
+  /**
+   * 編集ブロックショートカットのタイプが存在するか判定する
+   * @param {string} type 判定するタイプ名
+   * @returns {boolean} true: 存在する / false: 存在しない
+   */
+  static existsTextBodyShortCutType(type){
+    return this.getTextBodyShortCutType().some(t => type === t.type);
+  }
+  /**
+   * 編集ブロックショートカットの全削除
+   */
+  static clearTextBodyShortCuts(){
+    this.getTextBodyShortCuts().length = 0;
+  }
+  /**
+   * 全ての編集ブロックショートカットの取得
+   * @returns {Array<{ key: string, type: string, value: Array<string> }>}
+   */
+  static getTextBodyShortCuts(){
     return this.textBodyShortCuts;
   }
   static setTBShortCuts(v){
-    this.clearTBShortCuts();
+    this.clearTextBodyShortCuts();
     this.textBodyShortCuts.push(...structuredClone(v));
   }
-  static getTBSCDefaults(){
-    return this.TBSCDefault;
+  /**
+   * 編集ブロックショートカットを再設定する
+   * @param {Array<{type: string, value: Array<string>}>} shortCutList 編集ブロックショートカット一覧 
+   */
+  static resetTextBodyShortCuts(shortCutList){
+    if(!Type.isArr(shortCutList)) System.fail("Array型ではないため「編集ブロックショートカット」を再設定できませんでした。");
+    
+    const tempList = [];
+    shortCutList.forEach(shortCut => {
+      this.addTextBodyShortCut(tempList, shortCut.type, shortCut.value);
+    });
+    this.clearTextBodyShortCuts();
+    this.textBodyShortCuts.push(...structuredClone(tempList));
+  }
+  /**
+   * 編集ブロックショートカットの追加
+   * @param {Array<{key: string, type: string, value: Array<string>}>} destArr 追加先の配列 
+   * @param {string} type 編集ブロックショートカットのタイプ
+   * @param {Array<string>} value 編集ブロックショートカットの値
+   * @returns {boolean} true: 成功 / false: 失敗
+   */
+  static addTextBodyShortCut(destArr, type, value){
+    if(!this.existsTextBodyShortCutType(type)) return System.fail(`タイプ(${type})が存在しないため、編集ブロックショートカットを追加できませんでした。`);
+    if(!Type.isArr(value)) return System.fail("valueがArray型でないため、編集ブロックショートカットを追加できませんでした。");
+    const count = destArr.length;
+    const key = this.makeTBSCKey(count + 1);
+    destArr.push({
+      key,
+      type,
+      value: [...value]
+    });
+    return true;
+  }
+  /**
+   * 編集ブロックショートカットのタイプリストの取得
+   * 各要素はタイプの設定情報
+   * @returns {Array<{type: string, name: string, hint: string}>}
+   */
+  static getTextBodyShortCutType(){
+    return this.TEXTBODY_SHORT_CUT_TYPE;
   }
 
+  /**
+   * 設定画面を開く
+   */
   static open(){
     Render.config();
   }
-
+  /**
+   * 設定画面を閉じる
+   */
   static close(){
     configOverlay.classList.remove("show");
   }
 
-  static getConfigs(){
-    function deepEqual(a, b) {
-      if (a === b) return true;
-      if (typeof a !== typeof b) return false;
-      if (Array.isArray(a) && Array.isArray(b)) {
-        if (a.length !== b.length) return false;
-        return a.every((v, i) => deepEqual(v, b[i]));
-      }
-      if (typeof a === 'object' && a && b) {
-        const keysA = Object.keys(a);
-        const keysB = Object.keys(b);
-        if (keysA.length !== keysB.length) return false;
-        return keysA.every(key => deepEqual(a[key], b[key]));
-      }
-      return false;
-    }
-
-    const userData = UserSelect.data;
-    if(this.userName !== "ゲスト"){
-      for(let j = 0; j < userData.length; j++){
-        if(this.userName !== userData[j].user_name)continue;
-        if(deepEqual(userData[j].general, this.get())
-          && deepEqual(userData[j].shortCut, this.getShortCuts())
-          && deepEqual(userData[j].tbShortCut, this.getTBShortCuts()))break;
-        const addNum = Number(this.userName.slice(-1));
-        const addUserName = Number.isNaN(addNum)
-          ? `${this.userName}1`
-          : `${this.userName.slice(0, -1)}${addNum + 1}`;
-        UserSelect.add([{
-          user_name: addUserName,
-          general: structuredClone(this.get()),
-          shortCut: structuredClone(this.getShortCuts()),
-          tbShortCut: structuredClone(this.getTBShortCuts())
-        }]);
-      }
-    }else{
-      UserSelect.add([{
-        user_name: "ユーザー1",
-        general: structuredClone(this.get()),
-        shortCut: structuredClone(this.getShortCuts()),
-        tbShortCut: structuredClone(this.getTBShortCuts())
-      }]);
-    }
-
-    return UserSelect.data;
+  /**
+   * キー設定画面を開く
+   */
+  static openKeyCondig(){
+    document.getElementById("config-general").classList.add("hide");
+    document.getElementById("config-shortcut").classList.remove("hide");
+    this.isKeyConfig = true;
   }
+  /**
+   * キー設定画面を閉じる
+   */
+  static closeKeyConfig(){
+    document.getElementById("config-general").classList.remove("hide");
+    document.getElementById("config-shortcut").classList.add("hide");
+    this.isKeyConfig = false;
+  }
+
+  static getConfigData(){
+    const data = {};
+    data.general = this.general
+      .filter(c => c.key !== "keyconfig")
+      .map( ({key, value}) => ({
+        key,
+        value: Type.isArr(value) ? [...value] : value
+      }));
+    
+    data.global_short_cut = structuredClone(this.getGlobalShortCuts());
+    data.textbody_short_cut = structuredClone(this.getTextBodyShortCuts());
+
+    return data;
+  }
+
+  static isSameConfig(config){
+    return User.getList().some(d => Compare.deepEqual(d.config, config));
+  }
+
 }

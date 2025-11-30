@@ -14,22 +14,12 @@ class FileParser {
           .map( l => this.parseLine(l))
           .filter(Boolean);
         
-        Doc.insertLines(lines);
+        Doc.setLines(lines);
         resolve();
       };
       reader.onerror = e => reject(e);
       reader.readAsText(textFile);
     });   
-  }
-
-  static parseFromText(text, Side){
-    const lines = (text + "\n")
-      .split('\n')
-      .map( line => this.parseLine(line))
-      .filter(Boolean);
-    
-      console.log(lines);
-    Side.insertLines(lines);
   }
 
   static parseLine(preline) {

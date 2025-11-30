@@ -12,7 +12,7 @@ class Header {
         saveArea.classList.add("hide");
         exportArea.classList.add("hide");
 
-        mainToolOpenCloseBtn.querySelector("img").src = `img/theme/${Theme.get()}/open.png`;
+        mainToolOpenCloseBtn.querySelector("img").src = `img/theme/${Theme.jpnToCode(Theme.get())}/open.png`;
         mainToolsArea.style.height = "25px";
         this.isClosedMainTools = true;
       }else{
@@ -21,7 +21,7 @@ class Header {
         saveArea.classList.remove("hide");
         exportArea.classList.remove("hide");
 
-        mainToolOpenCloseBtn.querySelector("img").src = `img/theme/${Theme.get()}/close.png`;
+        mainToolOpenCloseBtn.querySelector("img").src = `img/theme/${Theme.jpnToCode(Theme.get())}/close.png`;
         mainToolsArea.style.height = "auto";
         this.isClosedMainTools = false;
       }

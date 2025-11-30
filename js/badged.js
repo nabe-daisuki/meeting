@@ -3,7 +3,7 @@ class Badged {
   static create(i){
     const line = Doc.getLine(i);
 
-    const elem = Elem.create("div", {cl: `badged BADGED_${Theme.get()}`});
+    const elem = Elem.create("div", {cl: `badged BADGED_${Theme.jpnToCode(Theme.get())}`});
     if(line.hided) elem.style.display = "none";
     elem.addEventListener("dragover", e => e.preventDefault());
     return elem;

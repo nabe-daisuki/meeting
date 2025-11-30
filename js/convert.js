@@ -22,7 +22,7 @@ class Convert {
   }
 
   static numToSectionIdx(num){
-    const buf = new ArrayBuffer(GijiInput.SECTION_INDEX_BYTES);
+    const buf = new ArrayBuffer(GijiDecoder.SECTION_INDEX_BYTES);
     const view = new DataView(buf);
     view.setBigUint64(0, BigInt(num), true);
     return new Uint8Array(buf);
@@ -30,7 +30,7 @@ class Convert {
 
   static strToSectionTag(str){
     const encoder = new TextEncoder();
-    const u8arr = new Uint8Array(GijiInput.SECTION_TAG_BYTES);
+    const u8arr = new Uint8Array(GijiDecoder.SECTION_TAG_BYTES);
     u8arr.set(encoder.encode(str));
     return u8arr;
   }
@@ -93,11 +93,16 @@ class Convert {
   static arrBufToBase64(arrBuf) {
     let binary = "";
     const bytes = new Uint8Array(arrBuf);
-    const len = bytes.byteLength;
-
-    for (let i = 0; i < len; i++) {
-      binary += String.fromCharCode(bytes[i]);
+    const chunkSize = 0x8000; // 32KB
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.subarray(i, i + chunkSize);
+      binary += String.fromCharCode.apply(null, chunk);
     }
+    // const len = bytes.byteLength;
+
+    // for (let i = 0; i < len; i++) {
+    //   binary += String.fromCharCode(bytes[i]);
+    // }
 
     return btoa(binary);
   }

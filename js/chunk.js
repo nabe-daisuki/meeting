@@ -8,7 +8,7 @@ class Chunk {
 
   static create(i){
     const line = Doc.getLine(i);
-    const div = Elem.create("div", {cl: `chunk CHUNK_${Theme.get()}`});
+    const div = Elem.create("div", {cl: `chunk CHUNK_${Theme.jpnToCode(Theme.get())}`});
     if(line.disabled) div.classList.add("disabled");
     if(line.color === "g") div.classList.add("green-hatch");
     div.addEventListener("contextmenu", e => {

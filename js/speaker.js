@@ -20,7 +20,7 @@ class Speaker {
   }
 
   static create(name){
-    const el = Elem.create("button", {cl: `STB_BTN_${Theme.get()}`});
+    const el = Elem.create("button", {cl: `STB_BTN_${Theme.jpnToCode(Theme.get())}`});
     el.draggable = true;
     el.textContent = `（${name}）`;
     el.addEventListener("dragstart", e => {

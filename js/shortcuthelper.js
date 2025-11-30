@@ -1,6 +1,6 @@
 class ShortCutHelper {
   static create(){
-    const shortCuts = Config.getShortCuts();
+    const shortCuts = Config.getGlobalShortCuts();
     const items = [];
     if(shortCuts === 0){
       const item = Elem.create("div");

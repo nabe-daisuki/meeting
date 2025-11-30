@@ -47,6 +47,7 @@ const inputerArea = document.getElementById("inputer");
 const textFileInput = document.getElementById("text-file-input");
 const audioFileInput = document.getElementById("audio-file-input");
 const reloadFileInput = document.getElementById("reload-file-input");
+const configInput = document.getElementById("config-input");
 
 let isWindowBlur = false;
 let isWindowResize = false;
@@ -69,6 +70,7 @@ const editedToExport = document.getElementById("edited-to-export");
 const mainToolOpenCloseBtn = document.getElementById("main-tool-open-close");
 
 const pdfViewer = document.getElementById("pdf-viewer");
+const pdfControls = document.getElementById("pdf-controls");
 const zoomInBtn = document.getElementById("zoom-in");
 const zoomOutBtn = document.getElementById("zoom-out");
 const moveTopPage = document.getElementById("move-top-page");
@@ -109,7 +111,6 @@ const categorizeUpdateBtn = document.getElementById("categorize-update-btn");
 const caseContent = document.getElementById("case-content");
 
 const output = document.getElementById("output");
-console.log(output);
 
 const repInfosUl = document.getElementById("repinfos");
 
@@ -148,16 +149,7 @@ const replaceCompare = document.getElementById("replace-compare");
 const replaceCloseBtn = document.getElementById("replace-close");
 
 
-function setEditorPanelH(){
-  editorPanel.style.height = `calc(100vh - ${Header.getHeight()}px)`;
-}
-
-let docHeader = null;
-
 window.onload= () =>{
-  // setEditorPanelH();
-  // Panel.setPreReplaceH();
-
   Header.init();
   ResizeBar.init();
   Panel.init();

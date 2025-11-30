@@ -169,23 +169,48 @@ class Export {
   }
 
   static exportConfig(){
-    const config = structuredClone(Config.getConfigs());
+    let fileName = "";
+    while(true){
+      fileName = prompt(`ファイル名を入力ください。
+また、以下の文字は無効です。
+（改行、タブ、\\、/、*、<、>、?、"、.）`);
+
+      if(fileName === null){
+        return System.fail("\"設定の保存\"の処理を中断します。");
+      }else if(fileName === ""){
+        continue;
+      }else{
+        fileName = fileName.trim();
+        const invalidChars = /[\t\r\n\\\/\*\<\>\?\|\"\.]/;
+        if(invalidChars.test(fileName)){
+          alert(`無効な入力文字を確認しました。以下はファイル名として利用できません。
+（改行、タブ、\\、/、*、<、>、?、"、.）`);
+        }else{
+          break;
+        }
+      }
+    }
+    
+    const config = {
+      name: fileName,
+      config: Config.getConfigData()
+    };
     const gijiParts = [new GijiPart("config", config, 0, "json")];
 
-    const now = new Date();
+    // const now = new Date();
     
     // ゼロ埋め用関数
-    const pad = (n) => n.toString().padStart(2, '0');
+    // const pad = (n) => n.toString().padStart(2, '0');
 
-    const yy = now.getFullYear() % 100;
-    const MM = pad(now.getMonth() + 1); // 月は0始まり
-    const dd = pad(now.getDate());
-    const hh = pad(now.getHours());
-    const mm = pad(now.getMinutes());
-    const ss = pad(now.getSeconds());
+    // const yy = now.getFullYear() % 100;
+    // const MM = pad(now.getMonth() + 1); // 月は0始まり
+    // const dd = pad(now.getDate());
+    // const hh = pad(now.getHours());
+    // const mm = pad(now.getMinutes());
+    // const ss = pad(now.getSeconds());
 
-    const fileName = `config__${yy}${MM}${dd}-${hh}${mm}${ss}.gijiconf`;
+    // const fileName = `config__${yy}${MM}${dd}-${hh}${mm}${ss}.gijiconf`;
     
-    Save.save(fileName, GijiEncoder.encode(gijiParts));
+    Save.save(`${fileName}.gijiconf`, GijiEncoder.encode(gijiParts));
   }
 }

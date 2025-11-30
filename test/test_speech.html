@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<body>
+<button id="startBtn">開始</button>
+<div id="text" style="margin-top:20px; font-size:20px;"></div>
+
+<script>
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if (!SpeechRecognition) {
+    document.getElementById("text").textContent = "このブラウザはWeb Speech APIをサポートしていません。";
+} else {
+    const rec = new SpeechRecognition();
+    rec.lang = "ja-JP";              // 日本語
+    rec.interimResults = true;       // 途中経過を出す
+    rec.continuous = true;           // 長く喋れる
+
+    const textOut = document.getElementById("text");
+
+    rec.onresult = (event) => {
+        let result = "";
+        for (const res of event.results) {
+            result += res[0].transcript;
+        }
+        textOut.textContent = result;
+    };
+
+    rec.onerror = (e) => {
+        console.error("Error:", e);
+    };
+
+    document.getElementById("startBtn").onclick = () => {
+        rec.start();
+    };
+}
+</script>
+</body>
+</html>

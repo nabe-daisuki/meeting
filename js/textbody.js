@@ -102,7 +102,7 @@ class TextBody {
 
   static create(i){
     const line = Doc.getLine(i);
-    const themeType = Theme.get();
+    const themeType = Theme.jpnToCode(Theme.get());
 
     const textBox = Elem.create("div", {cl: "text-box"});
     if(line.hided) textBox.style.display = "none";
@@ -136,7 +136,7 @@ class TextBody {
       }
 
       const keyString = KeyBoard.getKeyString(e);
-      const shortCuts = Config.getTBShortCuts().find(s => keyString === s.value.at(-1));
+      const shortCuts = Config.getTextBodyShortCuts().find(s => keyString === s.value.at(-1));
       
       if(!shortCuts) return;
       
@@ -444,7 +444,7 @@ class TextBody {
           const arrow = Elem.create("span");
           arrow.textContent = "↓";
 
-          const li = Elem.create("li", {cl: `REPINFOS_LI_${Theme.get()}`});
+          const li = Elem.create("li", {cl: `REPINFOS_LI_${Theme.jpnToCode(Theme.get())}`});
           li.appendChild(before);
           li.appendChild(arrow);
           li.appendChild(after);
@@ -470,6 +470,10 @@ class TextBody {
 
       const el = e.target;
       const currentText = el.value;
+      const textBodyBG = Doc.getTextBodyBG(i);
+      textBodyBG.innerHTML = "";
+      textBodyBG.textContent = currentText + '\u200b';
+
 
       if(this.isEdited(currentText, i)){
         this.enableEdited(i);
@@ -486,6 +490,8 @@ class TextBody {
       // console.log(`bs: ${this.edit.isBackspace}, dl: ${this.edit.isDelete}, en: ${this.edit.isEnter}, cu: ${this.edit.isCut}, pa: ${this.edit.isPaste}, dr: ${this.edit.isDrop}`);
 
       this.resetMiniBadges(i);
+
+      console.log(this.getSelectionParaNum(i));
       
       this.edit.isBackspace = false;
       this.edit.isDelete = false;
@@ -633,13 +639,10 @@ class TextBody {
       startPos += charsPerPara[j].length + 1;
     }
     // console.log(this.preSelection);
-    // console.log(this.selection);
+    console.log(this.selection);
   }
 
   static emphasizeSelection(i){
-    // this.resetCharsPerPara(i);
-    // this.resetParaHeights(i);
-
     const textBody = Doc.getTextBody(i);
     const splittedPrefix = textBody.value.slice(0, this.selection.start).split("\n"); 
     const splittedTarget = textBody.value.slice(this.selection.start, this.selection.end).split("\n");
@@ -711,50 +714,13 @@ class TextBody {
     const textBodyBG = Doc.getTextBodyBG(i);
     textBodyBG.innerHTML = "";
     textBodyBG.appendChild(spans);
-
-    // const paraNum = this.getSelectionParaNum(i);
-    // const charsPerPara = Doc.getCharsPerPara(i);
-    // const chars = charsPerPara[paraNum];
-    // const offset = charsPerPara.reduce((acc, cur, j) => {
-    //   if(paraNum <= j) return acc;
-    //   acc += cur.length + 1;
-    //   return acc;
-    // }, 0);
-
-    // const prefix = textBody.value.slice(offset, this.selection.start);
-    // const targets = textBody.value.slice(this.selection.start, this.selection.end).split("\n");
-    // const suffix = textBody.value.slice(this.selection.end, offset + chars.length);
-
-    // const prefixNode = Elem.createT(prefix);
-    // const targetNodes = targets.flatMap( (target, j) => {
-    //   const nodes = [];
-    //   const textSpan = Elem.create("span");
-    //   textSpan.textContent = target;
-    //   // textSpan.style.display = "inline-block";
-    //   textSpan.style.color = "white";
-    //   textSpan.style.backgroundColor = "#2A61D1";
-    //   nodes.push(textSpan);
-    //   if(j !== targets.length - 1){
-    //     const newLine = Elem.createT("\n");
-    //     nodes.push(newLine);
-    //   }
-    //   return nodes;
-    // });
-    // const suffixNode = Elem.createT(suffix);
-
-    // const textBodyBG = Doc.getTextBodyBG(i);
-    // const paraSpan = textBodyBG.querySelectorAll("span")[paraNum];
-    // paraSpan.innerHTML = "";
-    // paraSpan.appendChild(prefixNode);
-    // targetNodes.forEach( targetNode => paraSpan.appendChild(targetNode));
-    // paraSpan.appendChild(suffixNode);
   }
 
 
   static emphasizeText(i, paraNum){
     const para = Doc.getTextBodyBG(i).querySelectorAll("span")[paraNum];
     para.classList.add("focus-para");
-    para.classList.add(`FP_${Theme.get()}`);
+    para.classList.add(`FP_${Theme.jpnToCode(Theme.get())}`);
   }
   static unemphasizeText(i, paraNum){
     const para = Doc.getTextBodyBG(i).querySelectorAll("span")[paraNum];
@@ -764,7 +730,6 @@ class TextBody {
   static resetCharsPerPara(i){
     const line = Doc.getLine(i);
     const text = line.editedText || (line.editedText === "" ? "(空)" : line.text);
-    // const text = line.editedText || line.text;
     line.charsPerPara = text.split("\n");
   }
 
@@ -907,7 +872,7 @@ class TextBody {
       italic.style.fontStyle = "normal";
       if(rephist.length !== 0){
         italic.classList.add("has-replace");
-        italic.classList.add(`HR_${Theme.get()}`);
+        italic.classList.add(`HR_${Theme.jpnToCode(Theme.get())}`);
         italic.setAttribute("idx", j);
         italic.addEventListener("mousemove", () => {
           repInfosUl.textContent = rephist;
@@ -963,6 +928,7 @@ class TextBody {
       if(result.length === 0) result.push("n");
       Doc.setMiniBadges(i, [...result]);
     }
+    Doc.setMiniBadges(i, Doc.getMiniBadges(i).slice(0, Doc.getCharsPerPara(i).length));
 
     this.clearMiniBadges(i);
 
@@ -979,6 +945,7 @@ class TextBody {
     Doc.getMiniBadges(i).forEach( (mb, j) => {
       if(mb === "n"){
         const el = Elem.create("div", {cl: `badge mini-badge mini-none`});
+        console.log(i, j,Doc.getParaHeight(i, j))
         el.style.top = parseFloat(Doc.getParaHeight(i, j).split(":")[0]) + 2 + "px";
 
         el.addEventListener("click", e => {
@@ -1019,7 +986,7 @@ class TextBody {
       el.style.top = parseFloat(Doc.getParaHeight(i, j).split(":")[0]) + 2 + "px";
 
       const icon = Elem.create("img");
-      icon.src = `img/theme/${Theme.get()}/${badgeName}-mini.png`;
+      icon.src = `img/theme/${Theme.jpnToCode(Theme.get())}/${badgeName}-mini.png`;
 
       el.addEventListener("click", e => {
         e.stopPropagation();
@@ -1085,9 +1052,9 @@ class TextBody {
     let offset = 0;
     const charsPerPara = Doc.getCharsPerPara(i);
     for(let j = 0; j < charsPerPara.length; j++){
-      const charCount = offset + (Doc.hasCharsInPara(i, j) ? charsPerPara[j].length : 1);
+      const charCount = offset + (Doc.hasCharsInPara(i, j) ? charsPerPara[j].length + !!j : 1);
       if(this.selection.start <=  charCount) return j;
-      offset += (Doc.hasCharsInPara(i, j) ? charsPerPara[j].length : 1);
+      offset += (Doc.hasCharsInPara(i, j) ? charsPerPara[j].length + !!j : 1);
     }
     return charsPerPara.length - 1;
   }
@@ -1188,7 +1155,6 @@ class TextBody {
   }
 
   static select(i, start, end){
-    console.log("aiuei")
     const textBody = Doc.getTextBody(i);
     textBody.focus();
     textBody.setSelectionRange(start, end);

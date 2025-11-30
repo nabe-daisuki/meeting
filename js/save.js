@@ -134,26 +134,21 @@ class Save {
         data: structuredClone(Doc.getLines()),
         type: "json"
       },
-      {
-        tag: "config",
-        data: structuredClone(Config.getConfigs()),
-        type: "json"
-      },
-      {
-        tag: "crlist",
-        data: {
-          list: structuredClone(CRList.get()),
-          select: caseIds.selectedIndex,
-          paths: structuredClone(CaseCategorizing.paths.map(p => ({
-            color: p.color,
-            points: p.points,
-            hovered: p.hovered
-          }))),
-          group: structuredClone(CRList.getGroup()),
-          compressCaseTitles: structuredClone(CRList.getCompressCaseTitles())
-        },
-        type: "json"
-      },
+      // {
+      //   tag: "crlist",
+      //   data: {
+      //     list: structuredClone(CRList.get()),
+      //     select: caseIds.selectedIndex,
+      //     paths: structuredClone(CaseCategorizing.paths.map(p => ({
+      //       color: p.color,
+      //       points: p.points,
+      //       hovered: p.hovered
+      //     }))),
+      //     group: structuredClone(CRList.getGroup()),
+      //     compressCaseTitles: structuredClone(CRList.getCompressCaseTitles())
+      //   },
+      //   type: "json"
+      // },
       {
         tag: "pdfviewer",
         data: {
@@ -196,6 +191,38 @@ class Save {
         type: "json"
       }
     ];
+
+    const currConfig = Config.getConfigData();
+    if(!Config.isSameConfig(currConfig)){
+      User.add({
+        name: User.createUserName(),
+        config: currConfig
+      });
+    }
+    data.push({
+      tag: "userdata",
+      data: structuredClone(User.getList()),
+      type: "json"
+    });
+    console.log(User.getList());
+
+    if(CRList.isValid){
+      data.push({
+        tag: "crlist",
+        data: {
+          list: structuredClone(CRList.get()),
+          select: caseIds.selectedIndex,
+          paths: structuredClone(CaseCategorizing.paths.map(p => ({
+            color: p.color,
+            points: p.points,
+            hovered: p.hovered
+          }))),
+          group: structuredClone(CRList.getGroup()),
+          compressCaseTitles: structuredClone(CRList.getCompressCaseTitles())
+        },
+        type: "json"
+      });
+    }
 
     let offset = 0;
     const gijiParts = [];

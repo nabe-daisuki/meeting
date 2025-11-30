@@ -1,7 +1,4 @@
 class GijiInput {
-  static SECTION_TAG_BYTES = 10;
-  static SECTION_INDEX_BYTES = 8;
-
   static init(){
     if(isGijiTest){
       fileDropOverlay.style.display = "none";
@@ -74,49 +71,54 @@ class GijiInput {
       document.getElementById("load-neutral-img").classList.add("hide");
     }
 
-    const buffer = await file.arrayBuffer();
-    const view = new DataView(buffer);
+    const sections = await GijiDecoder.decode(file);
+    // const buffer = await file.arrayBuffer();
+    // const view = new DataView(buffer);
 
-    let offset = buffer.byteLength;
-    const sections = {};
+    // let offset = buffer.byteLength;
+    // const sections = {};
 
-    while(true){
-      offset -= this.SECTION_INDEX_BYTES;
-      const end = Number(view.getBigUint64(offset, true));
+    // while(true){
+    //   offset -= this.SECTION_INDEX_BYTES;
+    //   const end = Number(view.getBigUint64(offset, true));
 
-      offset -= this.SECTION_INDEX_BYTES;
-      const start = Number(view.getBigUint64(offset, true));
+    //   offset -= this.SECTION_INDEX_BYTES;
+    //   const start = Number(view.getBigUint64(offset, true));
 
-      offset -= this.SECTION_TAG_BYTES;
-      const tagBytes = new Uint8Array(buffer, offset, this.SECTION_TAG_BYTES);
-      const tag = Convert.bytesToTag(tagBytes);
+    //   offset -= this.SECTION_TAG_BYTES;
+    //   const tagBytes = new Uint8Array(buffer, offset, this.SECTION_TAG_BYTES);
+    //   const tag = Convert.bytesToTag(tagBytes);
 
-      if(tag === "end")break;
+    //   if(tag === "end")break;
       
-      const contentBytes = new Uint8Array(buffer, start, end - start);
+    //   const contentBytes = new Uint8Array(buffer, start, end - start);
 
-      sections[tag] = {bytes: contentBytes};
-    }
+    //   sections[tag] = {bytes: contentBytes};
+    // }
+
+    const keys = Object.keys(sections);
 
     const basename = file.name.split(".").shift();
     let otherInfo = null;
-    Object.keys(sections).forEach(k => {
+
+    keys.forEach(k => {
       switch(k){
         case "giji":
-          if(Object.keys(sections).includes("savedoc")) {
-            TextFile.setName(`${basename}.txt`);
-            return;
-          }
+          const textFilename = `${basename}.txt`;
+
+          TextFile.setName(textFilename)
+          if(keys.includes("savedoc")) return;
+          
           const giji = Convert.bytesToArray(sections[k]["bytes"]).join("") + "\n";
           const blob = new Blob([giji], { type: "text/plain" });
-          const textFilename = `${basename}.txt`;
           const textFile = new File([blob], textFilename, { type: "text/plain" });
-
+          
           TextInput.input(textFile);
           break;
         case "audio":
+          const audio = sections[k]["bytes"];
           const audioFilename = `${basename}.mp3`;
-          AudioInput.input(audioFilename, sections[k]["bytes"]);
+          AudioInput.input(audioFilename, audio);
           break;
         case "repinfos":
           const repInfos = Convert.bytesToArray(sections[k]["bytes"]);
@@ -132,13 +134,23 @@ class GijiInput {
           break;
         case "savedoc":
           const lines = Convert.bytesToArray(sections[k]["bytes"]);
-          Doc.insertLines(structuredClone(lines));
+          Doc.setLines(structuredClone(lines));
           break;
         case "saveother":
           otherInfo = Convert.bytesToArray(sections[k]["bytes"]);
           break;
         case "config":
           const configs = Convert.bytesToArray(sections[k]["bytes"]);
+          if(typeof User === "function"){
+            if(Type.isArr(configs)){
+              for(let i = 0; i < configs.length; i++){
+                User.add(configs[i]);
+              }
+            }else{
+              User.add(configs);
+            }
+            return;
+          }
           if(Array.isArray(configs)){
             UserSelect.add(structuredClone(configs));
           }else{
@@ -146,15 +158,26 @@ class GijiInput {
             UserSelect.add(structuredClone([configs]));
           }
           break;
+        case "userdata":
+          const userdataList = Convert.bytesToArray(sections[k]["bytes"]).filter(d => d.name !== "ゲスト");
+          for(let i = 0; i < userdataList.length; i++){
+            User.add(userdataList[i]);
+          }
+          break;
         case "crlist":
           const crlist = Convert.bytesToArray(sections[k]["bytes"]);
-          CaseCategorizing.restore(crlist.paths);
-          CRList.set(crlist.list);
-          CRList.setGroup(crlist.group);
-          CRList.setCompressCaseTitles(crlist.compressCaseTitles);
+          if("paths" in crlist){
+            CaseCategorizing.restore(crlist.paths);
+            CRList.set(crlist.list);
+            CRList.setGroup(crlist.group);
+            CRList.setCompressCaseTitles(crlist.compressCaseTitles);
+            caseIds.selectedIndex = crlist.select;
+            CRList.resetList(caseIds.value);
+          }else{
+            CRList.set(crlist);
+          }
+          CRList.isValid = true;
           CRList.init();
-          caseIds.selectedIndex = crlist.select;
-          CRList.resetList(caseIds.value);
           break;
         case "pdfviewer":
           const pdfviewer = Convert.bytesToArray(sections[k]["bytes"]);
@@ -172,30 +195,27 @@ class GijiInput {
       }
     });
 
-    Theme.set("dark");
-    Theme.setSub("yellow");
+    Theme.set("ダーク");
+    Theme.setSub("イエロー");
 
-    if(Object.keys(sections).includes("speaker")){
+    if(keys.includes("speaker")){
       Render.speaker();
     }
-    if(Object.keys(sections).includes("savedoc")){
+    if(keys.includes("savedoc")){
       Meta.resetTitle();
       DocHeader.init();
       Render.render();
       Save.enable();
     }
-    if(Object.keys(sections).includes("saveother")){
+
+    if(keys.includes("saveother")){
       Scroll.setScrollTop(otherInfo.scroll.scrollTop);
       if(otherInfo.scroll.isAuto) Scroll.setAuto();
       
-      AudioController.setVolumeLabel(otherInfo.audio.volume);
-      AudioController.setSpeedLabel(otherInfo.audio.speed);
-      AudioController.updateVolumeSlider(otherInfo.audio.volume);
-      AudioController.updateSpeedSlider(otherInfo.audio.speed);
-      AudioController.setVolume(otherInfo.audio.volume);
-      AudioController.setSpeed(otherInfo.audio.speed);
-      AudioController.setTime(otherInfo.audio.pos);
-      AudioController.setPlaybackLabel(otherInfo.audio.pos);
+      AudioController.volume(otherInfo.audio.volume);
+      AudioController.speed(otherInfo.audio.speed);
+      AudioController.seek(otherInfo.audio.pos);
+
       if(otherInfo.highlight.idx !== -1){
         Selection.relocateHighlight(otherInfo.highlight.idx);
         TextBody.select(otherInfo.highlight.idx, otherInfo.selection.start, otherInfo.selection.end);
@@ -206,18 +226,26 @@ class GijiInput {
       }
     }
     
+    if(keys.includes("pdfviewer")){
+      if(PDFViewer.isEnabled){
+        await PDFViewer.loadPDF(CRList.getAttachmentBin(
+          PDFViewer.prevPdf.caseid,
+          PDFViewer.prevPdf.name
+        ));
+        PDFViewer.initScroll();
+      }
+    }
+
+    if(CRList.isTest){
+      CRList.isValid = true;
+      // CRList.init();
+    }
+
+
     Render.userSelect();
     userSelectOverlay.classList.remove("hide");
     fileDropOverlay.classList.add("hide");
 
-    if(Object.keys(sections).includes("pdfviewer")){
-      if(!PDFViewer.isEnabled) return;
-      await PDFViewer.loadPDF(CRList.getAttachmentBin(
-        PDFViewer.prevPdf.caseid,
-        PDFViewer.prevPdf.name
-      ));
-      PDFViewer.initScroll();
-    }
   }
 
 }

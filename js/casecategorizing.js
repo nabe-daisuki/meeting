@@ -8,6 +8,13 @@ class CaseCategorizing {
   static CANVAS_W = 1810;
   static CANVAS_H = 634;
 
+  static hide(){
+    caseCategorizingOverlay.classList.add("hide");
+  }
+  static show(){
+    caseCategorizingOverlay.classList.remove("hide");
+  }
+
   static getCategoryResultItemW(){
     const categoryResultItem = document.querySelector(".category-result-item");
     return categoryResultItem.clientWidth

@@ -19,8 +19,8 @@ class Doc{
   static getLine(i){
     return this.lines[i];
   }
-  static insertLines(parsedLines){
-    this.lines.push(...parsedLines);
+  static setLines(lines){
+    this.lines.push(...lines);
   }
 
   static getRepInfos(){

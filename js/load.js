@@ -114,7 +114,7 @@ class Load {
 
       Doc.clearLines();
 
-      Doc.insertLines(lines);
+      Doc.setLines(lines);
       
       TextInput.setTextFileName();
 
