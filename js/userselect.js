@@ -29,7 +29,6 @@ class UserSelect {
     const btns = [];
 
     const userdataList = User.getList();
-    console.log(userdataList);
     for(let i = 0; i < User.count(); i++){
       const name = userdataList[i].name;
       const btn = Elem.create("div", {cl: "user-btn"});
@@ -40,8 +39,6 @@ class UserSelect {
 
         Config.active();
         
-        console.log(CRList.isValid);
-
         if(CRList.isValid){
           CaseCategorizing.show();
           Render.beCategorizedItems();

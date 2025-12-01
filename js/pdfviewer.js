@@ -48,7 +48,20 @@ class PDFViewer {
       this.scale = Math.max(0.2, this.scale - 0.2);
       await this.readerAllPages(this.pdf, true);
     });
-
+    rotateRightBtn.addEventListener("click", async() => {
+      if(!this.pdf) return;
+      const rotation = this.prevPdf.rotations[this.pageNum - 1];
+      this.prevPdf.rotations[this.pageNum - 1] = (rotation + 90) % 360;
+      CRList.setAttachmentRotation(this.prevPdf.caseid, this.prevPdf.name, this.prevPdf.rotations);
+      await this.readerAllPages(this.pdf, true);
+    });
+    rotateLeftBtn.addEventListener("click", async() => {
+      if(!this.pdf) return;
+      const rotation = this.prevPdf.rotations[this.pageNum - 1];
+      this.prevPdf.rotations[this.pageNum - 1] = (rotation - 90) % 360;
+      CRList.setAttachmentRotation(this.prevPdf.caseid, this.prevPdf.name, this.prevPdf.rotations);
+      await this.readerAllPages(this.pdf, true);
+    });
     moveTopPage.addEventListener("click", () => {
       this.movePage(1);
     });
@@ -71,10 +84,8 @@ class PDFViewer {
     moveBottomPage.addEventListener("click", () => {
       this.movePage(this.pdf.numPages);
     });
-    printPageBtn.addEventListener("click", () => {
-      const canvases = [...document.querySelectorAll(".page-wrapper canvas")];
-
-      this.printCanvases(canvases);
+    printPageBtn.addEventListener("click", async() => {
+      await this.print(CRList.getAttachmentBin(this.prevPdf.caseid, this.prevPdf.name));
     });
     pagePostBtn.addEventListener("click", () => {
       if(TextBody.selection.start === -1) return;
@@ -138,12 +149,12 @@ class PDFViewer {
     if(CRList.isDuplicatedPDF(caseId, filenameWithoutExt, filesize)){
       const buf = CRList.getAttachmentBin(caseId, filenameWithoutExt);
       if(!buf) return;
-      await this.loadPDF(buf);
       const attachment = CRList.getAttachment(caseId, filenameWithoutExt);
       this.prevPdf.caseid = caseId;
       this.prevPdf.name = filenameWithoutExt;
       this.prevPdf.size = attachment.size;
       this.prevPdf.rotations = [...attachment.rotations];
+      await this.loadPDF(buf);
       return;
     }
 
@@ -152,11 +163,16 @@ class PDFViewer {
       reader.onload = async ev => {
         try{
           const buf = ev.target.result;
-          const pdfDoc = await PDFLib.PDFDocument.load(buf);
-          const editedPdfBytes = await pdfDoc.save();
-          const copyBuf = editedPdfBytes.buffer.slice(0);
+          // const pdfDoc = await PDFLib.PDFDocument.load(buf,{
+          //   ignoreEncryption: true
+          // });
+          // const editedPdfBytes = await pdfDoc.save();
+          // const copyBuf = editedPdfBytes.buffer.slice(0);
+          const copyBuf = structuredClone(buf);
 
-          await this.loadPDF(editedPdfBytes);
+          // await this.loadPDF(editedPdfBytes);
+          this.initProp();
+          await this.loadPDF(buf);
           const pageCount = this.pdf.numPages;
           CRList.addAttachment(filenameWithoutExt, filesize, copyBuf, pageCount);
           this.prevPdf.caseid = caseId;
@@ -244,7 +260,7 @@ class PDFViewer {
 
     for(let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++){
       const page = await pdfDoc.getPage(pageNum);
-      const viewport = page.getViewport({scale: this.scale});
+      const viewport = page.getViewport({scale: this.scale, rotation: this.prevPdf.rotations[pageNum - 1]});
 
       const wrapper = Elem.create("div", {cl: "page-wrapper"});
 
@@ -281,6 +297,7 @@ class PDFViewer {
   static showPageText(pageNum){
     pdfTexts.innerHTML = "";
     const lines = (this.pageTexts[pageNum] || []).filter(t => t.trim().length > 0);
+    if(lines.length === 0) lines.push("テキストを抽出できませんでした。");
     for(const line of lines){
       const text = Elem.createT(line);
       pdfTexts.appendChild(text);
@@ -325,67 +342,52 @@ class PDFViewer {
     pdfView.scrollLeft = this.scroll.left;
   }
 
-  static print(base64) {
-    // Base64 → バイナリに変換
-    const byteCharacters = atob(base64);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
+  static async print(arrBuf){
+    try {
+      const blob = new Blob([arrBuf], { type: 'application/pdf' });
+      const blobUrl = URL.createObjectURL(blob);
+
+      const w = window.open("", "_blank");
+      const html = `
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>印刷プレビュー</title>
+    <style>html,body{height:100%;margin:0} iframe{border:0;width:100%;height:100vh}</style>
+  </head>
+  <body>
+    <iframe id="pdfFrame" src="${blobUrl}"></iframe>
+    <script>
+      // ウィンドウが閉じられると URL を解放
+      window.addEventListener("beforeunload", () => {
+        try { URL.revokeObjectURL("${blobUrl}"); } catch(e) {}
+      });
+      window.addEventListener("afterprint" = () => {
+        console.log("印刷完了 or キャンセルされました");
+      };
+      const mediaQueryList = window.matchMedia('print');
+
+      mediaQueryList.addEventListener('change', (e) => {
+        if (e.matches) {
+          console.log("印刷モード開始");
+        } else {
+          console.log("印刷モード終了");
+        }
+      });
+    <\/script>
+  </body>
+</html>
+        `;
+
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+
+      w.focus();
+    } catch (err) {
+      console.error(err);
+    } finally {
     }
-    const byteArray = new Uint8Array(byteNumbers);
-
-    // Blob 化（PDF）
-    const blob = new Blob([byteArray], { type: "application/pdf" });
-    const url = URL.createObjectURL(blob);
-
-    // 隠し iframe 作って印刷
-    const iframe = document.createElement("iframe");
-    iframe.style.position = "fixed";
-    iframe.style.right = "0";
-    iframe.style.bottom = "0";
-    iframe.style.width = "0";
-    iframe.style.height = "0";
-    iframe.src = url;
-
-    iframe.onload = () => {
-      iframe.contentWindow.focus();
-      iframe.contentWindow.print();
-    };
-
-    document.body.appendChild(iframe);
   }
-
-  static printCanvases(canvases) {
-    const printWindow = window.open("", "_blank");
-
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>${this.prevPdf.name}</title>
-          <style>
-            body { margin:0; padding:0; }
-            img { display:block; width:100%; page-break-after:always; }
-          </style>
-        </head>
-        <body>
-    `);
-
-    // 各 canvas を img に変換して追加
-    canvases.forEach(canvas => {
-      const dataUrl = canvas.toDataURL("image/png");
-      printWindow.document.write(`<img src="${dataUrl}">`);
-    });
-
-    printWindow.document.write(`
-        </body>
-      </html>
-    `);
-
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => printWindow.print(), 1000);
-
-    setTimeout(() => printWindow.close(), 1000); 
-  }
-
 }

@@ -267,6 +267,7 @@ class Theme {
       el.classList.remove(preClass);
     }
     caseContent.classList.remove(preClass);
+    output.classList.remove(preClass);
     repInfosUl.classList.remove(preClass);
 
     categorizingArea.classList.remove(preClass);
@@ -308,6 +309,7 @@ class Theme {
       el.classList.add(newClass);
     }
     caseContent.classList.add(newClass);
+    output.classList.add(newClass);
     repInfosUl.classList.add(newClass);
 
     categorizingArea.classList.add(newClass);

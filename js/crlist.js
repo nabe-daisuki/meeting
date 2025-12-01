@@ -358,6 +358,11 @@ class CRList {
     const attachment = this.createAttachmentBox(name);
     attachmentItemContent.appendChild(attachment);
   }
+  static setAttachmentRotation(caseId, name, rotations){
+    const attachment = this.getAttachment(caseId, name);
+    attachment.rotations.length = 0;
+    attachment.rotations.push(...rotations);
+  }
 
   static isDuplicatedPDF(caseId, name, size){
     const attachments = this.getAttachments(caseId);
@@ -395,11 +400,12 @@ class CRList {
       const caseId = e.target.parentElement.parentElement.dataset.attachmentcode;
       const bin = this.getAttachmentBin(caseId, name);
       if(!bin) return;
-      await PDFViewer.loadPDF(bin);
       const attachment = CRList.getAttachment(caseId, name);
       PDFViewer.prevPdf.caseid = caseId;
       PDFViewer.prevPdf.name = name;
       PDFViewer.prevPdf.size = attachment.size;
+      PDFViewer.prevPdf.rotations = [...attachment.rotations];
+      await PDFViewer.loadPDF(bin);
     });
     attachmentName.addEventListener("contextmenu", e => {
       e.preventDefault();

@@ -945,7 +945,6 @@ class TextBody {
     Doc.getMiniBadges(i).forEach( (mb, j) => {
       if(mb === "n"){
         const el = Elem.create("div", {cl: `badge mini-badge mini-none`});
-        console.log(i, j,Doc.getParaHeight(i, j))
         el.style.top = parseFloat(Doc.getParaHeight(i, j).split(":")[0]) + 2 + "px";
 
         el.addEventListener("click", e => {
@@ -1158,5 +1157,40 @@ class TextBody {
     const textBody = Doc.getTextBody(i);
     textBody.focus();
     textBody.setSelectionRange(start, end);
+  }
+
+  static getParaStartPos(i, paraNum){
+    let offset = 0;
+    const charsPerPara = Doc.getCharsPerPara(i);
+    for(let j = 0; j < charsPerPara.length; j++){
+      console.log(paraNum, j, offset)
+      if(j === paraNum) return offset;
+      offset += (Doc.hasCharsInPara(i, j) ? charsPerPara[j].length + !!j : 1) + 1;
+    }
+    return 0;
+  }
+  static getPosFromCommentCount(count){
+    const pos = {
+      idx: null,
+      paraNum: null
+    }
+    const commentLines = Doc.getLines()
+      .map((l, i) => ({l, i}))
+      .filter(m => m.l.editedText);
+    
+    let commentCounter = 0;
+    for(let j = 0; j < commentLines.length; j++){
+      for(let paraNum = 0; paraNum < commentLines[j].l.charsPerPara.length; paraNum++){
+        if(commentLines[j].l.miniBadges[paraNum].includes("n")) continue;
+        commentCounter++;
+        console.log(commentCounter, count);
+        if(count !== commentCounter) continue;
+        pos.idx = commentLines[j].i;
+        pos.paraNum = paraNum;
+        return pos;
+      }
+    }
+
+    return pos;
   }
 }

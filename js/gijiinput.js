@@ -177,7 +177,7 @@ class GijiInput {
             CRList.set(crlist);
           }
           CRList.isValid = true;
-          CRList.init();
+          // CRList.init();
           break;
         case "pdfviewer":
           const pdfviewer = Convert.bytesToArray(sections[k]["bytes"]);
