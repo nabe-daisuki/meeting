@@ -21,14 +21,118 @@ class Output {
     this.scroll();
   }
 
-  static scroll(){
-    if(TextBody.selection.start == -1) return;
-    const i = Selection.idx;
-    const chars = Doc.getCharsPerPara(i);
-    const paraNum = TextBody.getSelectionParaNum(i);
+  static unsetHighlight(){
+    [...output.children].find(p => p.classList.contains("editing"))?.classList.remove("editing");
+  }
 
-    const para = chars[paraNum];
-    if(para.trim() === "") return;
+  static createSelectionCommentSpans(selectionPara, commentCountBeforeSelection){
+    const charsInfo = [];
+
+    let commentCount = 0;
+    let isResponseComment = false;
+    const lines = Doc.getLines();
+    for(let i = 0; i < lines.length; i++){
+      if(!lines[i].editedText) continue;
+      const miniBadges = lines[i].miniBadges;
+      const charsPerPara = lines[i].charsPerPara;
+
+      for(let paraNum = 0; paraNum < charsPerPara.length; paraNum++){
+        const chars = charsPerPara[paraNum];
+        const miniBadge = miniBadges[paraNum];
+        if(/^[・→]/.test(chars) || miniBadges[paraNum] !== "n") commentCount++;
+        if(commentCount !== commentCountBeforeSelection) continue;
+        if(chars.startsWith("→") || miniBadge === "r") isResponseComment = true;
+        if(/^[『【]/.test(chars)) continue;
+        charsInfo.push({
+          chars,
+          idx: i,
+          paraNum
+        });
+      }
+      if(commentCount > commentCountBeforeSelection) break;
+    }
+
+
+    const spans = [];
+    for(let partNum = 0; partNum < charsInfo.length; partNum++){
+      const span = Elem.create("span");
+      span.dataset.idx = charsInfo[partNum].idx;
+      span.dataset.paranum = charsInfo[partNum].paraNum;
+      span.setAttribute("contenteditable", "true");
+      span.style.cursor = "pointer";
+
+      let chars = charsInfo[partNum].chars;
+      if(partNum === 0){
+        if(isResponseComment) chars = chars.startsWith("→") ? chars : `→${chars}`;
+        else chars = chars.startsWith("・") ? chars : `・${chars}`;
+      }
+      span.innerText = chars;
+
+      span.addEventListener("click", e => {
+        e.stopPropagation();
+      });
+      span.addEventListener("focus", e => {
+        const idx = e.target.dataset.idx;
+        const paraNum = e.target.dataset.paranum;
+        this.editing.idx = idx;
+        this.editing.paraNum = paraNum;
+        this.editBefore = chars;
+        Scroll.scrollToLine(idx);
+      });
+      span.addEventListener("blur", e => {
+        const el = e.target;
+        const editAfter = el.innerText.replace(/\s/g, "");
+        el.innerText = editAfter;
+        if(this.editBefore === editAfter) return;
+
+        const idx = this.editing.idx;
+        const paraNum = Number(this.editing.paraNum);
+        if(editAfter.startsWith("・")) Doc.setMiniBadge(idx, paraNum, "c");
+        else if(editAfter.startsWith("→")) Doc.setMiniBadge(idx, paraNum, "r");
+        else Doc.removeMiniBadge(idx, paraNum);
+
+        const charsPerPara = Doc.getCharsPerPara(idx);
+        charsPerPara[paraNum] = editAfter.startsWith("・") || editAfter.startsWith("→") ? editAfter.slice(1) : editAfter;
+        
+        const newText = charsPerPara.join("\n");
+        const textBody = Doc.getTextBody(idx);
+        textBody.value = newText;
+        const textBodyBG = Doc.getTextBodyBG(idx);
+        textBodyBG.innerHTML = "";
+        textBodyBG.textContent = newText + '\u200b';
+
+        Doc.setEditedText(idx, newText);
+        
+        TextBody.resetCharsPerPara(idx);
+        TextBody.resetParaHeights(idx);
+        TextBody.resetMiniBadges(idx);
+
+        const paraStartPos = TextBody.getParaStartPos(idx, paraNum);
+        TextBody.select(idx, paraStartPos, paraStartPos);
+      });
+      if(chars === selectionPara) span.classList.add("editing");
+      spans.push(span);
+    }
+
+    return spans;
+  }
+
+  static scroll(){
+    if(TextBody.selection.start == -1) return System.warn("編集ブロックが選択されていないため、スクロール処理はされません。");
+    const i = Selection.idx;
+    const charsPerPara = Doc.getCharsPerPara(i);
+    const paraNum = TextBody.getSelectionParaNum(i);
+    const miniBadge = Doc.getMiniBadge(i, paraNum);
+
+    const para = miniBadge === "n"
+      ? charsPerPara[paraNum]
+      : miniBadge === "c" && !charsPerPara[paraNum].startsWith("・")
+        ? `・${charsPerPara[paraNum]}`
+        : miniBadge === "r" && !charsPerPara[paraNum].startsWith("→")
+          ? `→${charsPerPara[paraNum]}`
+          : charsPerPara[paraNum];
+    if(para.trim() === "") return System.warn(`${TimeStamp.toTimeRangeStr(Doc.getLine(i).startSec)}の編集ブロックの${paraNum}行目は空行のため、スクロール処理はされません。`);
+    
     const paras = output.children;
 
     
@@ -37,117 +141,33 @@ class Output {
     });
 
     if(outputParaNum === -1) return;
+    
+    const commentCountBeforeSelection = TextBody.getCommentCountBeforeSelection();
+    if(commentCountBeforeSelection === -1) return;
 
-    this.commentAndResponseCount = Doc.getLines().reduce((acc, cur, j) => {
-      if(cur.editedText === null || j > i) return acc;
-      if(j === i){
-        acc += [...cur.miniBadges].slice(0, paraNum + 1).filter(p => p !== "n").length;
-        return acc;
-      }
-      acc += cur.miniBadges.filter(p => p !== "n").length;
-      return acc;
-    }, 0);
+    this.unsetHighlight();
 
-    [...paras].find(p => p.classList.contains("editing"))?.classList.remove("editing");
-
-    console.log(this.commentAndResponseCount);
     let scrollTop = 0;
     const rect = output.getBoundingClientRect();
-    if(this.commentAndResponseCount > 0) {
-      this.selectionParaSpans.length = 0;
-      
-      let currentCommentAndResponseCount = 0;
-      const lines = Doc.getLines();
-      for(let i = 0; i < lines.length; i++){
-        if(lines[i].editedText === null) continue;
-        const paras = lines[i].charsPerPara;
-        for(let j = 0; j < paras.length; j++){
-          console.log(paras[j])
-          if(paras[j].startsWith("・") && paras[j].startsWith("→") || !lines[i].miniBadges[j].includes("n")) currentCommentAndResponseCount++;
-          if(currentCommentAndResponseCount !== this.commentAndResponseCount) continue;
-          if(/^[『└\s【]/.test(paras[j])) continue;
-          this.selectionParaSpans.push({
-            chars: paras[j],
-            idx: i,
-            paraNum: j
-          });
-        }
-        if(currentCommentAndResponseCount > this.commentAndResponseCount) break;
-      }
-      console.log(this.selectionParaSpans);
+    if(commentCountBeforeSelection > 0) {
+      const spans = this.createSelectionCommentSpans(para, commentCountBeforeSelection);
 
-      currentCommentAndResponseCount = 0;
-
-      [...paras].forEach(l => {
-        if(l.textContent.startsWith("・") || l.textContent.startsWith("→")) currentCommentAndResponseCount++;
-        if(currentCommentAndResponseCount !== this.commentAndResponseCount) return;
-        const prefix = l.textContent.slice(0, 1);
-        l.innerHTML = "";
-        l.style.backgroundColor = "#63630038";
-        this.selectionParaSpans.forEach((p, j) => {
-          const s = Elem.create("span");
-          s.dataset.idx = p.idx;
-          s.dataset.paranum = p.paraNum;
-          s.setAttribute("contenteditable", "true");
-          s.style.cursor = "pointer";
-          s.textContent = j === 0 ? prefix + p.chars : p.chars;
-          s.addEventListener("click", e => {
-            e.stopPropagation();
-          });
-          s.addEventListener("focus", e => {
-            const idx = e.target.dataset.idx;
-            const paraNum = e.target.dataset.paranum;
-            this.editing.idx = idx;
-            this.editing.paraNum = paraNum;
-            const miniBadge = Doc.getMiniBadge(idx, paraNum);
-            this.editBefore = Doc.getCharsPerPara(idx)[paraNum];
-            if(miniBadge.includes("c") && !this.editBefore.startsWith("・")){
-              this.editBefore = "・" + this.editBefore;
-            }else if(miniBadge.includes("r") && !this.editBefore.startsWith("→")){
-              this.editBefore = "→" + this.editBefore;
-            }
-            Scroll.scrollToLine(idx);
-          });
-          s.addEventListener("blur", e => {
-            const el = e.target;
-            const editAfter = el.innerText.replace(/\s/g, "");
-            el.innerText = editAfter;
-            if(this.editBefore === editAfter) return;
-
-            const idx = this.editing.idx;
-            const paraNum = Number(this.editing.paraNum);
-            if(editAfter.startsWith("・")) Doc.setMiniBadge(idx, paraNum, "c");
-            else if(editAfter.startsWith("→")) Doc.setMiniBadge(idx, paraNum, "r");
-            else Doc.removeMiniBadge(idx, paraNum);
-
-            const charsPerPara = Doc.getCharsPerPara(idx);
-            charsPerPara[paraNum] = editAfter.startsWith("・") || editAfter.startsWith("→") ? editAfter.slice(1) : editAfter;
-            const newText = charsPerPara.join("\n");
-            const textBody = Doc.getTextBody(idx);
-            textBody.value = newText;
-            const textBodyBG = Doc.getTextBodyBG(idx);
-            textBodyBG.innerHTML = "";
-            textBodyBG.textContent = newText + '\u200b';
-
-            Doc.setEditedText(idx, newText);
-            
-            TextBody.resetCharsPerPara(idx);
-            TextBody.resetParaHeights(idx);
-            TextBody.resetMiniBadges(i);
-
-            const paraStartPos = TextBody.getParaStartPos(idx, paraNum);
-            TextBody.select(idx, paraStartPos, paraStartPos);
-          });
-          if(p.chars === para) s.classList.add("editing");
-          l.appendChild(s);
-          if(p.chars === para){
+      let commentCount = 0;
+      for(let commentNum = 0; commentNum < paras.length; commentNum++){
+        const comment = paras[commentNum];
+        if(/^[・→]/.test(comment.textContent)) commentCount++;
+        if(commentCount !== commentCountBeforeSelection) continue;
+        comment.innerHTML = "";
+        comment.style.backgroundColor = "#63630038";
+        spans.forEach(s => {
+          comment.appendChild(s);
+          if(s.innerText === para){
             const top = s.offsetTop;
-            scrollTop = top - rect.top -150;
+            scrollTop = top - rect.top - 150;
           }
         });
-        currentCommentAndResponseCount++;
-      });
-
+        break;
+      }
     }else{
       paras[outputParaNum].classList.add("editing");
       const top = paras[outputParaNum].offsetTop;

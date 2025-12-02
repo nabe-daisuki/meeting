@@ -14,7 +14,7 @@ class TimeStamp {
     return elem;
   }
 
-  static toTimeRangeStr(ss, es){
+  static toTimeRangeStr(ss, es = null){
     return `|${Convert.secToStr(ss)} →|`;
   }
 }

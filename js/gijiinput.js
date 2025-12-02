@@ -171,8 +171,9 @@ class GijiInput {
             CRList.set(crlist.list);
             CRList.setGroup(crlist.group);
             CRList.setCompressCaseTitles(crlist.compressCaseTitles);
-            caseIds.selectedIndex = crlist.select;
-            CRList.resetList(caseIds.value);
+            CRList.init();
+            caseIds.selectedIndex = crlist.select === -1 ? 0 : crlist.select;
+            // CRList.resetList(caseIds.value);
           }else{
             CRList.set(crlist);
           }

@@ -490,8 +490,6 @@ class TextBody {
       // console.log(`bs: ${this.edit.isBackspace}, dl: ${this.edit.isDelete}, en: ${this.edit.isEnter}, cu: ${this.edit.isCut}, pa: ${this.edit.isPaste}, dr: ${this.edit.isDrop}`);
 
       this.resetMiniBadges(i);
-
-      console.log(this.getSelectionParaNum(i));
       
       this.edit.isBackspace = false;
       this.edit.isDelete = false;
@@ -1192,5 +1190,20 @@ class TextBody {
     }
 
     return pos;
+  }
+
+  static getCommentCountBeforeSelection(){
+    if(this.selection.start === -1) return -1;
+    const i = Selection.idx;
+    const paraNum = this.getSelectionParaNum(i);
+
+    return Doc.getLines().reduce((acc, cur, j) => {
+      if(!cur.editedText || j > i) return acc;
+      const miniBadges = cur.miniBadges;
+      if(j === i) acc += miniBadges.slice(0, paraNum + 1).filter(b => b !== "n").length;
+      else acc += miniBadges.filter(b => b !== "n").length;
+
+      return acc;
+    }, 0);
   }
 }
