@@ -40,7 +40,7 @@ class Save {
     if(filename.includes("__")) filename = filename.split("__")[0];
     else filename = filename.split(".")[0];
 
-    return `${filename}__${yy}${MM}${dd}-${hh}${mm}${ss}.giji`;
+    return `${filename}__${yy}${MM}${dd}-${hh}${mm}${ss}.txt`;
   }
 
   static save(fileName, giji, isExport = false){
@@ -262,6 +262,6 @@ class Save {
       }
     }
 
-    this.save(`${fileName}.giji`, this.createGiji());
+    this.save(`${fileName}.txt`, this.createGiji());
   }
 }

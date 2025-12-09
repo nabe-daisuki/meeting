@@ -62,6 +62,9 @@ const saveArea = document.getElementById("save");
 const saveBtn = document.getElementById("save-btn");
 const namedSaveBtn = document.getElementById("named-save-btn");
 
+const openVODBtn = document.getElementById("open-vod");
+const openSystemBtn = document.getElementById("open-system"); 
+
 const exportArea = document.getElementById("export");
 const configToExport = document.getElementById("config-to-export");
 const hatchToExport = document.getElementById("hatch-to-export");
@@ -113,6 +116,9 @@ const categorizeUpdateBtn = document.getElementById("categorize-update-btn");
 const caseContent = document.getElementById("case-content");
 
 const output = document.getElementById("output");
+const outputZoomInBtn = document.getElementById("output-zoom-in");
+const outputZoomOutBtn = document.getElementById("output-zoom-out");
+const outputCanMoveAudioBtn = document.getElementById("output-can-move-audio");
 
 const repInfosUl = document.getElementById("repinfos");
 
@@ -156,6 +162,7 @@ window.onload= () =>{
   ResizeBar.init();
   Panel.init();
   SubTools.init();
+  Output.init();
   GijiInput.init();
   TextInput.init();
   AudioInput.init();
@@ -165,6 +172,7 @@ window.onload= () =>{
   Load.init();
   Config.init();
   Badge.init();
+  External.init();
   Export.init();
   AudioController.init();
   SearchHelper.init();

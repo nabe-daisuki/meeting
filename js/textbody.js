@@ -183,6 +183,8 @@ class TextBody {
         }
         const newSpeaker = Speaker.getBtns()[newSpeakerIdx].textContent.replace(/[（）]/g, "");
 
+        Render.speakerGuide(newSpeakerIdx);
+
         replacedText = textBody.value.split("\n").map((l, j) => {
           if(j === paraNum) return this.resetSpeaker(l, newSpeaker);
           else return l;

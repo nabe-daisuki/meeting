@@ -6,6 +6,19 @@ class Output {
     idx: -1,
     paraNum: -1
   }
+  static isDirectEditing = false;
+
+  static init(){
+    outputZoomInBtn.addEventListener("click", e => {
+      output.style.fontSize = Convert.numToPx(Elem.getStyleNum(output, "font-size") + 2);
+    });
+    outputZoomOutBtn.addEventListener("click", () => {
+      output.style.fontSize = Convert.numToPx(Elem.getStyleNum(output, "font-size") - 2);
+    });
+    outputCanMoveAudioBtn.addEventListener("click", e => {
+      e.target.classList.toggle("disabled");
+    });
+  }
 
   static write(){
     const transcriptions = [];
@@ -72,6 +85,7 @@ class Output {
         e.stopPropagation();
       });
       span.addEventListener("focus", e => {
+        this.isDirectEditing = true;
         const idx = e.target.dataset.idx;
         const paraNum = e.target.dataset.paranum;
         this.editing.idx = idx;
@@ -80,6 +94,7 @@ class Output {
         Scroll.scrollToLine(idx);
       });
       span.addEventListener("blur", e => {
+        this.isDirectEditing = false;
         const el = e.target;
         const editAfter = el.innerText.replace(/\s/g, "");
         el.innerText = editAfter;
@@ -195,16 +210,16 @@ class Output {
 
         const startPos = TextBody.getParaStartPos(pos.idx, pos.paraNum);
         TextBody.select(pos.idx, startPos, startPos);
+
+        if(!outputCanMoveAudioBtn.classList.contains("disabled")){
+          audio.currentTime = Doc.getLine(pos.idx).startSec;
+        }
       });
       if(l.startsWith("→")) span.classList.add("response");
       span.textContent = l || " ";
       return span;
     });
     return lines;
-  }
-
-  static getCommentAndResponseCount(){
-
   }
 
   static setOutputH(){

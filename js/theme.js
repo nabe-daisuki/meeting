@@ -268,6 +268,7 @@ class Theme {
     }
     caseContent.classList.remove(preClass);
     output.classList.remove(preClass);
+    outputCanMoveAudioBtn.classList.remove(preClass);
     repInfosUl.classList.remove(preClass);
 
     categorizingArea.classList.remove(preClass);
@@ -310,6 +311,7 @@ class Theme {
     }
     caseContent.classList.add(newClass);
     output.classList.add(newClass);
+    outputCanMoveAudioBtn.classList.add(newClass);
     repInfosUl.classList.add(newClass);
 
     categorizingArea.classList.add(newClass);

@@ -35,7 +35,8 @@
   /**********/
   /* export */
   /**********/
-  #export {
+  #export,
+  #external {
     display: flex;
     gap: 10px;
     margin-right: 20px;
@@ -168,7 +169,7 @@
       <div id="reload-file-input-box" class="file-input-box theme-blue">
         <label 
           for="reload-file-input" 
-          title="保存データ(.giji)を読み込み、状態を復元します。"
+          title="保存データ(.txt)を読み込み、状態を復元します。"
         >
           <img src="img/theme/default/load.png" alt="保存の読込" class="main-tool-icon">
           <span class="main-tool-caption">保存の読込</span>
@@ -253,6 +254,28 @@
       >
         <img src="img/theme/default/named-save.png" alt="名前を付けて保存" class="main-tool-icon">
         <div class="main-tool-caption">名前を付けて<br>保存</div>
+      </div>
+    </div>
+
+    <div id="external" class="main-tool">
+      <div
+        id="open-system"
+        title="システムページを開きます。"
+        class="main-tool-button theme-yellow"
+        tabindex="-1"
+      >
+        <img src="img/theme/dark/list.png" alt="システムを開く" class="main-tool-icon">
+        <div class="main-tool-caption">システムを<br>開く</div>
+      </div>
+
+      <div
+        id="open-vod"
+        title="VODページを開きます。"
+        class="main-tool-button theme-yellow"
+        tabindex="-1"
+      >
+        <img src="img/theme/dark/vod.png" alt="VODを開く" class="main-tool-icon">
+        <div class="main-tool-caption">VODを開く</div>
       </div>
     </div>
 
@@ -415,6 +438,7 @@
             <div id="output-controller">
               <img id="output-zoom-in" src="img/theme/dark/zoom-in.png">
               <img id="output-zoom-out" src="img/theme/dark/zoom-out.png">
+              <div id="output-can-move-audio" class="disabled"></div>
             </div>
           </div>
           <div id="output"></div>
@@ -467,7 +491,7 @@
 </div>
 
 <label for="giji-file-input" id="file-drop-overlay">
-  <input type="file" id="giji-file-input" accept=".giji" class="hide" tabindex="-1">
+  <input type="file" id="giji-file-input" accept=".txt" class="hide" tabindex="-1">
   <div id="file-drop-border">
     <div id="file-drop-area">
       <div>
@@ -477,9 +501,9 @@
           <img id="load-by-drop-img" src="img/load-by-drop.png">
         </div>
       </div>
-      <span id="load-by-selection">クリックしてファイル(.giji)を選択してね</span>
+      <span id="load-by-selection">クリックしてファイル(.txt)を選択してね</span>
       <span id="load-or">or</span>
-      <span id="load-by-drop">ここにファイル(.giji)をドロップしてね</span>
+      <span id="load-by-drop">ここにファイル(.txt)をドロップしてね</span>
     </div>
   </div>
 </label>
@@ -590,6 +614,7 @@
 <script src="js/menudata.js"></script>
 <script src="js/contextmenu.js"></script>
 <script src="js/save.js"></script>
+<script src="js/external.js"></script>
 <script src="js/export.js"></script>
 <script src="js/load.js"></script>
 <script src="js/badge.js"></script>

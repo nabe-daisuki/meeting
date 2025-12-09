@@ -32,6 +32,28 @@ class Render {
     });
   }
 
+  static speakerGuide(currSpeakerIdx){
+    const i = Selection.idx;
+    const viewerIdx = i === 0 ? 1 : i - 1;
+    const chunk = Doc.getDiv(viewerIdx);
+
+    let guide = chunk.querySelector(".speaker-guide-box");
+    if(guide){
+      Speaker.updateGuide(currSpeakerIdx, guide);
+    }else{
+      guide = Speaker.createGuide(currSpeakerIdx);
+
+      chunk.appendChild(guide);
+    }
+
+    Speaker.calledCount++;
+    
+    setTimeout(() => {
+      Speaker.calledCount--;
+      if(Speaker.calledCount === 0) guide.remove();
+    }, 1000);
+  }
+
   static beCategorizedItems(){
     const items = CaseCategorizing.createItems();
     for(let j = 0; j < items.length; j++){

@@ -1,5 +1,6 @@
 class Speaker {
   static table = [];
+  static calledCount = 0;
 
   static count(){
     return this.getBtns().length;
@@ -49,5 +50,50 @@ class Speaker {
       TextBody.resetMiniBadges(j);
     });
     return el;
+  }
+
+  static updateGuide(speakerIdx, guide){
+    const prev = guide.querySelector(".speaker-prev");
+    const curr = guide.querySelector(".speaker-curr");
+    const next = guide.querySelector(".speaker-next");
+
+    const speakers = Speaker.get();
+
+    const prevSpeakerIdx = speakerIdx - 1 < 0
+      ? speakers.length - 1
+      : speakerIdx - 1;
+    const nextSpeakerIdx = speakerIdx + 1 === speakers.length
+      ? 0
+      : speakerIdx + 1;
+
+    prev.textContent = `${speakers[prevSpeakerIdx].name}←`;
+    curr.textContent = speakers[speakerIdx].name;
+    next.textContent = `→${speakers[nextSpeakerIdx].name}`;
+  }
+
+  static createGuide(speakerIdx){
+    const box = Elem.create("div", {cl: "speaker-guide-box"});
+    const prev = Elem.create("div", {cl: "speaker-prev"});
+    const curr = Elem.create("div", {cl: "speaker-curr"});
+    const next = Elem.create("div", {cl: "speaker-next"});
+
+    const speakers = Speaker.get();
+
+    const prevSpeakerIdx = speakerIdx - 1 < 0
+      ? speakers.length - 1
+      : speakerIdx - 1;
+    const nextSpeakerIdx = speakerIdx + 1 === speakers.length
+      ? 0
+      : speakerIdx + 1;
+
+    prev.textContent = `${speakers[prevSpeakerIdx].name} ←`;
+    curr.textContent = speakers[speakerIdx].name;
+    next.textContent = `→ ${speakers[nextSpeakerIdx].name}`;
+
+    box.appendChild(prev);
+    box.appendChild(curr);
+    box.appendChild(next);
+
+    return box;
   }
 }

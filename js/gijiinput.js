@@ -9,7 +9,7 @@ class GijiInput {
     gijiFileInput.addEventListener("change", async(e) => {
       const files = e.target.files;
       if(files.length != 1){
-        alert("1つのファイル(.giji)を選択してください。");
+        alert("1つのファイル(.txt)を選択してください。");
         return;
       }
 
@@ -43,7 +43,7 @@ class GijiInput {
 
       const files = e.dataTransfer.files;
       if(files.length >= 2){
-        alert("1つのファイル(.giji)をドロップ下さい。");
+        alert("1つのファイル(.txt)をドロップ下さい。");
         return;
       }
 
@@ -51,7 +51,7 @@ class GijiInput {
       const item = e.dataTransfer.items[0];
       
       if(item.webkitGetAsEntry().isDirectory){
-        alert("フォルダではなくファイル(.giji)をドロップ下さい。");
+        alert("フォルダではなくファイル(.txt)をドロップ下さい。");
         return;
       }
 
@@ -61,8 +61,8 @@ class GijiInput {
 
   static async input(file, byDrop = true){
     const ext = file.name.split(".").pop().toLowerCase();
-    if(ext !== "giji"){
-      alert(`ドロップされた拡張子は「.${ext}」です。ファイル(.giji)をドロップ下さい。`);
+    if(ext !== "txt"){
+      alert(`ドロップされた拡張子は「.${ext}」です。ファイル(.txt)をドロップ下さい。`);
       return;
     }
 
@@ -173,12 +173,10 @@ class GijiInput {
             CRList.setCompressCaseTitles(crlist.compressCaseTitles);
             CRList.init();
             caseIds.selectedIndex = crlist.select === -1 ? 0 : crlist.select;
-            // CRList.resetList(caseIds.value);
           }else{
             CRList.set(crlist);
           }
           CRList.isValid = true;
-          // CRList.init();
           break;
         case "pdfviewer":
           const pdfviewer = Convert.bytesToArray(sections[k]["bytes"]);
@@ -191,7 +189,7 @@ class GijiInput {
           PDFViewer.isEnabled = pdfviewer.show;
           break;
         default:
-          alert(`.gijiファイルに有効でないタグ(${k})が登録されています。`);
+          alert(`.txtファイルに有効でないタグ(${k})が登録されています。`);
           break;
       }
     });

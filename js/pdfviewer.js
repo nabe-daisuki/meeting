@@ -108,7 +108,10 @@ class PDFViewer {
       pdfView.classList.remove("panning");
     });
     pdfView.addEventListener("mousemove", e => {
-      if(!this.isPanning) return;
+      if(!this.isPanning){
+        e.target.focus();      
+        return;
+      }
 
       const x = e.pageX - pdfView.offsetLeft;
       const y = e.pageY - pdfView.offsetTop;
@@ -120,12 +123,27 @@ class PDFViewer {
       pdfView.scrollTop = this.pan.scrollT + walkY;
     });
 
-    pdfView.addEventListener("scroll", () => {
+    pdfView.addEventListener("scroll", e => {
       if(!this.pdf) return;
+      if(KeyBoard.hasCtrl) return;
+
       this.updateCurrentPage();
       this.scroll.top = pdfView.scrollTop;
       this.scroll.left = pdfView.scrollLeft;
     });
+
+    pdfView.addEventListener("wheel", async(e) => {
+      if(KeyBoard.hasCtrl){
+        e.stopPropagation();
+        e.preventDefault();
+        if(e.deltaY < 0){
+          this.scale += 0.1;
+        }else{
+          this.scale -= 0.1;
+        }
+        await this.readerAllPages(this.pdf, true);
+      }
+    }, { passive: false });
 
     pdfCloseBox.addEventListener("click", () => {
       this.hide();
@@ -163,14 +181,8 @@ class PDFViewer {
       reader.onload = async ev => {
         try{
           const buf = ev.target.result;
-          // const pdfDoc = await PDFLib.PDFDocument.load(buf,{
-          //   ignoreEncryption: true
-          // });
-          // const editedPdfBytes = await pdfDoc.save();
-          // const copyBuf = editedPdfBytes.buffer.slice(0);
           const copyBuf = structuredClone(buf);
 
-          // await this.loadPDF(editedPdfBytes);
           this.initProp();
           await this.loadPDF(buf);
           const pageCount = this.pdf.numPages;
@@ -287,11 +299,10 @@ class PDFViewer {
 
     this.movePage(currentPageBefore);
     const interval = setInterval(() => {
-      console.log(this.isLayOutUnstable());
       if(this.isLayOutUnstable()) return;
       clearInterval(interval);
       this.updateCurrentPage();
-    }, 100);
+    }, 50);
   }
 
   static showPageText(pageNum){

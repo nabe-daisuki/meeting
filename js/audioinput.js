@@ -44,6 +44,22 @@ class AudioInput {
         Scroll.scrollToLine(i);
       }
       this.showPlayLine();
+
+      if(!outputCanMoveAudioBtn.classList.contains("disabled") && !Output.isDirectEditing){
+        let offset = 0;
+        const i = Doc.getLines().findIndex( (l, j) => {
+          if(j !== 0){
+            offset = Doc.getLine(j - 1).endSec;
+          }
+          return offset <= curTime && curTime <= l.endSec;
+        });
+        if(i != null && Doc.getEditedText(i)){
+          Selection.relocateHighlight(i);
+          const textLen = Doc.getTextBody(i).value.length;
+          TextBody.select(i, textLen, textLen);
+          Output.scroll();
+        }
+      }
     });
 
     audio.addEventListener("loadedmetadata", () => {

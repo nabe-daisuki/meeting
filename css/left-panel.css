@@ -54,6 +54,7 @@
   justify-content: space-between;
   padding: 2px 5px;
   border: var(--chunk-border);
+  position: relative;
 }
 .chunk.selected {
   border: 1px solid red;
@@ -141,4 +142,33 @@
 }
 .invalid-button.disabled {
   cursor: default;
+}
+
+.speaker-guide-box {
+  position: absolute;
+  left: 50%;
+  background-color: #cccccceb;
+  z-index: 100;
+  padding: 0 40px;
+  display: flex;
+  text-align: center;
+  align-items: center;
+  pointer-events: none;
+  flex-direction: column;
+  border-radius: 10px;
+}
+
+.speaker-prev {
+  display: flex;
+  font-size: 20px;
+  padding-right: 60px;
+}
+.speaker-curr {
+  font-size: 30px;
+  color: red;
+}
+.speaker-next {
+  display: flex;
+  font-size: 20px;
+  padding-left: 60px;
 }
