@@ -70,6 +70,8 @@ const configToExport = document.getElementById("config-to-export");
 const hatchToExport = document.getElementById("hatch-to-export");
 const editedToExport = document.getElementById("edited-to-export");
 
+const showReplaceCandidateBtn = document.getElementById("show-replace-candidate");
+
 const mainToolOpenCloseBtn = document.getElementById("main-tool-open-close");
 
 const pdfViewer = document.getElementById("pdf-viewer");
@@ -156,6 +158,8 @@ const replacingBtn = document.getElementById("replacing");
 const replaceCompare = document.getElementById("replace-compare");
 const replaceCloseBtn = document.getElementById("replace-close");
 
+const replaceSelectorSection = document.getElementById("replace-selector-section");
+const rBack = document.getElementById("r-back");
 
 window.onload= () =>{
   Header.init();
@@ -180,6 +184,7 @@ window.onload= () =>{
   Meta.init();
   CaseCategorizing.init();
   PDFViewer.init();
+  Replace.init();
 }
 
 window.addEventListener("resize", () => {

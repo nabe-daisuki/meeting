@@ -75,7 +75,7 @@
 .replace-selector.dark_theme_yellow {
   --sub-theme: #d1cd00;
   --sub-theme-hover: #fffa00;
-  --sub-theme-alpha: #3c4100cc
+  --sub-theme-alpha: #3c4100cc;
 }
 
 #current-time.dark_theme_green,

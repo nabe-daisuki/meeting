@@ -6,6 +6,11 @@
   <script src="js/pdfjs/pdf.min.js"></script>
   <script src="js/pdflibjs/pdf-lib.min.js"></script>
 <style>
+  :root{
+    --sub-theme: #d1cd00;
+    --sub-theme-hover: #fffa00;
+    --sub-theme-alpha: #3c4100cc;
+  }
   body { margin:0; font-family: sans-serif; }
   body.active {
     cursor: col-resize;
@@ -36,7 +41,8 @@
   /* export */
   /**********/
   #export,
-  #external {
+  #external,
+  #replace-candidate {
     display: flex;
     gap: 10px;
     margin-right: 20px;
@@ -87,6 +93,7 @@
   <link rel="stylesheet" href="css/shortcut-helper.css">
   <link rel="stylesheet" href="css/search-helper.css">
   <link rel="stylesheet" href="css/replace-helper.css">
+  <link rel="stylesheet" href="css/replace-selector-section.css">
 </head>
 <body>
 
@@ -308,6 +315,18 @@
       >
         <img src="img/theme/default/hatch-to-export.png" alt="編集行を出力" class="main-tool-icon">
         <div class="main-tool-caption">編集行を<br>出力</div>
+      </div>
+    </div>
+
+    <div id="replace-candidate" class="main-tool">
+      <div
+        id="show-replace-candidate"
+        title="置換候補を表示します。"
+        class="main-tool-button theme-yellow"
+        tabindex="-1"
+      >
+        <img src="img/theme/dark/replace.png" alt="編集行を出力" class="main-tool-icon">
+        <div class="main-tool-caption">置換候補を<br>表示</div>
       </div>
     </div>
 
@@ -567,6 +586,20 @@
   <ul id="replace-compare" class="hide"></ul>
 </div>
 
+<div id="replace-selector-section" class="hide">
+  <div id="r-header">
+    <div id="r-header-inner">
+      <div id="r-header-left">
+        <img id="r-back" src="img/theme/dark/left-arrow.png">
+        <div id="r-title">置換用データ候補一覧</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="r-main">
+    <div id="r-replace-candidates"></div>
+  </div>
+</div>
 
 <style>
 .hide { display: none; }

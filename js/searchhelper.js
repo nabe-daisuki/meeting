@@ -11,6 +11,7 @@ class SearchHelper {
 
   static init(){
     searchInput.addEventListener("input", e => {
+
       this.clearResult();
       this.searchInfo.text = e.target.value;
       this.searchInfo.charCount = this.searchInfo.text.length;
@@ -24,6 +25,8 @@ class SearchHelper {
 
       if(this.searchInfo.resultCount) this.searchInfo.resultPerLine.push(...this.toPerLine());
       else this.searchInfo.resultPerLine.push(...new Array(Doc.getLines().length).fill(null).map(v => []));
+
+      console.log(this.searchInfo.resultPerLine);
 
       for(const i in Doc.getLines()){
         TextBody.setSearchResultHighlights(i);
@@ -140,6 +143,7 @@ class SearchHelper {
 
     for(let i = 0; i < Doc.getLines().length; i++){
       TextBody.resetParaHeights(i);
+      console.log("fdfd")
     }
   }
 
@@ -170,7 +174,6 @@ class SearchHelper {
       let j = 0;
       while( (startIdx = text.indexOf(target, offset)) !== -1){
         j += 1;
-        console.log("fdfd")
         if(j === 1000) break;
         result.push({
           lineIdx: Number(i),
@@ -196,6 +199,7 @@ class SearchHelper {
   }
 
   static toPerLine(){
+    console.log("gfgfhghs")
     const resultPerLine = [];
     let offset = 0, offsetBuf = 0;
     for(const i in Doc.getLines()){

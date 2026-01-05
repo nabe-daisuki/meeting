@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>regexp-tree サンプル</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      padding: 16px;
+    }
+    textarea {
+      width: 100%;
+      height: 4em;
+      font-family: monospace;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 12px;
+      overflow: auto;
+    }
+    button {
+      margin-top: 8px;
+      padding: 6px 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>regexp-tree AST サンプル</h1>
+
+  <p>
+    正規表現を入力すると <code>regexp-tree</code> で AST に変換して表示します。
+  </p>
+
+  <textarea id="regex">(b|c|d)o|q|p(l|i)t</textarea>
+  <br />
+  <button id="parse">Parse</button>
+
+  <h2>AST</h2>
+  <pre id="output"></pre>
+
+<script>
+const input = document.getElementById("regex");
+const output = document.getElementById("output");
+const btn = document.getElementById("parse");
+
+function splitTopLevelOr(regex){
+  let depthParen = 0;
+  let depthClass = 0;
+  let escaped = false;
+  const result = [""];
+  patternCount = 0;
+
+  for(let j = 0; j < regex.length; j++){
+    const c = regex[j];
+
+    result[patternCount] += c;
+
+    if(c === "\\" && !escaped){
+      escaped = true;
+      continue;
+    }
+
+    if(escaped){
+      escaped = false;
+      continue;
+    }
+
+    if(c === "[") depthClass++;
+    if(c === "]") depthClass--;
+
+    if(c === "(") depthParen++;
+    if(c === ")") depthParen--;
+
+    if(!depthClass && !depthParen && c === "|"){
+      result[patternCount] = result[patternCount].slice(0, -1);
+      patternCount++;
+      result[patternCount] = "";
+    }
+  }
+
+  return result;
+}
+
+function hasTopLevelQuantifier(regex){
+  let depthClass = 0;
+  let depthParen = 0;
+  let escaped = false;
+
+  for(let i = 0; i < regex.length; i++){
+    const c = regex[i];
+
+    if(escaped){
+      escaped = false;
+      continue;
+    }
+
+    if(c === "\\"){
+      escaped = true;
+      continue;
+    }
+
+    if(c === "[") depthClass++;
+    if(c === "]") depthClass--;
+
+    if(depthClass) continue;
+
+    if(c === "(") depthParen++;
+    if(c === ")") depthParen--;
+
+    if(depthParen) continue;
+
+    if(c === "?" || c === "+" || c === "*"){
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+
+function splitGroup(regex){
+  let depthClass = 0;
+  let depthParen = 0;
+  let escaped = false;
+  const result = [""];
+  blockCount = 0;
+
+  for(let j = 0; j < regex.length; j++){
+    const c = regex[j];
+
+    result[blockCount] += c;
+
+    if(c === "\\" && !escaped){
+      escaped = true;
+      continue;
+    }
+
+    if(escaped){
+      escaped = false;
+      continue;
+    }
+
+    if(c === "[") depthClass++;
+    if(c === "]") depthClass--;
+
+    if(depthClass) continue;
+
+    if(c === "(") depthParen++;
+    if(c === ")") depthParen--;
+
+    if((c === "(" && depthParen === 1) || (c === ")" && depthParen === 0)){
+      result[blockCount] = result[blockCount].slice(0, -1);
+      blockCount++;
+
+      result[blockCount] = "";
+    }
+  }
+
+  return result;
+}
+
+function hasTopLevelOr(regex){
+  let depthClass = 0;
+  let depthParen = 0;
+  let escaped = false;
+
+  for(let j = 0; j < regex.length; j++){
+    const c = regex[j];
+
+    if(c === "\\" && !escaped){
+      escaped = true;
+      continue;
+    }
+
+    if(escaped){
+      escaped = false;
+      continue;
+    }
+    
+    if(c === "[") depthClass++;
+    if(c === "]") depthClass--;
+
+    if(c === "(" && !depthClass) depthParen++;
+    if(c === ")" && !depthClass) depthParen--;
+
+    if(depthClass !== 0 || depthParen !== 0) continue;
+
+    if(c === "|") return true;
+  }
+
+  return false;
+}
+
+function hasQuantifier(regex){
+  let depthClass = 0;
+  let depthParen = 0;
+  let escaped = false;
+
+  for(let j = 0; j < regex.length; j++){
+    const c = regex[j];
+
+    if(c === "\\" && !escaped){
+      escaped = true;
+      continue;
+    }
+
+    if(escaped){
+      escaped = false;
+      continue;
+    }
+    
+    if(c === "[") depthClass++;
+    if(c === "]") depthClass--;
+
+    if(c === "(" && !depthClass) depthParen++;
+    if(c === ")" && !depthClass) depthParen--;
+
+    if(!depthClass || !depthParen) continue;
+
+    if(c === "{") return true;
+  }
+
+  return false;
+}
+
+function hasTopLevelClass(regex){
+  let depthParen = 0;
+  let escaped = false;
+
+  for(let j = 0; j < regex.length; j++){
+    const c = regex[j];
+
+    if(c === "\\" && !escaped){
+      escaped = true;
+      continue;
+    }
+
+    if(escaped){
+      escaped = false;
+      continue;
+    }
+    
+    if(c === "(") depthParen++;
+    if(c === ")") depthParen--;
+
+    if(c === "[" && !depthParen) return true;
+  }
+
+  return false;
+}
+
+function splitTopLevelSequence(regex) {
+  let depthParen = 0;
+  let escaped = false;
+
+  const result = [];
+  let current = "";
+
+  for (let i = 0; i < regex.length; i++) {
+    const c = regex[i];
+
+    if (escaped) {
+      current += c;
+      escaped = false;
+      continue;
+    }
+
+    if (c === "\\") {
+      current += c;
+      escaped = true;
+      continue;
+    }
+
+    if (c === "[" && depthParen === 0) {
+      if (current) {
+        result.push({ type: "literal", value: current });
+        current = "";
+      }
+
+      const [node, next] = parseCharClass(regex, i);
+      result.push(node);
+      console.log(node)
+      i = next - 1;
+      continue;
+    }
+
+    if (c === "(") {
+      if (depthParen === 0 && current) {
+        result.push({ type: "literal", value: current });
+        current = "";
+      }
+      depthParen++;
+      current += c;
+      continue;
+    }
+
+    if (c === ")") {
+      current += c;
+      depthParen--;
+      if (depthParen === 0) {
+        result.push({ type: "group", value: current });
+        current = "";
+      }
+      continue;
+    }
+
+    // トップレベル文字
+    if (depthParen === 0) {
+      if (c === "?" || c === "+" || c === "*") {
+        if (current) {
+          result.push({ type: "literal", value: current });
+          current = "";
+        }
+        result.push({ type: "quantifier", kind: c });
+        continue;
+      }
+
+      if (current) {
+        result.push({ type: "literal", value: current });
+      }
+      current = c;
+    } else {
+      current += c;
+    }
+  }
+
+  if (current) {
+    result.push({ type: "literal", value: current });
+  }
+
+  console.log(result)
+  return result;
+}
+
+
+function bindQuantifiers(nodes){
+  const result = [];
+
+  for(const node of nodes){
+    if (node.value === ".") {
+      result.push({
+        type: "any"
+      });
+      continue;
+    }
+    if(node.type === "quantifier"){
+      if(result.length === 0){
+        throw new Error("Quantifier has no target");
+      }
+      const target = result.pop();
+      console.log(result);
+      result.push({
+        type: "quantifier",
+        kind: node.kind,
+        target
+      });
+    } else {
+      result.push(node);
+    }
+  }
+
+  return result;
+}
+
+
+function parseCharClass(regex, start) {
+  let i = start + 1;
+  let negate = false;
+
+  if (regex[i] === "^") {
+    negate = true;
+    i++;
+  }
+
+  const elements = [];
+  let prevChar = null;
+
+  function parseEscaped() {
+    if (i >= regex.length) throw new Error("Invalid escape in char class");
+    const next = regex[i];
+
+    // 組み込みクラス
+    const builtinMap = { d: "digit", D: "nonDigit", w: "word", W: "nonWord", s: "space", S: "nonSpace" };
+    const literalMap = { t: "\t", n: "\n", r: "\r", v: "\v", f: "\f", 0: "\0", "\\": "\\", "-": "-", "]": "]", "[": "[" };
+
+    if (builtinMap[next]) return { type: "builtin", name: builtinMap[next] };
+    if (literalMap[next] !== undefined) return { type: "literal", value: literalMap[next] };
+
+    // Unicode \uXXXX
+    if (next === "u") {
+      i++;
+      const hex = regex.slice(i, i + 4);
+      if (!/^[0-9a-fA-F]{4}$/.test(hex)) throw new Error("Invalid Unicode escape");
+      i += 3; // i++ は外でされるので追加で 3
+      return { type: "literal", value: String.fromCharCode(parseInt(hex, 16)) };
+    }
+
+    // その他は literal
+    return { type: "literal", value: next };
+  }
+
+  while (i < regex.length) {
+    let c = regex[i];
+    console.log("parseCharClass", c);
+
+    if (c === "]") break;
+
+    let current = null;
+
+    if (c === "\\") {
+      i++;
+      current = parseEscaped();
+      i++;
+    } else {
+      current = { type: "literal", value: c };
+      i++;
+    }
+
+    // ハイフン範囲判定
+    if (
+      current.type === "literal" &&
+      current.value === "-" &&
+      prevChar &&
+      prevChar.type === "literal" &&  // 前が literal の場合のみ範囲判定
+      i < regex.length &&
+      regex[i] !== "]"
+    ) {
+      // 範囲終端の文字を取得
+      let endChar;
+      if (regex[i] === "\\") {
+        i++;
+        endChar = parseEscaped();
+        i++;
+      } else {
+        endChar = { type: "literal", value: regex[i] };
+        i++;
+      }
+
+      if (endChar.type === "literal") {
+        elements.pop(); // 前の文字を取り出す
+        elements.push({ type: "range", from: prevChar.value, to: endChar.value });
+        prevChar = endChar;
+        continue;
+      } else {
+        // 終端が literal でない場合は literal として扱う
+        elements.push(current);
+        prevChar = current;
+        continue;
+      }
+    }
+
+    elements.push(current);
+    prevChar = current;
+  }
+
+  return [
+    {
+      type: "charclass",
+      negate,
+      elements
+    },
+    i + 1
+  ];
+}
+
+let captureIndex = 0;
+
+function parseGroup(node) {
+  if (node.type !== "group") return node;
+
+  const v = node.value;
+
+  if (!v.startsWith("(") || !v.endsWith(")")) {
+    throw new Error("Invalid group");
+  }
+
+  // non-capture
+  if (v.startsWith("(?:")) {
+    return {
+      type: "group",
+      kind: "non-capture",
+      body: analyzeRegex(v.slice(3, -1))
+    };
+  }
+
+  // lookahead
+  if (v.startsWith("(?=")) {
+    return {
+      type: "group",
+      kind: "lookahead",
+      body: analyzeRegex(v.slice(3, -1))
+    };
+  }
+
+  // negative lookahead
+  if (v.startsWith("(?!")) {
+    return {
+      type: "group",
+      kind: "negative-lookahead",
+      body: analyzeRegex(v.slice(3, -1))
+    };
+  }
+
+  // lookbehind
+  if (v.startsWith("(?<=")) {
+    return {
+      type: "group",
+      kind: "lookbehind",
+      body: analyzeRegex(v.slice(4, -1))
+    };
+  }
+
+  // negative lookbehind
+  if (v.startsWith("(?<!")) {
+    return {
+      type: "group",
+      kind: "negative-lookbehind",
+      body: analyzeRegex(v.slice(4, -1))
+    };
+  }
+
+  // ===== capture（ここが本命）=====
+  captureIndex++;
+
+  return {
+    type: "group",
+    kind: "capture",
+    index: captureIndex,
+    body: analyzeRegex(v.slice(1, -1))
+  };
+}
+
+
+function parseQuantifier(nodes) {
+  const result = [];
+
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+
+    // { 開始
+    if (node.type === "literal" && node.value === "{") {
+      if (result.length === 0) {
+        throw new Error("Quantifier has no target");
+      }
+
+      let j = i + 1;
+      let buf = "";
+
+      while (j < nodes.length) {
+        const n = nodes[j];
+        if (n.type !== "literal") break;
+        buf += n.value;
+        if (n.value === "}") break;
+        j++;
+      }
+
+      if (!buf.endsWith("}")) {
+        throw new Error("Unclosed quantifier");
+      }
+
+      // buf 例: "2}", "2,}", ",3}", "2,3}"
+      const inner = buf.slice(0, -1); // } を除去
+
+      let min, max;
+
+      if (inner.includes(",")) {
+        const [a, b] = inner.split(",");
+
+        min = a === "" ? 0 : Number(a);
+        max = b === "" ? null : Number(b);
+      } else {
+        // {n}
+        min = Number(inner);
+        max = min;
+      }
+
+      if (
+        Number.isNaN(min) ||
+        (max !== null && Number.isNaN(max))
+      ) {
+        throw new Error("Invalid quantifier range");
+      }
+
+      const target = result.pop();
+
+      result.push({
+        type: "quantifier",
+        kind: "range",
+        min,
+        max,
+        target
+      });
+
+      i = j;
+      continue;
+    }
+
+    result.push(node);
+  }
+
+  return result;
+}
+
+function splitLiteralsToAST(literals) {
+  const result = [];
+
+  for (const item of literals) {
+    if (item.type !== "literal") {
+      result.push(item);
+      continue;
+    }
+
+    const value = item.value;
+    let i = 0;
+
+    while (i < value.length) {
+      const c = value[i];
+
+      if (c === "\\") {
+        i++;
+        if (i >= value.length) throw new Error("Invalid escape in literal");
+
+        const next = value[i];
+
+        if (next === "d") {
+          result.push({ type: "builtin", name: "digit" });
+        } else if (next === "w") {
+          result.push({ type: "builtin", name: "word" });
+        } else if (next === "s") {
+          result.push({ type: "builtin", name: "space" });
+        } else {
+          // エスケープされた普通の文字
+          result.push({ type: "literal", value: next });
+        }
+      } else {
+        result.push({ type: "literal", value: c });
+      }
+
+      i++;
+    }
+  }
+
+  console.log(result)
+
+  return result;
+}
+
+function hasCharClass(str) {
+  let escaped = false;
+
+  for (const c of str) {
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (c === "\\") {
+      escaped = true;
+      continue;
+    }
+    if (c === "[" || c === "]") {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+function analyzeRegex(regex) {
+  console.log(hasTopLevelOr(regex))
+  if(hasTopLevelOr(regex)){
+    return {
+      type: "or",
+      children: splitTopLevelOr(regex).map(analyzeRegex)
+    }
+  }
+
+  const seq = splitLiteralsToAST(splitTopLevelSequence(regex));
+  if(seq.length > 1){
+    return {
+      type: "sequence",
+      children: parseQuantifier(bindQuantifiers(seq.map(parseGroup)))
+    }
+  }
+
+  const qPos = hasTopLevelQuantifier(regex);
+  if(qPos !== -1){
+    const target = regex.slice(0, qPos);
+    const quant = regex[qPos];
+
+    return {
+      type: "quantifier",
+      kind: quant,
+      target: analyzeRegex(target)
+    };
+  }
+
+  return {
+    type: "sequence",
+    children: parseQuantifier(bindQuantifiers(seq.map(parseGroup)))
+  };
+}
+
+
+const LIMIT = 50;
+
+function expandAST(node) {
+  const result = expand(node);
+  const uniq = [...new Set(result)];
+  if (uniq.length > LIMIT) {
+    throw new Error("候補数が50を超えました");
+  }
+  return uniq;
+}
+
+function expand(node) {
+  switch (node.type) {
+
+    case "literal":
+      return [node.value];
+
+    case "any":
+      return ["*"];
+
+    case "sequence":
+      if (!node.children || node.children.length === 0) {
+        return [""];
+      }
+      return node.children.reduce(
+        (acc, cur) => combine(acc, expand(cur)),
+        [""]
+      );
+
+    case "group":
+      return expand(node.body);
+
+    case "or":
+      return node.children.flatMap(expand);
+
+    case "charclass":
+      return node.elements.flatMap(expand);
+
+    case "quantifier": {
+      const target = node.target;
+      const base = expand(target);
+
+      const crossable =
+        target.type === "group" || target.type === "charclass";
+
+      /* ===== ? ===== */
+      if (node.kind === "?") {
+        return ["", ...base];
+      }
+
+      /* ===== + ===== */
+      if (node.kind === "+") {
+        const out = [];
+
+        // 単体
+        out.push(...base);
+
+        // 同種反復
+        for (const v of base) {
+          out.push(v + v);
+          out.push(v + v + "…");
+        }
+
+        // cross
+        if (crossable) {
+          out.push(...crossVariants(base));
+        }
+
+        return out;
+      }
+
+      /* ===== * ===== */
+      if (node.kind === "*") {
+        const out = [""];
+
+        out.push(...base);
+
+        for (const v of base) {
+          out.push(v + v);
+          out.push(v + v + "…");
+        }
+
+        if (crossable) {
+          out.push(...crossVariants(base));
+        }
+
+        return out;
+      }
+
+      /* ===== range ===== */
+      if (node.kind === "range") {
+        const out = [];
+
+        for (let n = node.min; n <= node.max; n++) {
+          if (n === 0) {
+            out.push("");
+            continue;
+          }
+
+          out.push(...repeatCombine(base, n));
+
+          if (crossable && n >= 2) {
+            out.push(...crossVariants(base));
+          }
+        }
+
+        return out;
+      }
+
+      throw new Error(`未対応 quantifier: ${node.kind}`);
+    }
+
+    default:
+      throw new Error(`未対応 type: ${node.type}`);
+  }
+}
+
+
+function combine(a, b) {
+  const result = [];
+  for (const x of a) {
+    for (const y of b) {
+      result.push(x + y);
+      if (result.length > LIMIT) {
+        throw new Error("候補数が50を超えました");
+      }
+    }
+  }
+  return result;
+}
+
+function repeatCombine(base, count) {
+  let acc = [""];
+  for (let i = 0; i < count; i++) {
+    acc = combine(acc, base);
+  }
+  return acc;
+}
+
+function crossVariants(base) {
+  const out = [];
+
+  for (let i = 0; i < base.length; i++) {
+    for (let j = 0; j < base.length; j++) {
+      if (i === j) continue;
+
+      const v = base[i] + base[j];
+      out.push(v);
+      out.push(v + "…");
+
+      if (out.length > LIMIT) {
+        throw new Error("候補数が50を超えました");
+      }
+    }
+  }
+
+  return out;
+}
+
+function expandASTWithMeta(ast) {
+  const results = expandNode(ast, {
+    pos: 0,
+    captures: {},
+    assertions: []
+  });
+
+  const uniq = [];
+  const seen = new Set();
+
+  for (const r of results) {
+    if (!seen.has(r.value)) {
+      seen.add(r.value);
+      uniq.push(r);
+    }
+    if (uniq.length > LIMIT) {
+      throw new Error("候補数が50を超えました");
+    }
+  }
+
+  return uniq;
+}
+
+function expandNode(node, state) {
+  switch (node.type) {
+
+    case "literal": {
+      const v = node.value;
+      const next = cloneState(state);
+      next.pos += v.length;
+      return [{
+        value: v,
+        captures: next.captures,
+        assertions: next.assertions
+      }];
+    }
+
+    case "any": {
+      const next = cloneState(state);
+      next.pos += 1;
+      return [{
+        value: "*",
+        captures: next.captures,
+        assertions: next.assertions
+      }];
+    }
+
+    case "sequence": {
+      let acc = [{
+        value: "",
+        captures: state.captures,
+        assertions: state.assertions,
+        pos: state.pos
+      }];
+
+      for (const child of node.children) {
+        const nextAcc = [];
+
+        for (const cur of acc) {
+          const parts = expandNode(child, cur);
+          for (const p of parts) {
+            nextAcc.push({
+              value: cur.value + p.value,
+              captures: p.captures,
+              assertions: p.assertions,
+              pos: p.pos
+            });
+          }
+        }
+
+        acc = nextAcc;
+      }
+
+      return acc;
+    }
+
+    case "group": {
+
+      // capture
+      if (node.kind === "capture") {
+        return expandNode(node.body, state).map(r => {
+          const idx = Object.keys(r.captures).length + 1;
+          r.captures = { ...r.captures, [idx]: r.value };
+          return r;
+        });
+      }
+
+      // non-capture
+      if (node.kind === "non-capture") {
+        return expandNode(node.body, state);
+      }
+
+      // lookarounds
+      const body = expand(node.body)[0];
+      const len = body.length;
+
+      const next = cloneState(state);
+
+      if (node.kind.includes("lookbehind")) {
+        next.assertions.push({
+          type: node.kind,
+          from: next.pos - len,
+          to: next.pos
+        });
+      } else {
+        next.assertions.push({
+          type: node.kind,
+          from: next.pos,
+          to: next.pos + len
+        });
+      }
+
+      return [{
+        value: "",
+        captures: next.captures,
+        assertions: next.assertions,
+        pos: next.pos
+      }];
+    }
+
+    case "or": {
+      return node.children.flatMap(c => expandNode(c, state));
+    }
+
+    default:
+      // quantifier / charclass は既存 expand に委譲
+      return expand(node).map(v => {
+        const next = cloneState(state);
+        next.pos += v.length;
+        return {
+          value: v,
+          captures: next.captures,
+          assertions: next.assertions,
+          pos: next.pos
+        };
+      });
+  }
+}
+
+function cloneState(state) {
+  return {
+    pos: state.pos,
+    captures: { ...state.captures },
+    assertions: [...state.assertions]
+  };
+}
+
+
+function render() {
+  captureIndex=0;
+  output.textContent = JSON.stringify(analyzeRegex(input.value), null, 2);
+  console.table(analyzeRegex(input.value));
+  console.log(expandASTWithMeta(analyzeRegex(input.value)));
+}
+
+btn.addEventListener("click", render);
+render();
+</script>
+</body>
+</html>

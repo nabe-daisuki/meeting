@@ -54,6 +54,32 @@ class Render {
     }, 1000);
   }
 
+  static replaceRegisterHelper(){
+    const i = Selection.idx;
+    const viewerIdx = i === 0 ? 1 : i - 1;
+    const chunk = Doc.getDiv(viewerIdx);
+
+    Replace.removeHelper();
+    const helper = Replace.createHelper();
+    chunk.appendChild(helper);
+  }
+
+  static replaceRegister(){
+    const i = Selection.idx;
+    const viewerIdx = i === 0 ? 1 : i - 1;
+    const chunk = Doc.getDiv(viewerIdx);
+
+    const register = Replace.createRegister();
+    chunk.appendChild(register);
+  }
+
+  static replaceCandidates(){
+    document.getElementById("r-replace-candidates").innerHTML = "";
+    Replace.createCandidates().forEach(item => {
+      document.getElementById("r-replace-candidates").appendChild(item);
+    });
+  }
+
   static beCategorizedItems(){
     const items = CaseCategorizing.createItems();
     for(let j = 0; j < items.length; j++){

@@ -3,7 +3,8 @@
 #effect button,
 #save button,
 #external button,
-#export button {
+#export button,
+#replace-candidate button {
   font-family: system-ui, sans-serif;
   font-size: 14px;
   padding: 6px 14px;

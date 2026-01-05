@@ -120,7 +120,20 @@ class TextBody {
     }
 
     textBody.addEventListener("input", e => {
-      // Output.write();      
+      const currentText = e.target.value;
+      textBodyBG.innerHTML = "";
+      textBodyBG.textContent = currentText + '\u200b';
+
+      if(this.isEdited(currentText, i)){
+        this.enableEdited(i);
+        Doc.setEditedText(i, currentText);
+      }else{
+        this.disableEdited(i);
+        Doc.setEditedText(i, null)
+      }
+
+      if(!Replace.register) return;
+      Replace.resetAfter(currentText);
     });
 
     textBody.addEventListener("keydown", e => {
@@ -242,7 +255,7 @@ class TextBody {
     });
     
     textBody.addEventListener("keyup", e => {
-      console.log("keyup");
+      // console.log("keyup");
       this.edit.isKeydown = false;
       const isMultiLine = e.target.value.slice(this.selection.start, this.selection.end).includes("\n");
 
@@ -360,7 +373,11 @@ class TextBody {
 
     textBody.addEventListener("focusout", () => {
       // console.log("focusout");
-      
+      Replace.removeHelper();
+      if(Replace.register){
+        Replace.registering();
+        Replace.removeRegister();
+      }
       this.visible(i);
     });
 
@@ -488,6 +505,30 @@ class TextBody {
       this.resetCharsPerPara(i);
       this.resetParaHeights(i);
       this.setSelection(el, i);
+
+      if(this.selection.start !== this.selection.end
+        && !Replace.register
+        && !currentText.slice(this.selection.start, this.selection.end).includes("\n")){
+        Render.replaceRegisterHelper();
+      }else{
+        Replace.removeHelper();
+      }
+
+      if(Replace.register){
+        const currentCharCount = currentText.length;
+        const srcCharCount = Replace.registerInfo.blockCharCount;
+        const replacingCharCount = Replace.registerInfo.charCount;
+        const start = Replace.registerInfo.startPos;
+
+        const replacedCharCount = currentCharCount - srcCharCount + replacingCharCount;
+        if(start > this.selection.start
+          || srcCharCount - replacingCharCount > currentCharCount
+          || start + replacedCharCount < this.selection.end
+        ){
+          Replace.registering();
+          Replace.removeRegister();
+        }
+      }
 
       // console.log(`bs: ${this.edit.isBackspace}, dl: ${this.edit.isDelete}, en: ${this.edit.isEnter}, cu: ${this.edit.isCut}, pa: ${this.edit.isPaste}, dr: ${this.edit.isDrop}`);
 
@@ -639,7 +680,7 @@ class TextBody {
       startPos += charsPerPara[j].length + 1;
     }
     // console.log(this.preSelection);
-    console.log(this.selection);
+    // console.log(this.selection);
   }
 
   static emphasizeSelection(i){
@@ -794,24 +835,52 @@ class TextBody {
   static setSearchResultHighlights(i){
     const textBodyBG = Doc.getTextBodyBG(i);
     const spans = new Array(Doc.getParaHeights(i).length).fill(null).map(v => Elem.create("span"));
-    const searchResultPerLine = SearchHelper.searchInfo.resultPerLine[i];
+
+    const text = Doc.getTextBody(i).value;
+    const len = text.length;
+    const hitSet = new Set(SearchHelper.searchInfo.resultPerLine[i]);
+    let buffer = "";
 
     const flag = document.createDocumentFragment();
     let paraCount = 0;
-    Doc.getTextBody(i).value.split("").forEach( (c, j) => {
-      const italic = Elem.create("i");
-      italic.textContent = c;
-      italic.style.fontStyle = "normal";
-      if(searchResultPerLine.includes(j)){
-        italic.classList.add("is-searched");
+
+    for(let j = 0; j < len; j++){
+      const c = text[j];
+
+      if(hitSet.has(j)){
+        if(buffer){
+          spans[paraCount].appendChild(Elem.createT(buffer));
+          buffer = "";
+        }
+        const italic = Elem.create("i", {cl: "is-searched"});
+        italic.textContent = c;
+        spans[paraCount].appendChild(italic);
+      }else{
+        buffer += c;
       }
-      if(Doc.getTextBody(i).value.length - 1 === j) italic.textContent += '\u200b';
-      spans[paraCount].appendChild(italic);
-      if(c === "\n" || Doc.getTextBody(i).value.length - 1 === j){
-        flag.appendChild(spans[paraCount]);
-        paraCount++;
+
+      if(c === "\n" || len - 1 === j){
+        if(buffer){
+          spans[paraCount].appendChild(Elem.createT(buffer));
+          buffer = "";
+        }
+        flag.appendChild(spans[paraCount++]);
       }
-    });
+    }
+    // text.split("").forEach( (c, j) => {
+    //   const italic = Elem.create("i");
+    //   italic.textContent = c;
+    //   italic.style.fontStyle = "normal";
+    //   if(searchResultPerLine.includes(j)){
+    //     italic.classList.add("is-searched");
+    //   }
+    //   if(Doc.getTextBody(i).value.length - 1 === j) italic.textContent += '\u200b';
+    //   spans[paraCount].appendChild(italic);
+    //   if(c === "\n" || Doc.getTextBody(i).value.length - 1 === j){
+    //     flag.appendChild(spans[paraCount]);
+    //     paraCount++;
+    //   }
+    // });
     
     textBodyBG.innerHTML = "";
     textBodyBG.appendChild(flag);

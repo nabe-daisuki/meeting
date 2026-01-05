@@ -2,7 +2,7 @@ class ReplaceHelper {
   static isActive = false;
   static AROUND_CHAR_COUNT = 4;
   static replaceInfo = {
-    text: null,
+    text: "",
     charCount: 0,
     result: [],
     resultPerLine: [],
@@ -171,6 +171,8 @@ class ReplaceHelper {
   static update(){
     const searchInfo = SearchHelper.searchInfo;
     for(const j in searchInfo.result){
+    console.log("fdgfhgh")
+
       const searchResult = searchInfo.result[j];
 
       const i = searchResult.lineIdx;
@@ -206,6 +208,8 @@ class ReplaceHelper {
 
     const replaceResult = this.replaceInfo.result;
     replaceResult.forEach( (r, j) => {
+    console.log("hhjhjhfdfs")
+
       const rSelectorBox = Elem.create("div");
       rSelectorBox.style.pointerEvents = "none";
       const rSelector = Elem.create("input", {cl: "replace-selector"});

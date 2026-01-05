@@ -172,3 +172,44 @@
   font-size: 20px;
   padding-left: 60px;
 }
+
+.replace-register-helper-box {
+  position: absolute;
+  left: 35%;
+  bottom: 10%;
+  background-color: #cccccceb;
+  z-index: 100;
+  padding: 10px 40px;
+  font-size: 20px;
+  text-align: center;
+  pointer-events: none;
+  border-radius: 10px;
+}
+
+.replace-register-box {
+  position: absolute;
+  left: 35%;
+  bottom: 10%;
+  background-color: #cccccceb;
+  z-index: 100;
+  padding: 10px 40px;
+  font-size: 16px;
+  text-align: center;
+  pointer-events: none;
+  border-radius: 10px;
+}
+
+.replace-register-box .emphasis-word {
+  color: red;
+  font-weight: bold;
+}
+.replace-register-box .normal-word {
+  font-size: 14px;
+}
+.replace-register-box .before-word {
+  color: red;
+}
+.replace-register-box .after-word {
+  color: #00ab00;
+  font-weight: bold;
+}

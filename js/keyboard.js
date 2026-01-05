@@ -78,6 +78,8 @@ document.addEventListener("keydown", e => {
     return;
   }
 
+  console.log(e.key);
+
   if(e.key === "h" && e.ctrlKey){
     if(ReplaceHelper.isActive){
       ReplaceHelper.hide();
@@ -93,6 +95,15 @@ document.addEventListener("keydown", e => {
   const keyString = KeyBoard.getKeyString(e);
   const shortCuts = Config.getGlobalShortCuts().find(s => keyString === s.value.at(-1));
 
+  const i = Selection.idx;
+  if(Replace.helper && keyString === "Ctrl+A"){
+    Replace.removeHelper();
+    Replace.resetRegisterInfo();
+
+    Render.replaceRegister();
+    e.preventDefault();
+  }
+  
   // console.log(keyString);
   
   if(!shortCuts) return;
