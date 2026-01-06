@@ -23,14 +23,14 @@ class AudioController {
     volumeBox.addEventListener("wheel", e => {
       e.preventDefault();
       const delta = KeyBoard.hasCtrl ? KeyBoard.hasShift ? 5 : 3 : KeyBoard.hasShift ? 5 : 1;
-      const v = AudioState.getVolume() + (e.deltaY < 0 ? delta : -delta);
-      this.volume(v);
+      const v = Number(AudioState.getVolume()) + (e.deltaY < 0 ? delta : -delta);
+      this.volume(v < 0 ? 0 : v > 100 ? 100 : v);
     });
     speedBox.addEventListener("wheel", e => {
       e.preventDefault();
       const delta = 0.05;
-      const v = AudioState.getSpeed() + (e.deltaY < 0 ? delta : -delta);
-      this.speed(v);
+      const v = Number(AudioState.getSpeed()) + (e.deltaY < 0 ? delta : -delta);
+      this.speed(v < 0.01 ? 0.01 : v > 2.00 ? 2.00 : v);
     });
 
     currentTime.addEventListener("wheel", e => {
@@ -59,6 +59,7 @@ class AudioController {
     volumeSlider.addEventListener("input", e => {
       const v = e.target.value;
       this.volume(v);
+      console.log(AudioState.getVolume());
     });
     volumeSlider.addEventListener("mouseover", e => {
       e.target.style.setProperty("--sub-theme", Theme.subThemeColor.hover);

@@ -164,7 +164,7 @@ class Replace {
       check.value = t.check;
 
       const status = Elem.create("span", {cl: "r-status"});
-      if()
+      // if()
       status.textContent = "Duplicate"
 
       const beforePrefix = Elem.create("span", {cl: "r-normal-word"});
