@@ -154,6 +154,10 @@ class Replace {
     });
   }
 
+  static hasDuplicatesAfterReplacement(target){
+
+  }
+
   static createCandidates(){
     const items = [];
 
