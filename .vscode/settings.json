@@ -1,9 +1,0 @@
-{
-  "editor.tabSize": 2,
-  "editor.insertSpaces": true,
-  "[powershell]": {
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "ms-vscode.powershell",
-    "files.encoding": "shiftjis"
-  }
-}

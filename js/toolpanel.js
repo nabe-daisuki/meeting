@@ -1,5 +1,0 @@
-class ToolPanel {
-  static init(){
-    
-  }
-}
